@@ -19,7 +19,13 @@
 * **Execution:** * Apply UI/UX principles to ensure a professional and intuitive user experience.
     * Run continuous **Testing** suites to debug the frontend, API endpoints, and model integration.
 
-### **4. Stakeholder Delivery**
+### **5. Deployment**
+* **Plugin:** `vercel-plugin` + `supabase-plugin`
+* **Installation:**
+     * **Vercel:** `claude plugin install vercel@claude-plugins-official`
+     * **Supabase:** `claude plugin install supabase@claude-plugins-official`
+
+### **5. Stakeholder Delivery**
 * **Skill:** `Pptx-plugin`
 * **Execution:** * Generate a final presentation summarizing findings from the CRISP-DM process.
     * Demonstrate the web app solution and how it addresses the initial business problem.
