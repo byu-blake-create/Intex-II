@@ -13,11 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-if (!string.IsNullOrWhiteSpace(connectionString))
-{
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString));
-// Keep database-backed controllers available when a real connection string is configured.
+// Keep the existing DbContext available when a real database connection is configured.
 if (!string.IsNullOrWhiteSpace(connectionString))
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
@@ -25,6 +21,7 @@ if (!string.IsNullOrWhiteSpace(connectionString))
             .UseSnakeCaseNamingConvention());
 }
 
+// Temporary cookie auth lets the staff workspace function before Supabase is wired in.
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {

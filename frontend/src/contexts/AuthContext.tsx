@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Restore an existing cookie session when the app first loads.
     fetch(`${API}/api/auth/me`, { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
       .then(data => setUser(data))

@@ -1,8 +1,13 @@
+import { Link } from 'react-router-dom'
 import './PrivacyPolicyPage.css'
 
 export default function PrivacyPolicyPage() {
   return (
     <main className="privacy-page">
+      <Link className="privacy-page__back" to="/">
+        <span aria-hidden="true">←</span>
+        Back to home
+      </Link>
       <h1>Privacy policy</h1>
       <p className="privacy-page__meta">Last updated: April 6, 2026</p>
 
