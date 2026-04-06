@@ -3,12 +3,12 @@ import { useAuth } from '../contexts/AuthContext'
 import './AdminLayout.css'
 
 const links = [
-  { to: '/admin', label: 'Dashboard' },
-  { to: '/admin/caseload', label: 'Caseload' },
-  { to: '/admin/donors', label: 'Donors' },
-  { to: '/admin/process-recording', label: 'Process recording' },
-  { to: '/admin/visitations', label: 'Visitations' },
-  { to: '/admin/reports', label: 'Reports' },
+  { to: '/staff', label: 'Dashboard' },
+  { to: '/staff/caseload', label: 'Caseload' },
+  { to: '/staff/donors', label: 'Donors' },
+  { to: '/staff/process-recording', label: 'Process recording' },
+  { to: '/staff/visitations', label: 'Visitations' },
+  { to: '/staff/reports', label: 'Reports' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -17,15 +17,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="admin-layout">
       <header className="admin-layout__header">
-        <Link to="/admin" className="admin-layout__brand">
+        <Link to="/staff" className="admin-layout__brand">
           North Star Shelter
         </Link>
-        <nav className="admin-layout__nav" aria-label="Admin">
+        <nav className="admin-layout__nav" aria-label="Staff workspace">
           {links.map(l => (
             <NavLink
               key={l.to}
               to={l.to}
-              end={l.to === '/admin'}
+              end={l.to === '/staff'}
               className={({ isActive }) => (isActive ? 'is-active' : undefined)}
             >
               {l.label}

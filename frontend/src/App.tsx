@@ -36,7 +36,7 @@ export default function App() {
         <Route path="/staff/visitations" element={<ProtectedRoute><VisitationsPage /></ProtectedRoute>} />
         <Route path="/staff/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
 
-        {/* Legacy route aliases */}
+        {/* Keep older links working while the app standardizes on /staff. */}
         <Route path="/admin" element={<Navigate to="/staff" replace />} />
         <Route path="/admin/donors" element={<Navigate to="/staff/donors" replace />} />
         <Route path="/admin/caseload" element={<Navigate to="/staff/caseload" replace />} />

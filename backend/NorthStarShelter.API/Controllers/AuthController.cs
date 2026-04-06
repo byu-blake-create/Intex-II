@@ -23,6 +23,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest req)
     {
+        // Match against the temporary config-backed users until real auth is connected.
         var user = _users.FirstOrDefault(u =>
             string.Equals(u.Email, req.Email, StringComparison.OrdinalIgnoreCase) &&
             u.Password == req.Password);
@@ -68,6 +69,7 @@ public class AuthController : ControllerBase
     [Authorize]
     public IActionResult Me()
     {
+        // The cookie stores the current user identity, so /me can rebuild the frontend session.
         var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue(ClaimTypes.Name);
         if (string.IsNullOrWhiteSpace(email))
         {
