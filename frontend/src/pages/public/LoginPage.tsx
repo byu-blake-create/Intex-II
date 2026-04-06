@@ -14,9 +14,10 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setSubmitting(true)
+
     try {
       await login(email, password)
-      navigate('/admin')
+      navigate('/staff')
     } catch {
       setError('Invalid email or password.')
     } finally {
@@ -31,6 +32,34 @@ export default function LoginPage() {
       </p>
       <h1 style={{ marginBottom: '1rem' }}>Sign in to the North Star Shelter staff workspace</h1>
       <p style={{ marginBottom: '2rem', lineHeight: 1.7 }}>
+        Staff and admin share the same internal workspace. This is a temporary local sign-in flow
+        until Supabase is connected.
+      </p>
+
+      <div
+        style={{
+          marginBottom: '1.5rem',
+          padding: '1rem 1.1rem',
+          borderRadius: '18px',
+          border: '1px solid rgba(82, 60, 47, 0.14)',
+          background: 'rgba(255, 250, 244, 0.9)',
+        }}
+      >
+        <p style={{ marginBottom: '0.5rem', fontWeight: 700, color: '#221813' }}>Temporary shared staff login</p>
+        <p style={{ marginBottom: '0.35rem', fontFamily: 'monospace' }}>Email: staff@northstarshelter.org</p>
+        <p style={{ margin: 0, fontFamily: 'monospace' }}>Password: NorthStarStaff123</p>
+      </div>
+
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: 'grid',
+          gap: '1rem',
+          padding: '1.5rem',
+          borderRadius: '24px',
+          background: 'rgba(255, 250, 244, 0.72)',
+          border: '1px solid rgba(82, 60, 47, 0.14)',
+        }}
         Sign in with an account provisioned in the API (cookie authentication; CORS allows the configured frontend origin).
       </p>
 
@@ -62,6 +91,15 @@ export default function LoginPage() {
             onChange={e => setEmail(e.target.value)}
             required
             autoComplete="email"
+            style={{
+              padding: '0.9rem 1rem',
+              borderRadius: '14px',
+              border: '1px solid rgba(82, 60, 47, 0.16)',
+              background: '#fffdf9',
+            }}
+          />
+        </label>
+
             style={{ padding: '0.9rem 1rem', borderRadius: '14px', border: '1px solid rgba(82, 60, 47, 0.16)', background: '#fffdf9' }}
           />
         </label>
@@ -73,6 +111,15 @@ export default function LoginPage() {
             onChange={e => setPassword(e.target.value)}
             required
             autoComplete="current-password"
+            style={{
+              padding: '0.9rem 1rem',
+              borderRadius: '14px',
+              border: '1px solid rgba(82, 60, 47, 0.16)',
+              background: '#fffdf9',
+            }}
+          />
+        </label>
+
             style={{ padding: '0.9rem 1rem', borderRadius: '14px', border: '1px solid rgba(82, 60, 47, 0.16)', background: '#fffdf9' }}
           />
         </label>
@@ -81,6 +128,7 @@ export default function LoginPage() {
             {error}
           </p>
         )}
+
         <button
           type="submit"
           disabled={submitting}
