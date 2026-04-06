@@ -1,6 +1,7 @@
 import { Navigate, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import CookieConsent from './components/CookieConsent'
 
 // Public pages
 import HomePage from './pages/public/HomePage'
@@ -19,6 +20,7 @@ import ReportsPage from './pages/admin/ReportsPage'
 export default function App() {
   return (
     <AuthProvider>
+      <CookieConsent />
       <Routes>
         {/* Public */}
         <Route path="/" element={<HomePage />} />

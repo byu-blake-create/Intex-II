@@ -1,0 +1,808 @@
+{
+  "generated_at": "2026-04-06T21:37:32+00:00",
+  "model_version": "social_post_performance_gb_v1",
+  "predictions": [
+    {
+      "post_id": 36,
+      "platform": "Facebook",
+      "created_at": "2025-10-29 13:24:00",
+      "actual_engagement_rate": 0.0667,
+      "predicted_engagement_rate": 0.099,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 442,
+      "platform": "TikTok",
+      "created_at": "2025-10-30 08:07:00",
+      "actual_engagement_rate": 0.0527,
+      "predicted_engagement_rate": 0.0533,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 58,
+      "platform": "WhatsApp",
+      "created_at": "2025-10-30 18:54:00",
+      "actual_engagement_rate": 0.1406,
+      "predicted_engagement_rate": 0.145,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 459,
+      "platform": "WhatsApp",
+      "created_at": "2025-10-31 05:58:00",
+      "actual_engagement_rate": 0.036,
+      "predicted_engagement_rate": 0.0351,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 544,
+      "platform": "Facebook",
+      "created_at": "2025-11-03 17:05:00",
+      "actual_engagement_rate": 0.0675,
+      "predicted_engagement_rate": 0.0727,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 394,
+      "platform": "Twitter",
+      "created_at": "2025-11-04 17:41:00",
+      "actual_engagement_rate": 0.1611,
+      "predicted_engagement_rate": 0.1384,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 267,
+      "platform": "YouTube",
+      "created_at": "2025-11-06 05:47:00",
+      "actual_engagement_rate": 0.0332,
+      "predicted_engagement_rate": 0.0354,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 668,
+      "platform": "Instagram",
+      "created_at": "2025-11-07 02:13:00",
+      "actual_engagement_rate": 0.0548,
+      "predicted_engagement_rate": 0.057,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 307,
+      "platform": "Facebook",
+      "created_at": "2025-11-07 19:53:00",
+      "actual_engagement_rate": 0.1,
+      "predicted_engagement_rate": 0.1191,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 347,
+      "platform": "Instagram",
+      "created_at": "2025-11-08 09:09:00",
+      "actual_engagement_rate": 0.0785,
+      "predicted_engagement_rate": 0.1043,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 740,
+      "platform": "WhatsApp",
+      "created_at": "2025-11-08 11:03:00",
+      "actual_engagement_rate": 0.1229,
+      "predicted_engagement_rate": 0.1218,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 67,
+      "platform": "Facebook",
+      "created_at": "2025-11-08 20:30:00",
+      "actual_engagement_rate": 0.1367,
+      "predicted_engagement_rate": 0.1259,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 27,
+      "platform": "Instagram",
+      "created_at": "2025-11-09 10:42:00",
+      "actual_engagement_rate": 0.0788,
+      "predicted_engagement_rate": 0.0834,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 601,
+      "platform": "Twitter",
+      "created_at": "2025-11-10 04:14:00",
+      "actual_engagement_rate": 0.0453,
+      "predicted_engagement_rate": 0.0456,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 698,
+      "platform": "WhatsApp",
+      "created_at": "2025-11-10 07:37:00",
+      "actual_engagement_rate": 0.0481,
+      "predicted_engagement_rate": 0.0611,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 725,
+      "platform": "Facebook",
+      "created_at": "2025-11-12 21:46:00",
+      "actual_engagement_rate": 0.0809,
+      "predicted_engagement_rate": 0.0801,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 120,
+      "platform": "TikTok",
+      "created_at": "2025-11-13 07:12:00",
+      "actual_engagement_rate": 0.0972,
+      "predicted_engagement_rate": 0.0831,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 686,
+      "platform": "Facebook",
+      "created_at": "2025-11-14 08:20:00",
+      "actual_engagement_rate": 0.1182,
+      "predicted_engagement_rate": 0.1111,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 591,
+      "platform": "Instagram",
+      "created_at": "2025-11-14 20:34:00",
+      "actual_engagement_rate": 0.0668,
+      "predicted_engagement_rate": 0.0865,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 113,
+      "platform": "TikTok",
+      "created_at": "2025-11-15 03:55:00",
+      "actual_engagement_rate": 0.0207,
+      "predicted_engagement_rate": 0.0183,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 200,
+      "platform": "Facebook",
+      "created_at": "2025-11-17 15:43:00",
+      "actual_engagement_rate": 0.0888,
+      "predicted_engagement_rate": 0.0831,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 47,
+      "platform": "Facebook",
+      "created_at": "2025-11-20 13:22:00",
+      "actual_engagement_rate": 0.0429,
+      "predicted_engagement_rate": 0.058,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 271,
+      "platform": "Twitter",
+      "created_at": "2025-11-24 18:13:00",
+      "actual_engagement_rate": 0.1453,
+      "predicted_engagement_rate": 0.1482,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 653,
+      "platform": "YouTube",
+      "created_at": "2025-11-25 01:03:00",
+      "actual_engagement_rate": 0.0422,
+      "predicted_engagement_rate": 0.0427,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 348,
+      "platform": "YouTube",
+      "created_at": "2025-11-27 21:58:00",
+      "actual_engagement_rate": 0.0414,
+      "predicted_engagement_rate": 0.0681,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 774,
+      "platform": "Facebook",
+      "created_at": "2025-11-28 21:59:00",
+      "actual_engagement_rate": 0.091,
+      "predicted_engagement_rate": 0.1066,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 398,
+      "platform": "WhatsApp",
+      "created_at": "2025-11-29 08:49:00",
+      "actual_engagement_rate": 0.1653,
+      "predicted_engagement_rate": 0.1488,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 624,
+      "platform": "Facebook",
+      "created_at": "2025-12-01 01:18:00",
+      "actual_engagement_rate": 0.0352,
+      "predicted_engagement_rate": 0.0288,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 39,
+      "platform": "Instagram",
+      "created_at": "2025-12-01 11:13:00",
+      "actual_engagement_rate": 0.185,
+      "predicted_engagement_rate": 0.1767,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 183,
+      "platform": "Facebook",
+      "created_at": "2025-12-02 22:17:00",
+      "actual_engagement_rate": 0.0379,
+      "predicted_engagement_rate": 0.0346,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 44,
+      "platform": "YouTube",
+      "created_at": "2025-12-03 09:29:00",
+      "actual_engagement_rate": 0.1027,
+      "predicted_engagement_rate": 0.141,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 399,
+      "platform": "Twitter",
+      "created_at": "2025-12-05 13:02:00",
+      "actual_engagement_rate": 0.0863,
+      "predicted_engagement_rate": 0.1087,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 497,
+      "platform": "WhatsApp",
+      "created_at": "2025-12-08 21:28:00",
+      "actual_engagement_rate": 0.1016,
+      "predicted_engagement_rate": 0.0981,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 77,
+      "platform": "LinkedIn",
+      "created_at": "2025-12-10 10:26:00",
+      "actual_engagement_rate": 0.1388,
+      "predicted_engagement_rate": 0.1429,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 369,
+      "platform": "Facebook",
+      "created_at": "2025-12-11 04:12:00",
+      "actual_engagement_rate": 0.0436,
+      "predicted_engagement_rate": 0.0423,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 289,
+      "platform": "TikTok",
+      "created_at": "2025-12-11 11:22:00",
+      "actual_engagement_rate": 0.1212,
+      "predicted_engagement_rate": 0.1309,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 439,
+      "platform": "LinkedIn",
+      "created_at": "2025-12-12 07:56:00",
+      "actual_engagement_rate": 0.0942,
+      "predicted_engagement_rate": 0.091,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 569,
+      "platform": "TikTok",
+      "created_at": "2025-12-13 01:23:00",
+      "actual_engagement_rate": 0.0241,
+      "predicted_engagement_rate": 0.0168,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 629,
+      "platform": "Facebook",
+      "created_at": "2025-12-15 13:03:00",
+      "actual_engagement_rate": 0.097,
+      "predicted_engagement_rate": 0.1147,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 228,
+      "platform": "Facebook",
+      "created_at": "2025-12-15 18:45:00",
+      "actual_engagement_rate": 0.0866,
+      "predicted_engagement_rate": 0.1022,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 89,
+      "platform": "LinkedIn",
+      "created_at": "2025-12-16 12:30:00",
+      "actual_engagement_rate": 0.1639,
+      "predicted_engagement_rate": 0.1444,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 310,
+      "platform": "Facebook",
+      "created_at": "2025-12-17 14:43:00",
+      "actual_engagement_rate": 0.082,
+      "predicted_engagement_rate": 0.0762,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 232,
+      "platform": "Twitter",
+      "created_at": "2025-12-21 16:49:00",
+      "actual_engagement_rate": 0.1037,
+      "predicted_engagement_rate": 0.1054,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 187,
+      "platform": "TikTok",
+      "created_at": "2025-12-21 19:16:00",
+      "actual_engagement_rate": 0.1884,
+      "predicted_engagement_rate": 0.165,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 766,
+      "platform": "Facebook",
+      "created_at": "2025-12-25 22:18:00",
+      "actual_engagement_rate": 0.0499,
+      "predicted_engagement_rate": 0.0399,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 281,
+      "platform": "TikTok",
+      "created_at": "2025-12-27 12:27:00",
+      "actual_engagement_rate": 0.0714,
+      "predicted_engagement_rate": 0.0728,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 676,
+      "platform": "Facebook",
+      "created_at": "2025-12-29 14:14:00",
+      "actual_engagement_rate": 0.0777,
+      "predicted_engagement_rate": 0.0835,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 41,
+      "platform": "Facebook",
+      "created_at": "2025-12-29 19:52:00",
+      "actual_engagement_rate": 0.1549,
+      "predicted_engagement_rate": 0.1382,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 219,
+      "platform": "LinkedIn",
+      "created_at": "2026-01-02 10:22:00",
+      "actual_engagement_rate": 0.1778,
+      "predicted_engagement_rate": 0.1749,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 633,
+      "platform": "Facebook",
+      "created_at": "2026-01-02 17:08:00",
+      "actual_engagement_rate": 0.0422,
+      "predicted_engagement_rate": 0.0459,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 422,
+      "platform": "YouTube",
+      "created_at": "2026-01-04 13:35:00",
+      "actual_engagement_rate": 0.0755,
+      "predicted_engagement_rate": 0.075,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 450,
+      "platform": "Instagram",
+      "created_at": "2026-01-06 19:24:00",
+      "actual_engagement_rate": 0.1042,
+      "predicted_engagement_rate": 0.1091,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 107,
+      "platform": "TikTok",
+      "created_at": "2026-01-08 09:50:00",
+      "actual_engagement_rate": 0.0503,
+      "predicted_engagement_rate": 0.0619,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 456,
+      "platform": "Instagram",
+      "created_at": "2026-01-08 14:21:00",
+      "actual_engagement_rate": 0.0821,
+      "predicted_engagement_rate": 0.0869,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 20,
+      "platform": "Instagram",
+      "created_at": "2026-01-10 15:08:00",
+      "actual_engagement_rate": 0.0742,
+      "predicted_engagement_rate": 0.0829,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 217,
+      "platform": "Facebook",
+      "created_at": "2026-01-11 11:55:00",
+      "actual_engagement_rate": 0.0819,
+      "predicted_engagement_rate": 0.0766,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 707,
+      "platform": "Twitter",
+      "created_at": "2026-01-11 17:55:00",
+      "actual_engagement_rate": 0.0943,
+      "predicted_engagement_rate": 0.0715,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 396,
+      "platform": "Facebook",
+      "created_at": "2026-01-13 04:24:00",
+      "actual_engagement_rate": 0.0342,
+      "predicted_engagement_rate": 0.0369,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 325,
+      "platform": "Facebook",
+      "created_at": "2026-01-15 21:34:00",
+      "actual_engagement_rate": 0.0783,
+      "predicted_engagement_rate": 0.0916,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 782,
+      "platform": "Twitter",
+      "created_at": "2026-01-17 09:46:00",
+      "actual_engagement_rate": 0.1393,
+      "predicted_engagement_rate": 0.1466,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 651,
+      "platform": "YouTube",
+      "created_at": "2026-01-17 17:00:00",
+      "actual_engagement_rate": 0.1052,
+      "predicted_engagement_rate": 0.1032,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 375,
+      "platform": "Instagram",
+      "created_at": "2026-01-18 01:06:00",
+      "actual_engagement_rate": 0.0184,
+      "predicted_engagement_rate": 0.0215,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 596,
+      "platform": "LinkedIn",
+      "created_at": "2026-01-18 11:22:00",
+      "actual_engagement_rate": 0.212,
+      "predicted_engagement_rate": 0.1794,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 239,
+      "platform": "Twitter",
+      "created_at": "2026-01-21 04:43:00",
+      "actual_engagement_rate": 0.0315,
+      "predicted_engagement_rate": 0.0386,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 526,
+      "platform": "Facebook",
+      "created_at": "2026-01-21 14:34:00",
+      "actual_engagement_rate": 0.0531,
+      "predicted_engagement_rate": 0.0539,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 685,
+      "platform": "Twitter",
+      "created_at": "2026-01-22 10:09:00",
+      "actual_engagement_rate": 0.1531,
+      "predicted_engagement_rate": 0.1345,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 785,
+      "platform": "WhatsApp",
+      "created_at": "2026-01-22 21:33:00",
+      "actual_engagement_rate": 0.1286,
+      "predicted_engagement_rate": 0.1495,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 55,
+      "platform": "Twitter",
+      "created_at": "2026-01-24 07:25:00",
+      "actual_engagement_rate": 0.1556,
+      "predicted_engagement_rate": 0.1447,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 745,
+      "platform": "Instagram",
+      "created_at": "2026-01-24 07:31:00",
+      "actual_engagement_rate": 0.0745,
+      "predicted_engagement_rate": 0.1008,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 138,
+      "platform": "Facebook",
+      "created_at": "2026-01-24 09:33:00",
+      "actual_engagement_rate": 0.1334,
+      "predicted_engagement_rate": 0.1485,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 167,
+      "platform": "Twitter",
+      "created_at": "2026-01-25 03:27:00",
+      "actual_engagement_rate": 0.0235,
+      "predicted_engagement_rate": 0.0291,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 541,
+      "platform": "WhatsApp",
+      "created_at": "2026-01-27 15:10:00",
+      "actual_engagement_rate": 0.0682,
+      "predicted_engagement_rate": 0.0791,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 479,
+      "platform": "Instagram",
+      "created_at": "2026-01-29 00:24:00",
+      "actual_engagement_rate": 0.0189,
+      "predicted_engagement_rate": 0.0179,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 769,
+      "platform": "Facebook",
+      "created_at": "2026-01-29 19:03:00",
+      "actual_engagement_rate": 0.1073,
+      "predicted_engagement_rate": 0.107,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 59,
+      "platform": "Facebook",
+      "created_at": "2026-01-30 04:11:00",
+      "actual_engagement_rate": 0.023,
+      "predicted_engagement_rate": 0.0251,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 528,
+      "platform": "WhatsApp",
+      "created_at": "2026-01-31 06:57:00",
+      "actual_engagement_rate": 0.1053,
+      "predicted_engagement_rate": 0.0947,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 484,
+      "platform": "Facebook",
+      "created_at": "2026-02-01 10:50:00",
+      "actual_engagement_rate": 0.2022,
+      "predicted_engagement_rate": 0.1707,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 24,
+      "platform": "WhatsApp",
+      "created_at": "2026-02-01 17:06:00",
+      "actual_engagement_rate": 0.0964,
+      "predicted_engagement_rate": 0.1179,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 551,
+      "platform": "Facebook",
+      "created_at": "2026-02-02 13:39:00",
+      "actual_engagement_rate": 0.1073,
+      "predicted_engagement_rate": 0.1187,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 474,
+      "platform": "LinkedIn",
+      "created_at": "2026-02-03 02:34:00",
+      "actual_engagement_rate": 0.043,
+      "predicted_engagement_rate": 0.0557,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 299,
+      "platform": "WhatsApp",
+      "created_at": "2026-02-04 10:08:00",
+      "actual_engagement_rate": 0.1245,
+      "predicted_engagement_rate": 0.1271,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 45,
+      "platform": "LinkedIn",
+      "created_at": "2026-02-05 13:36:00",
+      "actual_engagement_rate": 0.1877,
+      "predicted_engagement_rate": 0.1759,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 171,
+      "platform": "Twitter",
+      "created_at": "2026-02-07 09:05:00",
+      "actual_engagement_rate": 0.1511,
+      "predicted_engagement_rate": 0.1516,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 338,
+      "platform": "Facebook",
+      "created_at": "2026-02-07 10:25:00",
+      "actual_engagement_rate": 0.2058,
+      "predicted_engagement_rate": 0.1954,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 93,
+      "platform": "TikTok",
+      "created_at": "2026-02-07 21:14:00",
+      "actual_engagement_rate": 0.1582,
+      "predicted_engagement_rate": 0.1683,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 186,
+      "platform": "TikTok",
+      "created_at": "2026-02-08 12:52:00",
+      "actual_engagement_rate": 0.0391,
+      "predicted_engagement_rate": 0.0486,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 520,
+      "platform": "Instagram",
+      "created_at": "2026-02-08 14:50:00",
+      "actual_engagement_rate": 0.1605,
+      "predicted_engagement_rate": 0.1659,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 51,
+      "platform": "Twitter",
+      "created_at": "2026-02-08 23:13:00",
+      "actual_engagement_rate": 0.0805,
+      "predicted_engagement_rate": 0.0924,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 444,
+      "platform": "TikTok",
+      "created_at": "2026-02-09 17:25:00",
+      "actual_engagement_rate": 0.0725,
+      "predicted_engagement_rate": 0.0762,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 429,
+      "platform": "Facebook",
+      "created_at": "2026-02-10 06:10:00",
+      "actual_engagement_rate": 0.0622,
+      "predicted_engagement_rate": 0.042,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 280,
+      "platform": "Twitter",
+      "created_at": "2026-02-13 11:42:00",
+      "actual_engagement_rate": 0.1845,
+      "predicted_engagement_rate": 0.189,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 112,
+      "platform": "LinkedIn",
+      "created_at": "2026-02-18 09:13:00",
+      "actual_engagement_rate": 0.1682,
+      "predicted_engagement_rate": 0.1641,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 328,
+      "platform": "WhatsApp",
+      "created_at": "2026-02-18 17:25:00",
+      "actual_engagement_rate": 0.0857,
+      "predicted_engagement_rate": 0.0953,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 639,
+      "platform": "Facebook",
+      "created_at": "2026-02-20 18:20:00",
+      "actual_engagement_rate": 0.1438,
+      "predicted_engagement_rate": 0.1504,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 498,
+      "platform": "LinkedIn",
+      "created_at": "2026-02-21 09:54:00",
+      "actual_engagement_rate": 0.2369,
+      "predicted_engagement_rate": 0.187,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 245,
+      "platform": "Facebook",
+      "created_at": "2026-02-21 23:46:00",
+      "actual_engagement_rate": 0.0608,
+      "predicted_engagement_rate": 0.0639,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 214,
+      "platform": "Facebook",
+      "created_at": "2026-02-22 00:38:00",
+      "actual_engagement_rate": 0.0274,
+      "predicted_engagement_rate": 0.0272,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 491,
+      "platform": "TikTok",
+      "created_at": "2026-02-23 11:05:00",
+      "actual_engagement_rate": 0.0565,
+      "predicted_engagement_rate": 0.081,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 251,
+      "platform": "YouTube",
+      "created_at": "2026-02-23 17:53:00",
+      "actual_engagement_rate": 0.2466,
+      "predicted_engagement_rate": 0.2238,
+      "top_factor": "sentiment_tone_Informative"
+    },
+    {
+      "post_id": 581,
+      "platform": "Facebook",
+      "created_at": "2026-02-26 21:56:00",
+      "actual_engagement_rate": 0.1231,
+      "predicted_engagement_rate": 0.1321,
+      "top_factor": "sentiment_tone_Informative"
+    }
+  ],
+  "target": "engagement_rate",
+  "prediction_scope": "latest_100_posts"
+}

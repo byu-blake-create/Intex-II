@@ -60,6 +60,28 @@ export default function LoginPage() {
           background: 'rgba(255, 250, 244, 0.72)',
           border: '1px solid rgba(82, 60, 47, 0.14)',
         }}
+        Sign in with an account provisioned in the API (cookie authentication; CORS allows the configured frontend origin).
+      </p>
+
+      {import.meta.env.DEV && (
+        <div
+          style={{
+            marginBottom: '1.5rem',
+            padding: '1rem 1.1rem',
+            borderRadius: '18px',
+            border: '1px solid rgba(82, 60, 47, 0.14)',
+            background: 'rgba(255, 250, 244, 0.9)',
+          }}
+        >
+          <p style={{ marginBottom: '0.5rem', fontWeight: 700, color: '#221813' }}>Local development (default seed)</p>
+          <p style={{ marginBottom: '0.35rem', fontFamily: 'monospace' }}>Email: admin@northstarshelter.org</p>
+          <p style={{ margin: 0, fontFamily: 'monospace' }}>Password: LocalDev!North12</p>
+        </div>
+      )}
+
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: 'grid', gap: '1rem', padding: '1.5rem', borderRadius: '24px', background: 'rgba(255, 250, 244, 0.72)', border: '1px solid rgba(82, 60, 47, 0.14)' }}
       >
         <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
           <span>Email</span>
@@ -78,6 +100,9 @@ export default function LoginPage() {
           />
         </label>
 
+            style={{ padding: '0.9rem 1rem', borderRadius: '14px', border: '1px solid rgba(82, 60, 47, 0.16)', background: '#fffdf9' }}
+          />
+        </label>
         <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
           <span>Password</span>
           <input
@@ -95,6 +120,9 @@ export default function LoginPage() {
           />
         </label>
 
+            style={{ padding: '0.9rem 1rem', borderRadius: '14px', border: '1px solid rgba(82, 60, 47, 0.16)', background: '#fffdf9' }}
+          />
+        </label>
         {error && (
           <p role="alert" style={{ margin: 0, color: '#9f2f1f' }}>
             {error}

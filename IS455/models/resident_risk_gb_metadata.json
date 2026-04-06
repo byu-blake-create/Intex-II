@@ -1,0 +1,42 @@
+{
+  "name": "resident_risk_gb",
+  "trained_at": "2026-04-06T22:03:26+00:00",
+  "label_definition": "1 if the resident will have any concern-flagged session in the next 90 days",
+  "feature_names": [
+    "days_since_admission",
+    "session_count_total",
+    "session_count_30d",
+    "concern_rate_90d",
+    "referral_rate_90d",
+    "session_duration_minutes",
+    "plan_count_total",
+    "snapshot_month",
+    "snapshot_year",
+    "progress_noted",
+    "safety_concerns_noted",
+    "follow_up_needed",
+    "safehouse_id",
+    "case_status",
+    "case_category",
+    "reintegration_status",
+    "current_risk_level",
+    "assigned_social_worker",
+    "session_type",
+    "emotional_state_observed",
+    "emotional_state_end",
+    "family_cooperation_level",
+    "visit_outcome"
+  ],
+  "metrics": {
+    "roc_auc": 0.9829,
+    "f1": 0.5714,
+    "precision": 0.8571,
+    "recall": 0.4286,
+    "accuracy": 0.9545
+  },
+  "random_seed": 42,
+  "model_path": "C:\\Users\\johne\\Documents\\Coding\\BYU\\Intex-II\\IS455\\models\\resident_risk_gb.pkl",
+  "model_type": "GradientBoostingClassifier",
+  "test_start": "2026-06-01 00:00:00",
+  "decision_threshold": 0.25
+}

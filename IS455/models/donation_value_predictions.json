@@ -1,0 +1,428 @@
+{
+  "generated_at": "2026-04-06T22:01:32+00:00",
+  "model_version": "donation_value_rf_v2",
+  "predictions": [
+    {
+      "supporter_id": 9,
+      "high_value_probability": 0.8825,
+      "threshold_php": 1000.0,
+      "predicted_tier": "High Opportunity",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 8,
+      "high_value_probability": 0.8775,
+      "threshold_php": 1000.0,
+      "predicted_tier": "High Opportunity",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 11,
+      "high_value_probability": 0.8725,
+      "threshold_php": 1000.0,
+      "predicted_tier": "High Opportunity",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 18,
+      "high_value_probability": 0.835,
+      "threshold_php": 1000.0,
+      "predicted_tier": "High Opportunity",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 44,
+      "high_value_probability": 0.765,
+      "threshold_php": 1000.0,
+      "predicted_tier": "High Opportunity",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 51,
+      "high_value_probability": 0.665,
+      "threshold_php": 1000.0,
+      "predicted_tier": "High Opportunity",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 6,
+      "high_value_probability": 0.2025,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 22,
+      "high_value_probability": 0.1775,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 7,
+      "high_value_probability": 0.1675,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 32,
+      "high_value_probability": 0.1375,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 4,
+      "high_value_probability": 0.09,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 47,
+      "high_value_probability": 0.0775,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 48,
+      "high_value_probability": 0.07,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 10,
+      "high_value_probability": 0.0475,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 38,
+      "high_value_probability": 0.0475,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 42,
+      "high_value_probability": 0.045,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 29,
+      "high_value_probability": 0.045,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 16,
+      "high_value_probability": 0.045,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 25,
+      "high_value_probability": 0.0425,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 43,
+      "high_value_probability": 0.0425,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 26,
+      "high_value_probability": 0.04,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 56,
+      "high_value_probability": 0.0325,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 23,
+      "high_value_probability": 0.03,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 59,
+      "high_value_probability": 0.0275,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 24,
+      "high_value_probability": 0.0225,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 19,
+      "high_value_probability": 0.0225,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 49,
+      "high_value_probability": 0.02,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 21,
+      "high_value_probability": 0.02,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 31,
+      "high_value_probability": 0.02,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 37,
+      "high_value_probability": 0.02,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 39,
+      "high_value_probability": 0.0175,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 50,
+      "high_value_probability": 0.0175,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 40,
+      "high_value_probability": 0.015,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 45,
+      "high_value_probability": 0.015,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 13,
+      "high_value_probability": 0.015,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 53,
+      "high_value_probability": 0.0125,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 12,
+      "high_value_probability": 0.0125,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 27,
+      "high_value_probability": 0.01,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 17,
+      "high_value_probability": 0.01,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 46,
+      "high_value_probability": 0.01,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 60,
+      "high_value_probability": 0.01,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 33,
+      "high_value_probability": 0.01,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 52,
+      "high_value_probability": 0.01,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 54,
+      "high_value_probability": 0.01,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 30,
+      "high_value_probability": 0.0075,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 34,
+      "high_value_probability": 0.0075,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 41,
+      "high_value_probability": 0.0075,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 15,
+      "high_value_probability": 0.0075,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 1,
+      "high_value_probability": 0.0075,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 2,
+      "high_value_probability": 0.0075,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 5,
+      "high_value_probability": 0.0075,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 14,
+      "high_value_probability": 0.0075,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 58,
+      "high_value_probability": 0.005,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 55,
+      "high_value_probability": 0.005,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 3,
+      "high_value_probability": 0.0025,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 20,
+      "high_value_probability": 0.0025,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 28,
+      "high_value_probability": 0.0025,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 36,
+      "high_value_probability": 0.0025,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 57,
+      "high_value_probability": 0.0025,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 35,
+      "high_value_probability": 0.0,
+      "threshold_php": 1000.0,
+      "predicted_tier": "Standard",
+      "prediction_date": "2025-12-01"
+    }
+  ],
+  "target": "high_value_opportunity",
+  "threshold_php": 1000.0
+}

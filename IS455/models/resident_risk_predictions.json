@@ -1,0 +1,225 @@
+{
+  "generated_at": "2026-04-06T22:03:26+00:00",
+  "model_version": "resident_risk_gb_v2",
+  "predictions": [
+    {
+      "resident_id": 27,
+      "concern_probability": 0.6368,
+      "risk_level": "High",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 49,
+      "concern_probability": 0.0409,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 59,
+      "concern_probability": 0.03,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 4,
+      "concern_probability": 0.0282,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 41,
+      "concern_probability": 0.0272,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 3,
+      "concern_probability": 0.0271,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 36,
+      "concern_probability": 0.0263,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 57,
+      "concern_probability": 0.0241,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 55,
+      "concern_probability": 0.0235,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 21,
+      "concern_probability": 0.0229,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 42,
+      "concern_probability": 0.0225,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 38,
+      "concern_probability": 0.0219,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 7,
+      "concern_probability": 0.0219,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 25,
+      "concern_probability": 0.0218,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 12,
+      "concern_probability": 0.0213,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 10,
+      "concern_probability": 0.0208,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 19,
+      "concern_probability": 0.0205,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 17,
+      "concern_probability": 0.0197,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 53,
+      "concern_probability": 0.0196,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 9,
+      "concern_probability": 0.0195,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 1,
+      "concern_probability": 0.0191,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 48,
+      "concern_probability": 0.0184,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 16,
+      "concern_probability": 0.0181,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 32,
+      "concern_probability": 0.018,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 50,
+      "concern_probability": 0.0178,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 46,
+      "concern_probability": 0.017,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 24,
+      "concern_probability": 0.0163,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 14,
+      "concern_probability": 0.0158,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 40,
+      "concern_probability": 0.0156,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 6,
+      "concern_probability": 0.0155,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 8,
+      "concern_probability": 0.0138,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    }
+  ],
+  "target": "next90d_concern",
+  "decision_threshold": 0.25
+}

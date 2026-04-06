@@ -1,0 +1,355 @@
+{
+  "generated_at": "2026-04-06T21:10:03+00:00",
+  "model_version": "reintegration_readiness_gb_v1",
+  "predictions": [
+    {
+      "resident_id": 1,
+      "favorable_probability": 0.0052,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 2,
+      "favorable_probability": 0.8141,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 3,
+      "favorable_probability": 0.0145,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 4,
+      "favorable_probability": 0.009,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 5,
+      "favorable_probability": 0.8324,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 6,
+      "favorable_probability": 0.6901,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 7,
+      "favorable_probability": 0.6912,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 8,
+      "favorable_probability": 0.604,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 9,
+      "favorable_probability": 0.0244,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 10,
+      "favorable_probability": 0.006,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 11,
+      "favorable_probability": 0.0068,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 12,
+      "favorable_probability": 0.009,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 13,
+      "favorable_probability": 0.6735,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 14,
+      "favorable_probability": 0.0158,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 15,
+      "favorable_probability": 0.8627,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 16,
+      "favorable_probability": 0.0068,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 17,
+      "favorable_probability": 0.4949,
+      "risk_level": "Medium",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 18,
+      "favorable_probability": 0.6227,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 19,
+      "favorable_probability": 0.8117,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 20,
+      "favorable_probability": 0.5806,
+      "risk_level": "Medium",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 21,
+      "favorable_probability": 0.006,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 22,
+      "favorable_probability": 0.6296,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 23,
+      "favorable_probability": 0.4426,
+      "risk_level": "Medium",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 24,
+      "favorable_probability": 0.0203,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 25,
+      "favorable_probability": 0.8524,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 26,
+      "favorable_probability": 0.0082,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 27,
+      "favorable_probability": 0.5466,
+      "risk_level": "Medium",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 28,
+      "favorable_probability": 0.0113,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 29,
+      "favorable_probability": 0.5931,
+      "risk_level": "Medium",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 30,
+      "favorable_probability": 0.7537,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 31,
+      "favorable_probability": 0.6538,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 32,
+      "favorable_probability": 0.7754,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 33,
+      "favorable_probability": 0.0118,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 34,
+      "favorable_probability": 0.7213,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 35,
+      "favorable_probability": 0.0115,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 36,
+      "favorable_probability": 0.8494,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 37,
+      "favorable_probability": 0.7122,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 38,
+      "favorable_probability": 0.8605,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 39,
+      "favorable_probability": 0.0089,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 41,
+      "favorable_probability": 0.0045,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 42,
+      "favorable_probability": 0.7523,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 43,
+      "favorable_probability": 0.0122,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 44,
+      "favorable_probability": 0.6776,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 45,
+      "favorable_probability": 0.7857,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 46,
+      "favorable_probability": 0.7874,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 47,
+      "favorable_probability": 0.7963,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 49,
+      "favorable_probability": 0.6813,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 50,
+      "favorable_probability": 0.9566,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 51,
+      "favorable_probability": 0.7001,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 52,
+      "favorable_probability": 0.0063,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 53,
+      "favorable_probability": 0.6528,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 54,
+      "favorable_probability": 0.6928,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 55,
+      "favorable_probability": 0.7461,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 56,
+      "favorable_probability": 0.7818,
+      "risk_level": "High",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 57,
+      "favorable_probability": 0.0063,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 58,
+      "favorable_probability": 0.4779,
+      "risk_level": "Medium",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 59,
+      "favorable_probability": 0.0085,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    },
+    {
+      "resident_id": 60,
+      "favorable_probability": 0.372,
+      "risk_level": "Low",
+      "top_factor": "follow_up_bin"
+    }
+  ],
+  "prediction_scope": "latest_visit_per_resident"
+}
