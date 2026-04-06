@@ -1,9 +1,9 @@
 services:
   - type: web
     name: northstar-api
-    runtime: dotnet
-    buildCommand: dotnet publish backend/NorthStarShelter.API/NorthStarShelter.API.csproj -c Release -o out
-    startCommand: dotnet out/NorthStarShelter.API.dll
+    runtime: docker
+    dockerfilePath: ./backend/NorthStarShelter.API/Dockerfile
+    dockerContext: ./
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
