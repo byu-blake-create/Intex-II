@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/NorthStarShelter.API/NorthStarShelter.API.csproj" />
+  </Folder>
+</Solution>

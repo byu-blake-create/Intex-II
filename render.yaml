@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: northstar-api
+    runtime: dotnet
+    buildCommand: dotnet publish backend/NorthStarShelter.API/NorthStarShelter.API.csproj -c Release -o out
+    startCommand: dotnet out/NorthStarShelter.API.dll
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: FrontendUrl
+        sync: false
