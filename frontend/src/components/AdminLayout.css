@@ -1,7 +1,18 @@
+/* ─── Dark theme variables scoped to admin ─────────────────── */
 .admin-layout {
+  --adm-bg: #0d1117;
+  --adm-surface: #161b22;
+  --adm-card: #1c2130;
+  --adm-border: rgba(255, 255, 255, 0.08);
+  --adm-ink: #e6ddd6;
+  --adm-muted: #8b8480;
+  --adm-accent: #e07048;
+  --adm-accent-dim: rgba(224, 112, 72, 0.12);
+
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+  background: var(--adm-bg);
 }
 
 .admin-layout__header {
@@ -10,16 +21,16 @@
   align-items: center;
   gap: 1rem 1.5rem;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--base-line);
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--adm-border);
+  background: var(--adm-surface);
+  color: var(--adm-ink);
 }
 
 .admin-layout__brand {
   font-family: var(--font-display);
   font-size: 1.25rem;
   text-decoration: none;
-  color: var(--base-ink);
+  color: var(--adm-ink);
 }
 
 .admin-layout__nav {
@@ -30,13 +41,18 @@
 
 .admin-layout__nav a {
   text-decoration: none;
-  color: var(--base-muted);
+  color: var(--adm-muted);
   font-weight: 600;
   font-size: 0.9rem;
+  transition: color 0.15s;
+}
+
+.admin-layout__nav a:hover {
+  color: var(--adm-ink);
 }
 
 .admin-layout__nav a.is-active {
-  color: #bb5f3c;
+  color: var(--adm-accent);
 }
 
 .admin-layout__user {
@@ -48,20 +64,26 @@
 
 .admin-layout__email {
   font-size: 0.85rem;
-  color: var(--base-muted);
+  color: var(--adm-muted);
   max-width: 14rem;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .admin-layout__logout {
-  border: 1px solid var(--base-line);
-  background: #fff;
+  border: 1px solid var(--adm-border);
+  background: var(--adm-surface);
   padding: 0.35rem 0.75rem;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  color: var(--base-ink);
+  color: var(--adm-ink);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.admin-layout__logout:hover {
+  border-color: var(--adm-muted);
+  background: var(--adm-card);
 }
 
 .admin-layout__body {
@@ -72,15 +94,18 @@
   margin: 0 auto;
 }
 
+/* ─── Admin utility classes — dark ────────────────────────── */
 .admin-panel {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid var(--base-line);
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-border);
   border-radius: 12px;
   padding: 1.25rem;
+  color: var(--adm-ink);
 }
 
 .admin-panel h1 {
   margin-top: 0;
+  color: var(--adm-ink);
 }
 
 .admin-toolbar {
@@ -97,7 +122,7 @@
   gap: 0.25rem;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--base-muted);
+  color: var(--adm-muted);
 }
 
 .admin-toolbar input,
@@ -105,14 +130,19 @@
   min-width: 10rem;
   padding: 0.4rem 0.5rem;
   border-radius: 8px;
-  border: 1px solid var(--base-line);
-  background: #fff;
+  border: 1px solid var(--adm-border);
+  background: var(--adm-card);
+  color: var(--adm-ink);
+}
+
+.admin-toolbar input::placeholder {
+  color: var(--adm-muted);
 }
 
 .admin-table-wrap {
   overflow: auto;
   border-radius: 8px;
-  border: 1px solid var(--base-line);
+  border: 1px solid var(--adm-border);
 }
 
 .admin-table {
@@ -125,16 +155,25 @@
 .admin-table td {
   text-align: left;
   padding: 0.6rem 0.75rem;
-  border-bottom: 1px solid var(--base-line);
+  border-bottom: 1px solid var(--adm-border);
 }
 
 .admin-table th {
-  background: rgba(241, 204, 171, 0.25);
+  background: rgba(255, 255, 255, 0.04);
   font-weight: 700;
+  color: var(--adm-ink);
+}
+
+.admin-table td {
+  color: var(--adm-ink);
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .admin-error {
-  color: #a33;
+  color: #ff8080;
   font-weight: 600;
 }
 
@@ -147,18 +186,18 @@
 .admin-metric {
   padding: 1rem;
   border-radius: 12px;
-  border: 1px solid var(--base-line);
-  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--adm-border);
+  background: var(--adm-card);
 }
 
 .admin-metric strong {
   display: block;
   font-size: 1.75rem;
   font-family: var(--font-display);
-  color: var(--base-ink);
+  color: var(--adm-ink);
 }
 
 .admin-metric span {
-  color: var(--base-muted);
+  color: var(--adm-muted);
   font-size: 0.9rem;
 }
