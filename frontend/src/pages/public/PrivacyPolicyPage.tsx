@@ -1,9 +1,99 @@
+import './PrivacyPolicyPage.css'
+
 export default function PrivacyPolicyPage() {
   return (
-    <main>
-      <h1>Privacy Policy</h1>
-      <p>Last updated: {new Date().toLocaleDateString()}</p>
-      <p>Privacy policy content — placeholder. Will be replaced with GDPR-compliant content.</p>
+    <main className="privacy-page">
+      <h1>Privacy policy</h1>
+      <p className="privacy-page__meta">Last updated: April 6, 2026</p>
+
+      <section>
+        <h2>Who we are</h2>
+        <p>
+          North Star Shelter (&quot;we&quot;, &quot;us&quot;) operates this website and related services in support of
+          shelter operations, fundraising, and care coordination. For GDPR purposes we act as a data controller for
+          personal data collected through this site and as a processor where we handle information strictly on behalf of
+          partner agencies under contract.
+        </p>
+      </section>
+
+      <section>
+        <h2>What we collect</h2>
+        <ul>
+          <li>
+            <strong>Account data:</strong> email address and authentication identifiers when staff or authorized partners
+            sign in.
+          </li>
+          <li>
+            <strong>Operational and case data:</strong> information entered into our internal systems by authorized users
+            in the course of providing shelter services (this may include highly sensitive data relating to survivors).
+          </li>
+          <li>
+            <strong>Technical data:</strong> server logs, security telemetry, and—only if you consent—analytics cookies
+            on public pages.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Legal bases (GDPR)</h2>
+        <p>We process personal data on the following bases where applicable:</p>
+        <ul>
+          <li>
+            <strong>Legitimate interests</strong> in operating a secure website, preventing abuse, and improving
+            reliability—balanced against your rights.
+          </li>
+          <li>
+            <strong>Vital interests</strong> and safeguarding duties where necessary to protect individuals at risk.
+          </li>
+          <li>
+            <strong>Legal obligations</strong> where we must retain or disclose information to competent authorities.
+          </li>
+          <li>
+            <strong>Consent</strong> for non-essential cookies and optional analytics on public pages (you may withdraw
+            consent by clearing cookies or adjusting your browser).
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Children and special-category data</h2>
+        <p>
+          Our services may involve information about minors and survivors of abuse. Access is restricted by role, audited
+          where feasible, and limited to what is necessary. We do not publish identifiable resident stories without
+          appropriate authority and safeguards.
+        </p>
+      </section>
+
+      <section>
+        <h2>Retention</h2>
+        <p>
+          We retain operational records in line with organizational policy and applicable law. Security logs are kept
+          only as long as needed for incident response. Analytics data derived from consented cookies is minimized and
+          aggregated where possible.
+        </p>
+      </section>
+
+      <section>
+        <h2>International transfers</h2>
+        <p>
+          If personal data is processed on infrastructure outside your country (for example cloud hosting), we apply
+          appropriate safeguards such as standard contractual clauses where required.
+        </p>
+      </section>
+
+      <section>
+        <h2>Your rights</h2>
+        <p>
+          Depending on your location, you may have rights to access, rectify, erase, restrict processing, object, or
+          port your data, and to lodge a complaint with a supervisory authority. To exercise rights, contact us using the
+          official channels published on this site. We may need to verify your identity before responding.
+        </p>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>For privacy questions or requests, contact North Star Shelter using the organization contact details provided to enrolled partners and donors.</p>
+      </section>
     </main>
   )
 }
