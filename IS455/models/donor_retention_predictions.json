@@ -1,367 +1,367 @@
 {
-  "generated_at": "2026-04-06T21:19:41+00:00",
-  "model_version": "donor_retention_gb_v1",
+  "generated_at": "2026-04-06T21:59:36+00:00",
+  "model_version": "donor_retention_rf_v2",
   "predictions": [
     {
-      "supporter_id": 12,
-      "churn_probability": 0.6993,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 24,
-      "churn_probability": 0.6163,
+      "supporter_id": 25,
+      "churn_probability": 0.9725,
       "top_feature": "recency_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 55,
-      "churn_probability": 0.6067,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 57,
-      "churn_probability": 0.6039,
-      "top_feature": "monetary_avg",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 2,
-      "churn_probability": 0.5224,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 41,
-      "churn_probability": 0.4725,
-      "top_feature": "monetary_avg",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 19,
-      "churn_probability": 0.3524,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 58,
-      "churn_probability": 0.3347,
-      "top_feature": "snapshot_year",
-      "prediction_date": "2026-04-06"
+      "prediction_date": "2025-12-01"
     },
     {
       "supporter_id": 31,
-      "churn_probability": 0.3282,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 21,
-      "churn_probability": 0.3266,
-      "top_feature": "monetary_avg",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 29,
-      "churn_probability": 0.3266,
-      "top_feature": "monetary_avg",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 56,
-      "churn_probability": 0.3205,
-      "top_feature": "snapshot_year",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 44,
-      "churn_probability": 0.2887,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 49,
-      "churn_probability": 0.2734,
-      "top_feature": "snapshot_year",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 10,
-      "churn_probability": 0.2664,
-      "top_feature": "tenure_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 11,
-      "churn_probability": 0.2664,
-      "top_feature": "tenure_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 14,
-      "churn_probability": 0.2664,
-      "top_feature": "tenure_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 17,
-      "churn_probability": 0.2664,
-      "top_feature": "tenure_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 22,
-      "churn_probability": 0.2664,
-      "top_feature": "tenure_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 28,
-      "churn_probability": 0.2664,
-      "top_feature": "tenure_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 40,
-      "churn_probability": 0.2664,
-      "top_feature": "snapshot_year",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 5,
-      "churn_probability": 0.2446,
-      "top_feature": "monetary_avg",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 53,
-      "churn_probability": 0.2344,
-      "top_feature": "monetary_avg",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 30,
-      "churn_probability": 0.2108,
-      "top_feature": "monetary_avg",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 50,
-      "churn_probability": 0.2007,
-      "top_feature": "monetary_avg",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 52,
-      "churn_probability": 0.1891,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 51,
-      "churn_probability": 0.1652,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 43,
-      "churn_probability": 0.162,
-      "top_feature": "allocation_spread",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 48,
-      "churn_probability": 0.1594,
+      "churn_probability": 0.9725,
       "top_feature": "recency_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 16,
-      "churn_probability": 0.1279,
-      "top_feature": "monetary_avg",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 18,
-      "churn_probability": 0.11,
-      "top_feature": "recency_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 36,
-      "churn_probability": 0.0935,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 54,
-      "churn_probability": 0.0824,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 13,
-      "churn_probability": 0.0813,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 59,
-      "churn_probability": 0.0806,
-      "top_feature": "snapshot_year",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 46,
-      "churn_probability": 0.0687,
-      "top_feature": "allocation_spread",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 47,
-      "churn_probability": 0.0687,
-      "top_feature": "snapshot_year",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 39,
-      "churn_probability": 0.0681,
-      "top_feature": "recency_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 60,
-      "churn_probability": 0.0681,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 7,
-      "churn_probability": 0.0595,
-      "top_feature": "tenure_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 32,
-      "churn_probability": 0.0595,
-      "top_feature": "allocation_spread",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 37,
-      "churn_probability": 0.0595,
-      "top_feature": "snapshot_year",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 34,
-      "churn_probability": 0.0589,
-      "top_feature": "recency_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 45,
-      "churn_probability": 0.0586,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 42,
-      "churn_probability": 0.0501,
-      "top_feature": "recency_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 33,
-      "churn_probability": 0.0497,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 23,
-      "churn_probability": 0.0482,
-      "top_feature": "recency_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 27,
-      "churn_probability": 0.0478,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 4,
-      "churn_probability": 0.0475,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 6,
-      "churn_probability": 0.0444,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 15,
-      "churn_probability": 0.0426,
-      "top_feature": "recency_days",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 25,
-      "churn_probability": 0.0372,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 9,
-      "churn_probability": 0.0349,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
+      "prediction_date": "2025-12-01"
     },
     {
       "supporter_id": 8,
-      "churn_probability": 0.0305,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 1,
-      "churn_probability": 0.0284,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 3,
-      "churn_probability": 0.0275,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
-    },
-    {
-      "supporter_id": 38,
-      "churn_probability": 0.0272,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
+      "churn_probability": 0.97,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
     },
     {
       "supporter_id": 35,
-      "churn_probability": 0.0259,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
+      "churn_probability": 0.9675,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
     },
     {
-      "supporter_id": 20,
-      "churn_probability": 0.02,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
+      "supporter_id": 38,
+      "churn_probability": 0.9475,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 1,
+      "churn_probability": 0.9425,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 21,
+      "churn_probability": 0.94,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 9,
+      "churn_probability": 0.9325,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 51,
+      "churn_probability": 0.9325,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 49,
+      "churn_probability": 0.9325,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 57,
+      "churn_probability": 0.9225,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 11,
+      "churn_probability": 0.9225,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 4,
+      "churn_probability": 0.9175,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 7,
+      "churn_probability": 0.9075,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 32,
+      "churn_probability": 0.8925,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 44,
+      "churn_probability": 0.8925,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 18,
+      "churn_probability": 0.8775,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 22,
+      "churn_probability": 0.87,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 13,
+      "churn_probability": 0.8625,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
     },
     {
       "supporter_id": 26,
-      "churn_probability": 0.02,
-      "top_feature": "monetary_total",
-      "prediction_date": "2026-04-06"
+      "churn_probability": 0.8625,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 56,
+      "churn_probability": 0.79,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 42,
+      "churn_probability": 0.76,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 27,
+      "churn_probability": 0.695,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 6,
+      "churn_probability": 0.3525,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 54,
+      "churn_probability": 0.27,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 16,
+      "churn_probability": 0.2425,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 10,
+      "churn_probability": 0.24,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 45,
+      "churn_probability": 0.23,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 19,
+      "churn_probability": 0.205,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 48,
+      "churn_probability": 0.1975,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 24,
+      "churn_probability": 0.155,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 29,
+      "churn_probability": 0.1325,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 12,
+      "churn_probability": 0.13,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 47,
+      "churn_probability": 0.1075,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 59,
+      "churn_probability": 0.1,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 5,
+      "churn_probability": 0.09,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 43,
+      "churn_probability": 0.0725,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 46,
+      "churn_probability": 0.055,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 3,
+      "churn_probability": 0.055,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 23,
+      "churn_probability": 0.055,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 37,
+      "churn_probability": 0.05,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 41,
+      "churn_probability": 0.0475,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 50,
+      "churn_probability": 0.045,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 40,
+      "churn_probability": 0.0425,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 34,
+      "churn_probability": 0.0375,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 33,
+      "churn_probability": 0.035,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 30,
+      "churn_probability": 0.03,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 2,
+      "churn_probability": 0.03,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 39,
+      "churn_probability": 0.0275,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 36,
+      "churn_probability": 0.0275,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 53,
+      "churn_probability": 0.025,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 14,
+      "churn_probability": 0.0225,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 58,
+      "churn_probability": 0.0225,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 55,
+      "churn_probability": 0.0225,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 60,
+      "churn_probability": 0.0225,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 17,
+      "churn_probability": 0.0175,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 20,
+      "churn_probability": 0.015,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 15,
+      "churn_probability": 0.01,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 52,
+      "churn_probability": 0.01,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
+    },
+    {
+      "supporter_id": 28,
+      "churn_probability": 0.005,
+      "top_feature": "recency_days",
+      "prediction_date": "2025-12-01"
     }
   ],
-  "snapshot_date": "2024-12-01"
+  "snapshot_date": "2025-12-01"
 }

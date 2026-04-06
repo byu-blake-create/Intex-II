@@ -1,0 +1,35 @@
+{
+  "name": "social_post_performance_elasticnet",
+  "trained_at": "2026-04-06T21:37:32+00:00",
+  "label_definition": "engagement_rate for a social media post",
+  "feature_names": [
+    "post_hour",
+    "num_hashtags",
+    "mentions_count",
+    "caption_length",
+    "has_call_to_action",
+    "features_resident_story",
+    "is_boosted",
+    "boost_budget_php",
+    "follower_count_at_post",
+    "month_num",
+    "is_weekend",
+    "platform",
+    "day_of_week",
+    "post_type",
+    "media_type",
+    "call_to_action_type",
+    "content_topic",
+    "sentiment_tone",
+    "campaign_name"
+  ],
+  "metrics": {
+    "rmse": 0.0437,
+    "mae": 0.0361,
+    "r2": 0.3476
+  },
+  "random_seed": 42,
+  "model_path": "C:\\Users\\johne\\Documents\\Coding\\BYU\\Intex-II\\IS455\\models\\social_post_performance_elasticnet.pkl",
+  "model_type": "ElasticNet",
+  "split_date": "2025-07-18 17:56:00"
+}
