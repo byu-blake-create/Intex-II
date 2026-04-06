@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Navigate, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -8,7 +8,7 @@ import ImpactPage from './pages/public/ImpactPage'
 import LoginPage from './pages/public/LoginPage'
 import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage'
 
-// Admin pages
+// Staff pages
 import AdminDashboard from './pages/admin/AdminDashboard'
 import DonorsPage from './pages/admin/DonorsPage'
 import CaseloadPage from './pages/admin/CaseloadPage'
@@ -26,13 +26,21 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
-        {/* Admin / Staff (require authentication) */}
-        <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-        <Route path="/admin/donors" element={<ProtectedRoute><DonorsPage /></ProtectedRoute>} />
-        <Route path="/admin/caseload" element={<ProtectedRoute><CaseloadPage /></ProtectedRoute>} />
-        <Route path="/admin/process-recording" element={<ProtectedRoute><ProcessRecordingPage /></ProtectedRoute>} />
-        <Route path="/admin/visitations" element={<ProtectedRoute><VisitationsPage /></ProtectedRoute>} />
-        <Route path="/admin/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+        {/* Shared staff workspace */}
+        <Route path="/staff" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/staff/donors" element={<ProtectedRoute><DonorsPage /></ProtectedRoute>} />
+        <Route path="/staff/caseload" element={<ProtectedRoute><CaseloadPage /></ProtectedRoute>} />
+        <Route path="/staff/process-recording" element={<ProtectedRoute><ProcessRecordingPage /></ProtectedRoute>} />
+        <Route path="/staff/visitations" element={<ProtectedRoute><VisitationsPage /></ProtectedRoute>} />
+        <Route path="/staff/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+
+        {/* Legacy route aliases */}
+        <Route path="/admin" element={<Navigate to="/staff" replace />} />
+        <Route path="/admin/donors" element={<Navigate to="/staff/donors" replace />} />
+        <Route path="/admin/caseload" element={<Navigate to="/staff/caseload" replace />} />
+        <Route path="/admin/process-recording" element={<Navigate to="/staff/process-recording" replace />} />
+        <Route path="/admin/visitations" element={<Navigate to="/staff/visitations" replace />} />
+        <Route path="/admin/reports" element={<Navigate to="/staff/reports" replace />} />
       </Routes>
     </AuthProvider>
   )
