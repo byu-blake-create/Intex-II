@@ -1,0 +1,33 @@
+{
+  "name": "donor_retention_gb",
+  "trained_at": "2026-04-06T21:19:41+00:00",
+  "label_definition": "1 if supporter donates again within 90 days after the snapshot date",
+  "feature_names": [
+    "recency_days",
+    "frequency",
+    "monetary_total",
+    "monetary_avg",
+    "monetary_max",
+    "tenure_days",
+    "allocation_spread",
+    "snapshot_year",
+    "snapshot_month"
+  ],
+  "metrics": {
+    "roc_auc": 0.392,
+    "f1": 0.0952,
+    "precision": 0.2,
+    "recall": 0.0625,
+    "accuracy": 0.6833
+  },
+  "random_seed": 42,
+  "model_path": "C:\\Users\\johne\\Documents\\Coding\\BYU\\Intex-II\\IS455\\models\\donor_retention_gb.pkl",
+  "model_type": "GradientBoostingClassifier",
+  "test_snapshot": "2024-12-01",
+  "train_snapshots": [
+    "2023-06-01",
+    "2023-12-01",
+    "2024-06-01"
+  ],
+  "recommended_threshold": 0.4
+}
