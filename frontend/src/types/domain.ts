@@ -1,0 +1,76 @@
+export interface Resident {
+  residentId: number
+  caseControlNo: string
+  internalCode?: string | null
+  safehouseId: number
+  caseStatus?: string | null
+  sex?: string | null
+  dateOfBirth?: string | null
+  caseCategory?: string | null
+  assignedSocialWorker?: string | null
+  notesRestricted?: string | null
+}
+
+export interface Safehouse {
+  safehouseId: number
+  safehouseCode: string
+  name: string
+  region?: string | null
+  city?: string | null
+}
+
+export interface Supporter {
+  supporterId: number
+  supporterType: string
+  displayName: string
+  organizationName?: string | null
+  email?: string | null
+  status?: string | null
+}
+
+export interface Donation {
+  donationId: number
+  supporterId: number
+  donationType: string
+  donationDate?: string | null
+  amount?: number | null
+  currencyCode?: string | null
+  campaignName?: string | null
+}
+
+export interface ProcessRecording {
+  recordingId: number
+  residentId: number
+  sessionDate?: string | null
+  socialWorker?: string | null
+  sessionType?: string | null
+  sessionNarrative?: string | null
+  notesRestricted?: string | null
+}
+
+export interface HomeVisitation {
+  visitationId: number
+  residentId: number
+  visitDate?: string | null
+  socialWorker?: string | null
+  visitType?: string | null
+  observations?: string | null
+  visitOutcome?: string | null
+}
+
+export interface PublicImpactSnapshot {
+  snapshotId: number
+  snapshotDate?: string | null
+  headline?: string | null
+  summaryText?: string | null
+  metricPayloadJson?: string | null
+  isPublished: boolean
+  publishedAt?: string | null
+}
+
+export interface DashboardSummary {
+  activeResidents: number
+  totalDonationsLast30Days: number
+  donationAmountLast30Days: number
+  upcomingCaseConferences: number
+}
