@@ -1,26 +1,27 @@
 # Pipeline Target Definitions (locked after data audit)
 
 ## Pipeline 1 — Donor Retention
-- **Unit:** supporter (60 rows)
+- **Unit:** supporter-month snapshot (2,160 rows)
 - **Label:** `label_donated_again` = 1 if supporter donated within 90 days after snapshot_date
-- **Positive rate:** ~38.6% (at 2025-01-01 snapshot)
+- **Positive rate:** ~39% overall in the monthly panel
 - **Date column:** `donations.donation_date`
-- **Snapshot strategy:** use 2024-01-01 as snapshot; label window 2024-01-01 to 2024-04-01
-- **Train/test:** time-based — train on donations up to 2024-06-01, test on later
+- **Snapshot strategy:** one leakage-safe monthly snapshot per supporter
+- **Key feature cols:** `recency_days`, `donation_count`, `monetary_total`, `monetary_avg`, `recurring_rate`, donation-type mix, channel mix, campaign-history counts, `avg_gap_days`, program/safehouse spread, supporter profile fields
+- **Train/test:** time-based — hold out the latest 4 monthly snapshots
 
 ## Pipeline 2 — Donation Value Forecasting
-- **Unit:** donation (420 rows)
-- **Label:** `amount` (regression) — use `log1p(amount)` as model target, report RMSE on original scale
-- **Note:** amounts range $250–$6,482, median $820 — right-skewed, log transform essential
-- **Train/test:** time-based split on `donation_date`
+- **Unit:** supporter-month snapshot (2,160 rows)
+- **Label:** `label_high_value` = 1 if next 90-day monetary total is at least `1000 PHP`
+- **Note:** exact future amount was too noisy on holdout, so the predictive framing was revised to a high-value opportunity classification problem
+- **Key feature cols:** same leakage-safe donor-month features as Pipeline 1
+- **Train/test:** time-based — hold out the latest 6 monthly snapshots
 
 ## Pipeline 3 — Resident Risk / Concerns Triage
-- **Unit:** process_recording session (2,819 rows across 60 residents)
-- **Label:** `concerns_flagged` = True (677 positives = 24% — good balance)
-- **Frame:** predict whether a session will flag concerns, using prior session + resident context features
-- **Alternative label at resident level:** "has any concerns_flagged session in trailing 30 days"
-- **Key feature cols:** `emotional_state_observed`, `session_type`, `session_duration_minutes`, `progress_noted`, `interventions_applied`
-- **Train/test:** time-based split on `session_date`
+- **Unit:** resident-month snapshot
+- **Label:** `label_next90d_concern` = 1 if the resident has any future session with `concerns_flagged = True` in the next 90 days
+- **Frame:** predict resident-level support need for triage, using recent session/visit/plan context
+- **Key feature cols:** `concern_rate_90d`, `session_count_30d`, `session_duration_minutes`, `emotional_state_observed`, `family_cooperation_level`, `visit_outcome`, `current_risk_level`, `plan_count_total`
+- **Train/test:** time-based — hold out the latest 6 resident-month snapshots
 
 ## Pipeline 4 — Reintegration Readiness
 - **Unit:** home_visitation (1,337 rows, 58 residents)
@@ -41,5 +42,6 @@
 - **Unit:** social_media_post (812 rows, 7 platforms)
 - **Label (regression):** `engagement_rate` (already computed, mean=0.10)
 - **Label (classification alt):** binary high_engagement = engagement_rate > median
-- **Key feature cols:** `platform`, `likes`, `shares`, `comments`, `impressions`, `reach`
+- **Key feature cols:** `platform`, `post_type`, `media_type`, `post_hour`, `num_hashtags`, `mentions_count`, `caption_length`, `call_to_action_type`, `content_topic`, `sentiment_tone`, `features_resident_story`, `is_boosted`, `boost_budget_php`, `follower_count_at_post`
+- **Leakage rule:** exclude post-outcome metrics such as `impressions`, `reach`, `likes`, `comments`, `shares`, `saves`, `click_throughs`, `video_views`, `donation_referrals`, and `estimated_donation_value_php`
 - **Train/test:** time-based split on `created_at`

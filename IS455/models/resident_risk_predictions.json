@@ -1,487 +1,225 @@
 {
-  "generated_at": "2026-04-06T21:08:50+00:00",
-  "model_version": "resident_risk_gb_v1",
+  "generated_at": "2026-04-06T22:03:26+00:00",
+  "model_version": "resident_risk_gb_v2",
   "predictions": [
     {
-      "resident_id": 41,
-      "concern_probability": 0.9598,
-      "risk_level": "High",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578327",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 29,
-      "concern_probability": 0.872,
-      "risk_level": "High",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.576527",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 51,
-      "concern_probability": 0.8471,
-      "risk_level": "High",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579169",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 54,
-      "concern_probability": 0.7704,
-      "risk_level": "High",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579389",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 42,
-      "concern_probability": 0.7695,
-      "risk_level": "High",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578439",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 23,
-      "concern_probability": 0.7149,
-      "risk_level": "High",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.575304",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 8,
-      "concern_probability": 0.6603,
-      "risk_level": "High",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.573888",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 4,
-      "concern_probability": 0.6442,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.573226",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 26,
-      "concern_probability": 0.585,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.575949",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 12,
-      "concern_probability": 0.5804,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.574334",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 45,
-      "concern_probability": 0.5693,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578713",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 25,
-      "concern_probability": 0.5564,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.575667",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
       "resident_id": 27,
-      "concern_probability": 0.4776,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.576159",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 50,
-      "concern_probability": 0.4534,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579088",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "concern_probability": 0.6368,
+      "risk_level": "High",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
       "resident_id": 49,
-      "concern_probability": 0.3867,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579010",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "concern_probability": 0.0409,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
       "resident_id": 59,
-      "concern_probability": 0.3708,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579752",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 48,
-      "concern_probability": 0.3701,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578933",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 36,
-      "concern_probability": 0.3577,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.577875",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 53,
-      "concern_probability": 0.3573,
-      "risk_level": "Medium",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579316",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 16,
-      "concern_probability": 0.3371,
+      "concern_probability": 0.03,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.574808",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 7,
-      "concern_probability": 0.3125,
+      "resident_id": 4,
+      "concern_probability": 0.0282,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.573774",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 46,
-      "concern_probability": 0.3093,
+      "resident_id": 41,
+      "concern_probability": 0.0272,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578785",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 21,
-      "concern_probability": 0.285,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.575161",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 1,
-      "concern_probability": 0.2609,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.572763",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 30,
-      "concern_probability": 0.2361,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.576818",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 40,
-      "concern_probability": 0.2305,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578238",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 55,
-      "concern_probability": 0.2233,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579462",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 6,
-      "concern_probability": 0.2171,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.573654",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 33,
-      "concern_probability": 0.2036,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.577351",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 56,
-      "concern_probability": 0.2018,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579534",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 35,
-      "concern_probability": 0.1936,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.577703",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 52,
-      "concern_probability": 0.1866,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579244",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 20,
-      "concern_probability": 0.1855,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.575091",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 18,
-      "concern_probability": 0.1646,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.574950",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 57,
-      "concern_probability": 0.1607,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579608",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 17,
-      "concern_probability": 0.16,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.574879",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 34,
-      "concern_probability": 0.1594,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.577528",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 58,
-      "concern_probability": 0.1533,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579682",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 13,
-      "concern_probability": 0.1268,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.574569",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
-    },
-    {
-      "resident_id": 60,
-      "concern_probability": 0.112,
-      "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.579834",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
       "resident_id": 3,
-      "concern_probability": 0.0972,
+      "concern_probability": 0.0271,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.573101",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 9,
-      "concern_probability": 0.0945,
+      "resident_id": 36,
+      "concern_probability": 0.0263,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.573997",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 28,
-      "concern_probability": 0.0925,
+      "resident_id": 57,
+      "concern_probability": 0.0241,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.576349",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 10,
-      "concern_probability": 0.0877,
+      "resident_id": 55,
+      "concern_probability": 0.0235,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.574113",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 21,
+      "concern_probability": 0.0229,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 42,
+      "concern_probability": 0.0225,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
       "resident_id": 38,
-      "concern_probability": 0.0828,
+      "concern_probability": 0.0219,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578069",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 39,
-      "concern_probability": 0.0819,
+      "resident_id": 7,
+      "concern_probability": 0.0219,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578156",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 15,
-      "concern_probability": 0.08,
+      "resident_id": 25,
+      "concern_probability": 0.0218,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.574737",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 32,
-      "concern_probability": 0.0747,
+      "resident_id": 12,
+      "concern_probability": 0.0213,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.577172",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 24,
-      "concern_probability": 0.071,
+      "resident_id": 10,
+      "concern_probability": 0.0208,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.575394",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
       "resident_id": 19,
-      "concern_probability": 0.0687,
+      "concern_probability": 0.0205,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.575021",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 5,
-      "concern_probability": 0.0672,
+      "resident_id": 17,
+      "concern_probability": 0.0197,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.573499",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 11,
-      "concern_probability": 0.0642,
+      "resident_id": 53,
+      "concern_probability": 0.0196,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.574223",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 47,
-      "concern_probability": 0.0568,
+      "resident_id": 9,
+      "concern_probability": 0.0195,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578861",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 37,
-      "concern_probability": 0.0544,
+      "resident_id": 1,
+      "concern_probability": 0.0191,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.577980",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 2,
-      "concern_probability": 0.0536,
+      "resident_id": 48,
+      "concern_probability": 0.0184,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.572978",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 44,
-      "concern_probability": 0.0428,
+      "resident_id": 16,
+      "concern_probability": 0.0181,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578632",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 31,
-      "concern_probability": 0.0407,
+      "resident_id": 32,
+      "concern_probability": 0.018,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.577027",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 43,
-      "concern_probability": 0.0349,
+      "resident_id": 50,
+      "concern_probability": 0.0178,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.578536",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 46,
+      "concern_probability": 0.017,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 24,
+      "concern_probability": 0.0163,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
       "resident_id": 14,
-      "concern_probability": 0.0246,
+      "concern_probability": 0.0158,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.574659",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     },
     {
-      "resident_id": 22,
-      "concern_probability": 0.0094,
+      "resident_id": 40,
+      "concern_probability": 0.0156,
       "risk_level": "Low",
-      "top_factor": "days_since_admission",
-      "scored_at": "2026-04-06T15:08:50.575232",
-      "disclaimer": "Assistive tool only. Final decisions must involve a qualified social worker."
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 6,
+      "concern_probability": 0.0155,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
+    },
+    {
+      "resident_id": 8,
+      "concern_probability": 0.0138,
+      "risk_level": "Low",
+      "top_factor": "concern_rate_90d",
+      "prediction_date": "2026-11-01"
     }
   ],
-  "operating_threshold": 0.35
+  "target": "next90d_concern",
+  "decision_threshold": 0.25
 }

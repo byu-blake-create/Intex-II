@@ -1,34 +1,42 @@
 {
   "name": "resident_risk_gb",
-  "trained_at": "2026-04-06T21:08:50+00:00",
-  "label_definition": "concerns_flagged",
+  "trained_at": "2026-04-06T22:03:26+00:00",
+  "label_definition": "1 if the resident will have any concern-flagged session in the next 90 days",
   "feature_names": [
-    "session_duration_minutes",
-    "prev_concerns_flagged",
-    "prev_progress_noted",
-    "days_since_last_session",
     "days_since_admission",
-    "concerns_rate_last5",
-    "session_count_to_date",
+    "session_count_total",
+    "session_count_30d",
+    "concern_rate_90d",
+    "referral_rate_90d",
+    "session_duration_minutes",
+    "plan_count_total",
+    "snapshot_month",
+    "snapshot_year",
+    "progress_noted",
+    "safety_concerns_noted",
+    "follow_up_needed",
+    "safehouse_id",
+    "case_status",
+    "case_category",
+    "reintegration_status",
+    "current_risk_level",
+    "assigned_social_worker",
     "session_type",
     "emotional_state_observed",
-    "social_worker",
-    "prev_emotional_state_end",
-    "safehouse_id"
+    "emotional_state_end",
+    "family_cooperation_level",
+    "visit_outcome"
   ],
   "metrics": {
-    "cv_recall": 0.1168,
-    "test_recall_at_05": 0.1977,
-    "test_auc": 0.4613
+    "roc_auc": 0.9829,
+    "f1": 0.5714,
+    "precision": 0.8571,
+    "recall": 0.4286,
+    "accuracy": 0.9545
   },
   "random_seed": 42,
   "model_path": "C:\\Users\\johne\\Documents\\Coding\\BYU\\Intex-II\\IS455\\models\\resident_risk_gb.pkl",
   "model_type": "GradientBoostingClassifier",
-  "best_params": {
-    "clf__learning_rate": 0.2,
-    "clf__max_depth": 4
-  },
-  "operating_threshold": 0.35,
-  "trained_on": "2025-07-01",
-  "training_rows": 2008
+  "test_start": "2026-06-01 00:00:00",
+  "decision_threshold": 0.25
 }
