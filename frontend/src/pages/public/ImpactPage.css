@@ -1,0 +1,41 @@
+.impact-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.impact-page__header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.impact-page__error {
+  color: #a33;
+  font-weight: 600;
+}
+
+.impact-page__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.impact-card {
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--base-line);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.impact-card__date {
+  font-size: 0.85rem;
+  color: var(--base-muted);
+  margin: 0 0 0.5rem;
+}
+
+.impact-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+}
+
+.impact-card p {
+  margin: 0;
+}

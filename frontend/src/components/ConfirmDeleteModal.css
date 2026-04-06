@@ -1,0 +1,49 @@
+.confirm-delete-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(34, 24, 19, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.confirm-delete-dialog {
+  max-width: 420px;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid var(--base-line);
+}
+
+.confirm-delete-dialog h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+}
+
+.confirm-delete-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.confirm-delete-cancel,
+.confirm-delete-ok {
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirm-delete-cancel {
+  border: 1px solid var(--base-line);
+  background: #fff;
+}
+
+.confirm-delete-ok {
+  border: none;
+  background: #a33;
+  color: #fff;
+}

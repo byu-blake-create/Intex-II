@@ -1,6 +1,9 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace NorthStarShelter.API.Controllers;
 
@@ -8,47 +11,70 @@ namespace NorthStarShelter.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly IReadOnlyList<DemoAuthUser> _users;
 
-    public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+    public AuthController(IOptions<DemoAuthOptions> options)
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
+        _users = options.Value.Users;
     }
 
     public record LoginRequest(string Email, string Password);
-    public record RegisterRequest(string Email, string Password, string Role);
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest req)
     {
-        var user = await _userManager.FindByEmailAsync(req.Email);
-        if (user == null) return Unauthorized();
+        var user = _users.FirstOrDefault(u =>
+            string.Equals(u.Email, req.Email, StringComparison.OrdinalIgnoreCase) &&
+            u.Password == req.Password);
 
-        var result = await _signInManager.PasswordSignInAsync(user, req.Password, isPersistent: true, lockoutOnFailure: false);
-        if (!result.Succeeded) return Unauthorized();
+        if (user is null)
+        {
+            return Unauthorized(new { message = "Invalid email or password." });
+        }
 
-        var roles = await _userManager.GetRolesAsync(user);
-        return Ok(new { email = user.Email, roles });
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Name, user.Email),
+            new(ClaimTypes.Email, user.Email),
+        };
+
+        claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties
+            {
+                IsPersistent = true,
+                AllowRefresh = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(12),
+            });
+
+        return Ok(new { email = user.Email, roles = user.Roles });
     }
 
     [HttpPost("logout")]
     [Authorize]
     public async Task<IActionResult> Logout()
     {
-        await _signInManager.SignOutAsync();
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return NoContent();
     }
 
     [HttpGet("me")]
     [Authorize]
-    public async Task<IActionResult> Me()
+    public IActionResult Me()
     {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Unauthorized();
+        var email = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue(ClaimTypes.Name);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized();
+        }
 
-        var roles = await _userManager.GetRolesAsync(user);
-        return Ok(new { email = user.Email, roles });
+        var roles = User.FindAll(ClaimTypes.Role).Select(claim => claim.Value).ToArray();
+        return Ok(new { email, roles });
     }
 }
