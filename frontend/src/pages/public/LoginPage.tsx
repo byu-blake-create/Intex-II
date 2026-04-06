@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
 export default function LoginPage() {
@@ -26,41 +26,52 @@ export default function LoginPage() {
   }
 
   return (
-    <main style={{ maxWidth: 520, margin: '0 auto', padding: '4rem 1.25rem 5rem' }}>
-      <p style={{ marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.14em', fontSize: '0.78rem' }}>
+    <>
+      <Link
+        to="/"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.45rem',
+          position: 'fixed',
+          top: '1.25rem',
+          left: '1.25rem',
+          color: '#221813',
+          textDecoration: 'none',
+          fontWeight: 700,
+          padding: '0.7rem 1rem',
+          borderRadius: '999px',
+          border: '1px solid rgba(82, 60, 47, 0.14)',
+          background: 'rgba(255, 250, 244, 0.92)',
+          boxShadow: '0 12px 30px rgba(61, 36, 20, 0.08)',
+          backdropFilter: 'blur(12px)',
+          zIndex: 10,
+        }}
+      >
+        <span aria-hidden="true">←</span>
+        Back to home
+      </Link>
+      <main
+        style={{
+          maxWidth: 520,
+          margin: '0 auto',
+          padding: '4rem 1.25rem 5rem',
+        }}
+      >
+      <p
+        style={{
+          marginBottom: '0.75rem',
+          textTransform: 'uppercase',
+          letterSpacing: '0.14em',
+          fontSize: '0.78rem',
+        }}
+      >
         Staff access
       </p>
       <h1 style={{ marginBottom: '1rem' }}>Sign in to the North Star Shelter staff workspace</h1>
       <p style={{ marginBottom: '2rem', lineHeight: 1.7 }}>
-        Staff and admin share the same internal workspace. This is a temporary local sign-in flow
-        until Supabase is connected.
-      </p>
-
-      <div
-        style={{
-          marginBottom: '1.5rem',
-          padding: '1rem 1.1rem',
-          borderRadius: '18px',
-          border: '1px solid rgba(82, 60, 47, 0.14)',
-          background: 'rgba(255, 250, 244, 0.9)',
-        }}
-      >
-        <p style={{ marginBottom: '0.5rem', fontWeight: 700, color: '#221813' }}>Temporary shared staff login</p>
-        <p style={{ marginBottom: '0.35rem', fontFamily: 'monospace' }}>Email: staff@northstarshelter.org</p>
-        <p style={{ margin: 0, fontFamily: 'monospace' }}>Password: NorthStarStaff123</p>
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: 'grid',
-          gap: '1rem',
-          padding: '1.5rem',
-          borderRadius: '24px',
-          background: 'rgba(255, 250, 244, 0.72)',
-          border: '1px solid rgba(82, 60, 47, 0.14)',
-        }}
-        Sign in with an account provisioned in the API (cookie authentication; CORS allows the configured frontend origin).
+        Staff and admins share the same internal workspace. This temporary login is only here
+        until Supabase-backed authentication is connected.
       </p>
 
       {import.meta.env.DEV && (
@@ -73,15 +84,26 @@ export default function LoginPage() {
             background: 'rgba(255, 250, 244, 0.9)',
           }}
         >
-          <p style={{ marginBottom: '0.5rem', fontWeight: 700, color: '#221813' }}>Local development (default seed)</p>
-          <p style={{ marginBottom: '0.35rem', fontFamily: 'monospace' }}>Email: admin@northstarshelter.org</p>
-          <p style={{ margin: 0, fontFamily: 'monospace' }}>Password: LocalDev!North12</p>
+          <p style={{ marginBottom: '0.5rem', fontWeight: 700, color: '#221813' }}>
+            Local development login
+          </p>
+          <p style={{ marginBottom: '0.35rem', fontFamily: 'monospace' }}>
+            Email: staff@northstarshelter.org
+          </p>
+          <p style={{ margin: 0, fontFamily: 'monospace' }}>Password: NorthStarStaff123</p>
         </div>
       )}
 
       <form
         onSubmit={handleSubmit}
-        style={{ display: 'grid', gap: '1rem', padding: '1.5rem', borderRadius: '24px', background: 'rgba(255, 250, 244, 0.72)', border: '1px solid rgba(82, 60, 47, 0.14)' }}
+        style={{
+          display: 'grid',
+          gap: '1rem',
+          padding: '1.5rem',
+          borderRadius: '24px',
+          background: 'rgba(255, 250, 244, 0.72)',
+          border: '1px solid rgba(82, 60, 47, 0.14)',
+        }}
       >
         <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
           <span>Email</span>
@@ -100,9 +122,6 @@ export default function LoginPage() {
           />
         </label>
 
-            style={{ padding: '0.9rem 1rem', borderRadius: '14px', border: '1px solid rgba(82, 60, 47, 0.16)', background: '#fffdf9' }}
-          />
-        </label>
         <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
           <span>Password</span>
           <input
@@ -120,9 +139,6 @@ export default function LoginPage() {
           />
         </label>
 
-            style={{ padding: '0.9rem 1rem', borderRadius: '14px', border: '1px solid rgba(82, 60, 47, 0.16)', background: '#fffdf9' }}
-          />
-        </label>
         {error && (
           <p role="alert" style={{ margin: 0, color: '#9f2f1f' }}>
             {error}
@@ -146,6 +162,7 @@ export default function LoginPage() {
           {submitting ? 'Signing in...' : 'Sign In'}
         </button>
       </form>
-    </main>
+      </main>
+    </>
   )
 }
