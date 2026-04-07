@@ -47,6 +47,7 @@ export default function App() {
         <Route path="/admin/process-recording" element={<Navigate to="/staff/process-recording" replace />} />
         <Route path="/admin/visitations" element={<Navigate to="/staff/visitations" replace />} />
         <Route path="/admin/reports" element={<Navigate to="/staff/reports" replace />} />
+        <Route path="/admin/social" element={<Navigate to="/staff/social" replace />} />
       </Routes>
       </Suspense>
     </AuthProvider>
