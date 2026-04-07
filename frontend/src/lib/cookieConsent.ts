@@ -55,6 +55,21 @@ function setAnalyticsDisabled(disabled: boolean) {
   windowWithFlags[getAnalyticsDisableKey(id)] = disabled
 }
 
+function removeAnalyticsScript(id: string) {
+  document.getElementById(id)?.remove()
+}
+
+function clearAnalyticsGlobals() {
+  const analyticsWindow = window as unknown as {
+    dataLayer?: unknown[]
+    gtag?: unknown
+    [key: string]: unknown
+  }
+
+  analyticsWindow.dataLayer = []
+  delete analyticsWindow.gtag
+}
+
 function notifyConsentChanged(decision: ConsentDecision | null) {
   window.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail: { decision } }))
 }
@@ -122,6 +137,9 @@ export function syncOptionalAnalytics() {
   }
 
   setAnalyticsDisabled(true)
+  removeAnalyticsScript(ANALYTICS_SCRIPT_ID)
+  removeAnalyticsScript(ANALYTICS_BOOTSTRAP_ID)
+  clearAnalyticsGlobals()
   clearOptionalAnalyticsCookies()
 }
 
@@ -132,6 +150,9 @@ export function setConsentDecision(decision: ConsentDecision) {
     loadAnalyticsIfConfigured()
   } else {
     setAnalyticsDisabled(true)
+    removeAnalyticsScript(ANALYTICS_SCRIPT_ID)
+    removeAnalyticsScript(ANALYTICS_BOOTSTRAP_ID)
+    clearAnalyticsGlobals()
     clearOptionalAnalyticsCookies()
   }
 
@@ -141,6 +162,9 @@ export function setConsentDecision(decision: ConsentDecision) {
 export function resetConsentDecision() {
   deleteCookieEverywhere(CONSENT_COOKIE)
   setAnalyticsDisabled(true)
+  removeAnalyticsScript(ANALYTICS_SCRIPT_ID)
+  removeAnalyticsScript(ANALYTICS_BOOTSTRAP_ID)
+  clearAnalyticsGlobals()
   clearOptionalAnalyticsCookies()
   notifyConsentChanged(null)
 }
