@@ -8,15 +8,14 @@ import CookieConsent from './components/CookieConsent'
 import HomePage from './pages/public/HomePage'
 import LoginPage from './pages/public/LoginPage'
 
-// Lazy-loaded pages — split into separate chunks
-const ImpactPage = lazy(() => import('./pages/public/ImpactPage'))
-const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage'))
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
-const DonorsPage = lazy(() => import('./pages/admin/DonorsPage'))
-const CaseloadPage = lazy(() => import('./pages/admin/CaseloadPage'))
-const ProcessRecordingPage = lazy(() => import('./pages/admin/ProcessRecordingPage'))
-const VisitationsPage = lazy(() => import('./pages/admin/VisitationsPage'))
-const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'))
+// Staff pages
+import AdminDashboard from './pages/admin/AdminDashboard'
+import DonorsPage from './pages/admin/DonorsPage'
+import CaseloadPage from './pages/admin/CaseloadPage'
+import ProcessRecordingPage from './pages/admin/ProcessRecordingPage'
+import VisitationsPage from './pages/admin/VisitationsPage'
+import ReportsPage from './pages/admin/ReportsPage'
+import SocialSuitePage from './pages/admin/SocialSuitePage'
 
 export default function App() {
   return (
@@ -37,6 +36,7 @@ export default function App() {
         <Route path="/staff/process-recording" element={<ProtectedRoute><ProcessRecordingPage /></ProtectedRoute>} />
         <Route path="/staff/visitations" element={<ProtectedRoute><VisitationsPage /></ProtectedRoute>} />
         <Route path="/staff/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+        <Route path="/staff/social" element={<ProtectedRoute><SocialSuitePage /></ProtectedRoute>} />
 
         {/* Keep older links working while the app standardizes on /staff. */}
         <Route path="/admin" element={<Navigate to="/staff" replace />} />

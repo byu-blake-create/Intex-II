@@ -15,12 +15,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null)
 
 const API = import.meta.env.VITE_API_BASE_URL ?? ''
+const USE_MOCK = import.meta.env.VITE_MOCK === 'true'
+const MOCK_USER: AuthUser = { email: 'staff@northstarshelter.org', roles: ['Staff'] }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<AuthUser | null>(USE_MOCK ? MOCK_USER : null)
+  const [loading, setLoading] = useState(!USE_MOCK)
 
   useEffect(() => {
+    if (USE_MOCK) return
     // Restore an existing cookie session when the app first loads.
     fetch(`${API}/api/auth/me`, { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
@@ -30,6 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   async function login(email: string, password: string) {
+    if (USE_MOCK) { setUser(MOCK_USER); return }
     const r = await fetch(`${API}/api/auth/login`, {
       method: 'POST',
       credentials: 'include',
@@ -42,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
+    if (USE_MOCK) { setUser(null); return }
     await fetch(`${API}/api/auth/logout`, { method: 'POST', credentials: 'include' })
     setUser(null)
   }

@@ -1,8 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import AdminLayout from '../../components/AdminLayout'
 import { fetchResidents } from '../../lib/residentsApi'
 import { fetchSafehouses } from '../../lib/safehousesApi'
-import type { Resident, Safehouse } from '../../types/domain'
+import { fetchVisitations } from '../../lib/visitationsApi'
+import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
+import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
+import type { Resident, Safehouse, HomeVisitation, ProcessRecording } from '../../types/domain'
+import './CaseloadPage.css'
+
+const PAGE_SIZE = 30
+
+function statusBadge(status: string | null | undefined) {
+  if (!status) return <span className="badge badge--gray">Unknown</span>
+  const s = status.toLowerCase()
+  if (s === 'active') return <span className="badge badge--green">Active</span>
+  if (s === 'closed') return <span className="badge badge--gray">Closed</span>
+  return <span className="badge badge--blue">{status}</span>
+}
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value)
@@ -15,150 +29,177 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export default function CaseloadPage() {
   const [residents, setResidents] = useState<Resident[]>([])
-  const [total, setTotal] = useState(0)
-  const [safehouses, setSafehouses] = useState<Safehouse[]>([])
-  const [safehouseId, setSafehouseId] = useState<string>('')
-  const [caseStatus, setCaseStatus] = useState('')
-  const [caseCategory, setCaseCategory] = useState('')
-  const [search, setSearch] = useState('')
+  const [totalCount, setTotalCount] = useState(0)
   const [pageNum, setPageNum] = useState(1)
-  const pageSize = 20
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  // Debounce text inputs to avoid an API call per keystroke
-  const debouncedStatus = useDebounce(caseStatus, 350)
-  const debouncedCategory = useDebounce(caseCategory, 350)
-  const debouncedSearch = useDebounce(search, 350)
-
-  const filters = useMemo(
-    () => ({
-      pageNum,
-      pageSize,
-      safehouseId: safehouseId ? Number(safehouseId) : undefined,
-      caseStatus: debouncedStatus || undefined,
-      caseCategory: debouncedCategory || undefined,
-      search: debouncedSearch.trim() || undefined,
-    }),
-    [pageNum, safehouseId, debouncedStatus, debouncedCategory, debouncedSearch],
-  )
+  const [search, setSearch] = useState('')
+  const [safehouseFilter, setSafehouseFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [safehouses, setSafehouses] = useState<Safehouse[]>([])
+  const [selected, setSelected] = useState<Resident | null>(null)
+  const [visits, setVisits] = useState<HomeVisitation[]>([])
+  const [sessions, setSessions] = useState<ProcessRecording[]>([])
+  const [visitsLoading, setVisitsLoading] = useState(false)
+  const [sessionsLoading, setSessionsLoading] = useState(false)
+  const [listLoading, setListLoading] = useState(true)
+  const [listError, setListError] = useState<string | null>(null)
+  const [triageCard, setTriageCard] = useState<AdminDashboardCard | null>(null)
 
   useEffect(() => {
-    fetchSafehouses(1, 200)
-      .then(r => setSafehouses(r.items))
-      .catch(() => {})
+    fetchSafehouses().then(r => setSafehouses(r.items)).catch(() => {})
+    fetchAdminDashboard().then(d => {
+      const c = d.cards.find(card => card.id === 'resident-triage') ?? null
+      setTriageCard(c)
+    }).catch(() => {})
   }, [])
 
-  useEffect(() => {
-    setLoading(true)
-    fetchResidents(filters)
-      .then(r => {
-        setResidents(r.items)
-        setTotal(r.totalCount)
-      })
-      .catch(() => setError('Unable to load residents.'))
-      .finally(() => setLoading(false))
-  }, [filters])
+  useEffect(() => { setPageNum(1) }, [search, safehouseFilter, statusFilter])
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  useEffect(() => {
+    let mounted = true
+    setListLoading(true)
+    setListError(null)
+    fetchResidents({
+      pageNum,
+      pageSize: PAGE_SIZE,
+      safehouseId: safehouseFilter ? Number(safehouseFilter) : undefined,
+      caseStatus: statusFilter || undefined,
+      search: search || undefined,
+    })
+      .then(r => { if (mounted) { setResidents(r.items); setTotalCount(r.totalCount) } })
+      .catch(() => { if (mounted) setListError('Failed to load residents.') })
+      .finally(() => { if (mounted) setListLoading(false) })
+    return () => { mounted = false }
+  }, [pageNum, search, safehouseFilter, statusFilter])
+
+  useEffect(() => {
+    if (!selected) { setVisits([]); setSessions([]); return }
+    setVisitsLoading(true)
+    setSessionsLoading(true)
+    fetchVisitations(selected.residentId)
+      .then(r => setVisits(r.items))
+      .catch(() => setVisits([]))
+      .finally(() => setVisitsLoading(false))
+    fetchProcessRecordings(selected.residentId)
+      .then(r => setSessions(r.items))
+      .catch(() => setSessions([]))
+      .finally(() => setSessionsLoading(false))
+  }, [selected])
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+
+  const safehouseMap = useMemo(() => {
+    const m = new Map<number, string>()
+    safehouses.forEach(s => m.set(s.safehouseId, s.name))
+    return m
+  }, [safehouses])
 
   return (
     <AdminLayout>
-      <section className="admin-panel">
-        <h1>Caseload</h1>
-        <p style={{ color: 'var(--base-muted)' }}>
-          Resident inventory with filters. Restricted notes are omitted unless your role allows them.
-        </p>
-
-        <div className="admin-toolbar">
-          <label>
-            Safehouse
-            <select value={safehouseId} onChange={e => { setPageNum(1); setSafehouseId(e.target.value) }}>
-              <option value="">All</option>
-              {safehouses.map(s => (
-                <option key={s.safehouseId} value={s.safehouseId}>
-                  {s.safehouseCode} — {s.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Case status
-            <input
-              value={caseStatus}
-              onChange={e => { setPageNum(1); setCaseStatus(e.target.value) }}
-              placeholder="e.g. Active"
-            />
-          </label>
-          <label>
-            Case category
-            <input
-              value={caseCategory}
-              onChange={e => { setPageNum(1); setCaseCategory(e.target.value) }}
-              placeholder="e.g. Neglected"
-            />
-          </label>
-          <label>
-            Search
-            <input
-              value={search}
-              onChange={e => { setPageNum(1); setSearch(e.target.value) }}
-              placeholder="Control #, code, social worker"
-            />
-          </label>
+      <div className="cl-layout">
+        <div className="cl-sidebar">
+          <div className="cl-sidebar__header">
+            <input className="cl-search" placeholder="Search residents..." value={search} onChange={e => setSearch(e.target.value)} />
+            <div className="cl-filters">
+              <select value={safehouseFilter} onChange={e => setSafehouseFilter(e.target.value)}>
+                <option value="">All safehouses</option>
+                {safehouses.map(s => <option key={s.safehouseId} value={s.safehouseId}>{s.name}</option>)}
+              </select>
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+                <option value="">All statuses</option>
+                <option value="Active">Active</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+          </div>
+          <div className="cl-list">
+            {listLoading && <div className="inline-loading">Loading...</div>}
+            {listError && <p className="admin-error" style={{ padding: '1rem' }}>{listError}</p>}
+            {!listLoading && !listError && residents.length === 0 && <div className="empty-state">No residents found.</div>}
+            {!listLoading && !listError && residents.map(r => (
+              <button key={r.residentId} className={`cl-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`} onClick={() => setSelected(r)}>
+                <span className="cl-row__id">{r.caseControlNo}</span>
+                <span className="cl-row__meta">
+                  {statusBadge(r.caseStatus)}
+                  {r.caseCategory && <span>{r.caseCategory}</span>}
+                  {r.assignedSocialWorker && <span>{r.assignedSocialWorker}</span>}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div className="cl-pager">
+            <span className="cl-pager__info">Page {pageNum} of {totalPages}, {totalCount} records</span>
+            <button className="cl-pager__btn" disabled={pageNum <= 1} onClick={() => setPageNum(p => p - 1)}>Prev</button>
+            <button className="cl-pager__btn" disabled={pageNum >= totalPages} onClick={() => setPageNum(p => p + 1)}>Next</button>
+          </div>
         </div>
 
-        {loading && <p>Loading…</p>}
-        {error && <p className="admin-error">{error}</p>}
+        <div className="cl-detail">
+          {!selected && <div className="cl-detail__empty">Select a resident to view details</div>}
+          {selected && (
+            <>
+              {triageCard && (
+                <div className="cl-ml-box">
+                  <p className="cl-ml-box__label">ML Triage Signal</p>
+                  <p>{triageCard.plainLanguage} {triageCard.detail}</p>
+                </div>
+              )}
+              <div className="cl-resident-header">
+                <h2>{selected.caseControlNo}</h2>
+                {statusBadge(selected.caseStatus)}
+                <span style={{ fontSize: '0.85rem', color: 'var(--adm-muted)' }}>
+                  {safehouseMap.get(selected.safehouseId) ?? `Safehouse ${selected.safehouseId}`}
+                </span>
+              </div>
+              <dl className="cl-fields">
+                <div className="cl-field"><dt>Date of Birth</dt><dd>{selected.dateOfBirth ?? '\u2014'}</dd></div>
+                <div className="cl-field"><dt>Sex</dt><dd>{selected.sex ?? '\u2014'}</dd></div>
+                <div className="cl-field"><dt>Case Category</dt><dd>{selected.caseCategory ?? '\u2014'}</dd></div>
+                <div className="cl-field"><dt>Social Worker</dt><dd>{selected.assignedSocialWorker ?? '\u2014'}</dd></div>
+                <div className="cl-field"><dt>Internal Code</dt><dd>{selected.internalCode ?? '\u2014'}</dd></div>
+                <div className="cl-field"><dt>Safehouse</dt><dd>{safehouseMap.get(selected.safehouseId) ?? String(selected.safehouseId)}</dd></div>
+              </dl>
 
-        {!loading && !error && (
-          <>
-            <p style={{ fontSize: '0.9rem', color: 'var(--base-muted)' }}>
-              Showing {residents.length} of {total} residents (page {pageNum} of {totalPages})
-            </p>
-            <div className="admin-table-wrap">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Control #</th>
-                    <th>Safehouse</th>
-                    <th>Status</th>
-                    <th>Category</th>
-                    <th>Social worker</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {residents.map((r: Resident) => (
-                    <tr key={r.residentId}>
-                      <td>{r.caseControlNo}</td>
-                      <td>{r.safehouseId}</td>
-                      <td>{r.caseStatus ?? '—'}</td>
-                      <td>{r.caseCategory ?? '—'}</td>
-                      <td>{r.assignedSocialWorker ?? '—'}</td>
-                    </tr>
+              <p className="section-title">Visit History</p>
+              {visitsLoading && <div className="inline-loading">Loading visits...</div>}
+              {!visitsLoading && visits.length === 0 && <div className="empty-state">No visit history</div>}
+              {!visitsLoading && visits.length > 0 && (
+                <div className="cl-timeline">
+                  {visits.map(v => (
+                    <div key={v.visitationId} className="cl-timeline-card">
+                      <div className="cl-timeline-card__header">
+                        <span className="cl-timeline-card__date">{v.visitDate ?? 'No date'}</span>
+                        {v.visitType && <span className="badge badge--blue">{v.visitType}</span>}
+                        {v.visitOutcome && <span className={`badge ${v.visitOutcome.toLowerCase() === 'positive' ? 'badge--green' : v.visitOutcome.toLowerCase() === 'concern' ? 'badge--red' : 'badge--gray'}`}>{v.visitOutcome}</span>}
+                        <span className="cl-timeline-card__worker">{v.socialWorker}</span>
+                      </div>
+                      {v.observations && <p className="cl-timeline-card__text">{v.observations}</p>}
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-              <button
-                type="button"
-                disabled={pageNum <= 1}
-                onClick={() => setPageNum(p => Math.max(1, p - 1))}
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                disabled={pageNum >= totalPages}
-                onClick={() => setPageNum(p => Math.min(totalPages, p + 1))}
-              >
-                Next
-              </button>
-            </div>
-          </>
-        )}
-      </section>
+                </div>
+              )}
+
+              <p className="section-title">Session Notes</p>
+              {sessionsLoading && <div className="inline-loading">Loading sessions...</div>}
+              {!sessionsLoading && sessions.length === 0 && <div className="empty-state">No session notes</div>}
+              {!sessionsLoading && sessions.length > 0 && (
+                <div className="cl-timeline">
+                  {sessions.map(s => (
+                    <div key={s.recordingId} className="cl-timeline-card">
+                      <div className="cl-timeline-card__header">
+                        <span className="cl-timeline-card__date">{s.sessionDate ?? 'No date'}</span>
+                        {s.sessionType && <span className="badge badge--purple">{s.sessionType}</span>}
+                        {s.notesRestricted === 'Y' && <span className="badge badge--red">Restricted</span>}
+                        <span className="cl-timeline-card__worker">{s.socialWorker}</span>
+                      </div>
+                      <p className="cl-timeline-card__text">{s.sessionNarrative || <em>No narrative recorded</em>}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </AdminLayout>
   )
 }
