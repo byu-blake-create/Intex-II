@@ -1,6 +1,6 @@
 /** Base for API calls; empty uses same-origin `/api` (Vite dev proxy). */
 export function apiUrl(path: string): string {
-  const configuredBase = import.meta.env.VITE_API_BASE_URL ?? ''
+  const configuredBase = (import.meta.env.VITE_API_BASE_URL ?? '').trim()
   const isLocalPage = typeof window !== 'undefined'
     && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   const isLocalApi = configuredBase.includes('localhost') || configuredBase.includes('127.0.0.1')
