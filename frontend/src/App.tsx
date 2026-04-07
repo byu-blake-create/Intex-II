@@ -38,25 +38,25 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
-        {/* Shared staff workspace */}
-        <Route path="/staff" element={<ProtectedRoute requiredRole="Staff"><AdminDashboard /></ProtectedRoute>} />
-        <Route path="/staff/donors" element={<ProtectedRoute requiredRole="Staff"><DonorsPage /></ProtectedRoute>} />
-        <Route path="/staff/caseload" element={<ProtectedRoute requiredRole="Staff"><CaseloadPage /></ProtectedRoute>} />
-        <Route path="/staff/process-recording" element={<ProtectedRoute requiredRole="Staff"><ProcessRecordingPage /></ProtectedRoute>} />
-        <Route path="/staff/visitations" element={<ProtectedRoute requiredRole="Staff"><VisitationsPage /></ProtectedRoute>} />
-        <Route path="/staff/reports" element={<ProtectedRoute requiredRole="Staff"><ReportsPage /></ProtectedRoute>} />
-        <Route path="/staff/social" element={<ProtectedRoute requiredRole="Staff"><SocialSuitePage /></ProtectedRoute>} />
-        <Route path="/staff/database" element={<ProtectedRoute requiredRole="Admin"><DatabasePage /></ProtectedRoute>} />
+        {/* Shared admin workspace */}
+        <Route path="/admin" element={<ProtectedRoute requiredRole="Staff"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/donors" element={<ProtectedRoute requiredRole="Staff"><DonorsPage /></ProtectedRoute>} />
+        <Route path="/admin/caseload" element={<ProtectedRoute requiredRole="Staff"><CaseloadPage /></ProtectedRoute>} />
+        <Route path="/admin/process-recording" element={<ProtectedRoute requiredRole="Staff"><ProcessRecordingPage /></ProtectedRoute>} />
+        <Route path="/admin/visitations" element={<ProtectedRoute requiredRole="Staff"><VisitationsPage /></ProtectedRoute>} />
+        <Route path="/admin/reports" element={<ProtectedRoute requiredRole="Staff"><ReportsPage /></ProtectedRoute>} />
+        <Route path="/admin/social" element={<ProtectedRoute requiredRole="Staff"><SocialSuitePage /></ProtectedRoute>} />
+        <Route path="/admin/database" element={<ProtectedRoute requiredRole="Admin"><DatabasePage /></ProtectedRoute>} />
 
-        {/* Keep older links working while the app standardizes on /staff. */}
-        <Route path="/admin" element={<Navigate to="/staff" replace />} />
-        <Route path="/admin/donors" element={<Navigate to="/staff/donors" replace />} />
-        <Route path="/admin/caseload" element={<Navigate to="/staff/caseload" replace />} />
-        <Route path="/admin/process-recording" element={<Navigate to="/staff/process-recording" replace />} />
-        <Route path="/admin/visitations" element={<Navigate to="/staff/visitations" replace />} />
-        <Route path="/admin/reports" element={<Navigate to="/staff/reports" replace />} />
-        <Route path="/admin/social" element={<Navigate to="/staff/social" replace />} />
-        <Route path="/admin/database" element={<Navigate to="/staff/database" replace />} />
+        {/* Keep older /staff links working while /admin is canonical. */}
+        <Route path="/staff" element={<Navigate to="/admin" replace />} />
+        <Route path="/staff/donors" element={<Navigate to="/admin/donors" replace />} />
+        <Route path="/staff/caseload" element={<Navigate to="/admin/caseload" replace />} />
+        <Route path="/staff/process-recording" element={<Navigate to="/admin/process-recording" replace />} />
+        <Route path="/staff/visitations" element={<Navigate to="/admin/visitations" replace />} />
+        <Route path="/staff/reports" element={<Navigate to="/admin/reports" replace />} />
+        <Route path="/staff/social" element={<Navigate to="/admin/social" replace />} />
+        <Route path="/staff/database" element={<Navigate to="/admin/database" replace />} />
       </Routes>
       </Suspense>
     </AuthProvider>
