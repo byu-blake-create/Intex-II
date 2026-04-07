@@ -469,6 +469,43 @@
   border: 1px solid var(--page-line);
   background: var(--page-panel);
   box-shadow: var(--page-shadow);
+  min-width: 0;
+}
+
+.login-page__form {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.login-page__name-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+}
+
+.login-page__field {
+  display: grid;
+  gap: 0.45rem;
+  text-align: left;
+  min-width: 0;
+}
+
+.login-page__input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--page-chip-border);
+  background: var(--page-card-bg);
+  color: var(--page-ink);
+}
+
+@media (max-width: 720px) {
+  .login-page__name-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .hero-section {
