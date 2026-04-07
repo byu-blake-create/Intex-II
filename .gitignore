@@ -8,6 +8,7 @@ backend/**/*.user
 # User Secrets / env
 backend/**/.env
 backend/**/.env.local
+backend/NorthStarShelter.API/.env
 appsettings.Development.json
 
 # Frontend
@@ -25,3 +26,5 @@ frontend/.env.local
 .omc/
 .omx/
 **/__pycache__/
+.vercel
+seed_azure.py

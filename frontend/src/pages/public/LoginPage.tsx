@@ -199,7 +199,7 @@ export default function LoginPage() {
               </p>
               <p style={{ margin: 0, lineHeight: 1.7 }}>
                 {mode === 'register'
-                  ? 'Create a donor account with your name, email, and a password of at least 10 characters.'
+                  ? 'Create a donor account with your first name, last name, email, and a password of at least 10 characters.'
                   : 'Enter the email and password for your North Star Shelter account.'}
               </p>
             </div>

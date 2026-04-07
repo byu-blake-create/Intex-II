@@ -1,47 +1,30 @@
 import { useCallback, useEffect, useState } from 'react'
+import { CONSENT_EVENT, getConsentDecision, setConsentDecision, syncOptionalAnalytics } from '../lib/cookieConsent'
 import './CookieConsent.css'
 
-const CONSENT_COOKIE = 'nss_cookie_consent'
-const ONE_YEAR = 60 * 60 * 24 * 365
-
-function readConsent(): boolean {
-  return document.cookie.split(';').some(c => c.trim().startsWith(`${CONSENT_COOKIE}=accepted`))
-}
-
-/** Loads optional analytics only after explicit consent (set VITE_ANALYTICS_ID). */
-function loadAnalyticsIfConfigured() {
-  const id = import.meta.env.VITE_ANALYTICS_ID as string | undefined
-  if (!id) return
-  const s1 = document.createElement('script')
-  s1.async = true
-  s1.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`
-  document.head.appendChild(s1)
-  const s2 = document.createElement('script')
-  s2.innerHTML = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${id.replace(/'/g, "\\'")}', { anonymize_ip: true });
-  `
-  document.head.appendChild(s2)
-}
-
 export default function CookieConsent() {
-  const [visible, setVisible] = useState(() => !readConsent())
+  const [visible, setVisible] = useState(() => getConsentDecision() === null)
 
   useEffect(() => {
-    if (readConsent() && import.meta.env.VITE_ANALYTICS_ID) loadAnalyticsIfConfigured()
+    const sync = () => {
+      setVisible(getConsentDecision() === null)
+      syncOptionalAnalytics()
+    }
+
+    sync()
+    window.addEventListener(CONSENT_EVENT, sync)
+
+    return () => {
+      window.removeEventListener(CONSENT_EVENT, sync)
+    }
   }, [])
 
   const accept = useCallback(() => {
-    document.cookie = `${CONSENT_COOKIE}=accepted; Path=/; Max-Age=${ONE_YEAR}; SameSite=Lax`
-    setVisible(false)
-    if (import.meta.env.VITE_ANALYTICS_ID) loadAnalyticsIfConfigured()
+    setConsentDecision('accepted')
   }, [])
 
   const decline = useCallback(() => {
-    document.cookie = `${CONSENT_COOKIE}=declined; Path=/; Max-Age=${ONE_YEAR}; SameSite=Lax`
-    setVisible(false)
+    setConsentDecision('declined')
   }, [])
 
   if (!visible) return null

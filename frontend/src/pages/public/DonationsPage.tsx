@@ -3,6 +3,7 @@ import { fetchMyDonations, type MyDonationsResponse } from '../../lib/donationsA
 import PublicSiteHeader from '../../components/PublicSiteHeader'
 import { usePublicTheme } from '../../lib/usePublicTheme'
 import './HomePage.css'
+import './DonationsPage.css'
 
 export default function DonationsPage() {
   const { theme, setTheme } = usePublicTheme()
