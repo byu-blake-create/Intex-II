@@ -8,6 +8,10 @@ import CookieConsent from './components/CookieConsent'
 import HomePage from './pages/public/HomePage'
 import LoginPage from './pages/public/LoginPage'
 
+// Lazy-loaded pages — split into separate chunks
+const ImpactPage = lazy(() => import('./pages/public/ImpactPage'))
+const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage'))
+
 // Staff pages
 import AdminDashboard from './pages/admin/AdminDashboard'
 import DonorsPage from './pages/admin/DonorsPage'
@@ -45,6 +49,7 @@ export default function App() {
         <Route path="/admin/process-recording" element={<Navigate to="/staff/process-recording" replace />} />
         <Route path="/admin/visitations" element={<Navigate to="/staff/visitations" replace />} />
         <Route path="/admin/reports" element={<Navigate to="/staff/reports" replace />} />
+        <Route path="/admin/social" element={<Navigate to="/staff/social" replace />} />
       </Routes>
       </Suspense>
     </AuthProvider>
