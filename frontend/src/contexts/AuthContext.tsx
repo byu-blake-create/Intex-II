@@ -1,25 +1,32 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-
-interface AuthUser {
-  email: string
-  roles: string[]
-}
-
-interface AuthContextType {
-  user: AuthUser | null
-  loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  logout: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextType | null>(null)
+import { useEffect, useState } from 'react'
+import { AuthContext, type AuthUser } from './auth'
 
 const API = import.meta.env.VITE_API_BASE_URL ?? ''
 const USE_MOCK = import.meta.env.VITE_MOCK === 'true'
-const MOCK_USER: AuthUser = { email: 'staff@northstarshelter.org', roles: ['Staff'] }
+const MOCK_AUTH_STORAGE_KEY = 'mock-auth-user'
+const MOCK_USERS: Record<string, { password: string; user: AuthUser }> = {
+  'admin@northstarshelter.org': {
+    password: 'NorthStarAdmin123',
+    user: { email: 'admin@northstarshelter.org', roles: ['Admin', 'Staff'] },
+  },
+  'donor@northstarshelter.org': {
+    password: 'NorthStarDonor123',
+    user: { email: 'donor@northstarshelter.org', roles: ['Donor'] },
+  },
+}
+
+function readMockUser(): AuthUser | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = window.localStorage.getItem(MOCK_AUTH_STORAGE_KEY)
+    return raw ? JSON.parse(raw) as AuthUser : null
+  } catch {
+    return null
+  }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(USE_MOCK ? MOCK_USER : null)
+  const [user, setUser] = useState<AuthUser | null>(USE_MOCK ? readMockUser() : null)
   const [loading, setLoading] = useState(!USE_MOCK)
 
   useEffect(() => {
@@ -33,7 +40,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   async function login(email: string, password: string) {
-    if (USE_MOCK) { setUser(MOCK_USER); return }
+    if (USE_MOCK) {
+      const entry = MOCK_USERS[email.trim().toLowerCase()]
+      if (!entry || entry.password !== password) throw new Error('Invalid credentials')
+      setUser(entry.user)
+      window.localStorage.setItem(MOCK_AUTH_STORAGE_KEY, JSON.stringify(entry.user))
+      return
+    }
     const r = await fetch(`${API}/api/auth/login`, {
       method: 'POST',
       credentials: 'include',
@@ -46,7 +59,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
-    if (USE_MOCK) { setUser(null); return }
+    if (USE_MOCK) {
+      setUser(null)
+      window.localStorage.removeItem(MOCK_AUTH_STORAGE_KEY)
+      return
+    }
     await fetch(`${API}/api/auth/logout`, { method: 'POST', credentials: 'include' })
     setUser(null)
   }
@@ -56,10 +73,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider')
-  return ctx
 }

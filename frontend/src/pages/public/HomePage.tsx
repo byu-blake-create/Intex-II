@@ -1,3 +1,5 @@
+import PublicSiteHeader from '../../components/PublicSiteHeader'
+import { usePublicTheme } from '../../lib/usePublicTheme'
 import './HomePage.css'
 
 const carePillars = [
@@ -91,28 +93,11 @@ const heroPromises = [
 ]
 
 export default function HomePage() {
+  const { theme, setTheme } = usePublicTheme()
+
   return (
-    <div className="home-page">
-      <header className="home-nav">
-        <a className="home-brand" href="#top" aria-label="North Star Shelter home">
-          <span className="home-brand__mark">N</span>
-          <span>
-            <strong>North Star Shelter</strong>
-            <small>Safety-led care and measurable impact</small>
-          </span>
-        </a>
-
-        <nav className="home-nav__links" aria-label="Primary">
-          <a href="#mission">Mission</a>
-          <a href="#services">Services</a>
-          <a href="#pathway">Pathway</a>
-          <a href="/privacy">Privacy</a>
-        </nav>
-
-        <a className="home-nav__cta" href="/login">
-          Staff Sign In
-        </a>
-      </header>
+    <div className="public-site home-page" data-theme={theme}>
+      <PublicSiteHeader theme={theme} setTheme={setTheme} />
 
       <main id="top">
         <section className="hero-section">
