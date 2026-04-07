@@ -38,26 +38,22 @@ export default function DonorsPage() {
     }).catch(() => {})
   }, [])
 
-  useEffect(() => { setPageNum(1) }, [search, typeFilter])
-
   useEffect(() => {
     let mounted = true
-    setListLoading(true)
-    setListError(null)
     fetchSupporters({
       pageNum,
       pageSize: PAGE_SIZE,
+      search: search || undefined,
       supporterType: typeFilter || undefined,
     })
       .then(r => { if (mounted) { setSupporters(r.items); setTotalCount(r.totalCount) } })
       .catch(() => { if (mounted) setListError('Failed to load supporters.') })
       .finally(() => { if (mounted) setListLoading(false) })
     return () => { mounted = false }
-  }, [pageNum, typeFilter])
+  }, [pageNum, search, typeFilter])
 
   useEffect(() => {
-    if (!selected) { setDonations([]); return }
-    setDonLoading(true)
+    if (!selected) return
     fetchDonations({ supporterId: selected.supporterId, pageSize: 200 })
       .then(r => setDonations(r.items))
       .catch(() => setDonations([]))
@@ -66,13 +62,6 @@ export default function DonorsPage() {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
-  const filtered = search
-    ? supporters.filter(s =>
-        s.displayName.toLowerCase().includes(search.toLowerCase()) ||
-        (s.email ?? '').toLowerCase().includes(search.toLowerCase()) ||
-        (s.organizationName ?? '').toLowerCase().includes(search.toLowerCase()))
-    : supporters
-
   const donationTotal = donations.reduce((sum, d) => sum + (d.amount ?? 0), 0)
 
   return (
@@ -80,9 +69,23 @@ export default function DonorsPage() {
       <div className="dn-layout">
         <div className="dn-sidebar">
           <div className="dn-sidebar__header">
-            <input className="dn-search" placeholder="Search donors..." value={search} onChange={e => setSearch(e.target.value)} />
+            <input
+              className="dn-search"
+              placeholder="Search donors..."
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value)
+                setPageNum(1)
+              }}
+            />
             <div className="dn-filters">
-              <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
+              <select
+                value={typeFilter}
+                onChange={e => {
+                  setTypeFilter(e.target.value)
+                  setPageNum(1)
+                }}
+              >
                 <option value="">All types</option>
                 <option value="Individual">Individual</option>
                 <option value="Organization">Organization</option>
@@ -92,9 +95,17 @@ export default function DonorsPage() {
           <div className="dn-list">
             {listLoading && <div className="inline-loading">Loading...</div>}
             {listError && <p className="admin-error" style={{ padding: '1rem' }}>{listError}</p>}
-            {!listLoading && !listError && filtered.length === 0 && <div className="empty-state">No supporters found.</div>}
-            {!listLoading && !listError && filtered.map(s => (
-              <button key={s.supporterId} className={`dn-row${selected?.supporterId === s.supporterId ? ' is-selected' : ''}`} onClick={() => setSelected(s)}>
+            {!listLoading && !listError && supporters.length === 0 && <div className="empty-state">No supporters found.</div>}
+            {!listLoading && !listError && supporters.map(s => (
+              <button
+                key={s.supporterId}
+                className={`dn-row${selected?.supporterId === s.supporterId ? ' is-selected' : ''}`}
+                onClick={() => {
+                  setSelected(s)
+                  setDonations([])
+                  setDonLoading(true)
+                }}
+              >
                 <span className="dn-row__name">{s.displayName}</span>
                 <span className="dn-row__meta">
                   {typeBadge(s.supporterType)}
@@ -107,8 +118,20 @@ export default function DonorsPage() {
           </div>
           <div className="dn-pager">
             <span className="dn-pager__info">Page {pageNum} of {totalPages}, {totalCount} records</span>
-            <button className="dn-pager__btn" disabled={pageNum <= 1} onClick={() => setPageNum(p => p - 1)}>Prev</button>
-            <button className="dn-pager__btn" disabled={pageNum >= totalPages} onClick={() => setPageNum(p => p + 1)}>Next</button>
+            <button
+              className="dn-pager__btn"
+              disabled={pageNum <= 1}
+              onClick={() => {
+                setPageNum(p => p - 1)
+              }}
+            >Prev</button>
+            <button
+              className="dn-pager__btn"
+              disabled={pageNum >= totalPages}
+              onClick={() => {
+                setPageNum(p => p + 1)
+              }}
+            >Next</button>
           </div>
         </div>
 
@@ -128,7 +151,7 @@ export default function DonorsPage() {
 
               {watchlistCard && (
                 <div className="dn-ml-box">
-                  <p className="dn-ml-box__label">Retention Signal</p>
+                  <p className="dn-ml-box__label">Donor Signal</p>
                   <p>{watchlistCard.plainLanguage} {watchlistCard.detail}</p>
                 </div>
               )}

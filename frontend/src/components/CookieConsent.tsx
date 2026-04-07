@@ -27,10 +27,9 @@ function loadAnalyticsIfConfigured() {
 }
 
 export default function CookieConsent() {
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(() => !readConsent())
 
   useEffect(() => {
-    setVisible(!readConsent())
     if (readConsent() && import.meta.env.VITE_ANALYTICS_ID) loadAnalyticsIfConfigured()
   }, [])
 

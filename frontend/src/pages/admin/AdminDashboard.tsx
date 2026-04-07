@@ -87,7 +87,7 @@ export default function AdminDashboard() {
         {/* Page header */}
         <header className="page-header">
           <h1>Command Center</h1>
-          <p>{dashData?.summary ?? 'Loading operational signals...'}</p>
+          <p>{dashData?.summary ?? 'Loading live operational signals...'}</p>
         </header>
 
         {/* Loading / error */}
@@ -125,7 +125,7 @@ export default function AdminDashboard() {
         {!loading && !error && dashData && dashData.cards.length > 0 && (
           <>
             <div className="dash__section-header">
-              <span className="dash__ml-label">Signals</span>
+              <span className="dash__ml-label">Live Signals</span>
               <span className="dash__snapshot-date">{dashData.snapshotLabel}</span>
             </div>
             <div className="dash__cards">

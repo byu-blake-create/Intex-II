@@ -6,6 +6,8 @@ import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDas
 import type { Resident, HomeVisitation } from '../../types/domain'
 import './VisitationsPage.css'
 
+const PAGE_SIZE = 30
+
 function statusBadge(status: string | null | undefined) {
   if (!status) return <span className="badge badge--gray">Unknown</span>
   return status.toLowerCase() === 'active'
@@ -32,52 +34,88 @@ function outcomeBadge(o: string | null | undefined) {
 
 export default function VisitationsPage() {
   const [residents, setResidents] = useState<Resident[]>([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [pageNum, setPageNum] = useState(1)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Resident | null>(null)
   const [visits, setVisits] = useState<HomeVisitation[]>([])
   const [visitsLoading, setVisitsLoading] = useState(false)
   const [listLoading, setListLoading] = useState(true)
+  const [listError, setListError] = useState<string | null>(null)
   const [reintCard, setReintCard] = useState<AdminDashboardCard | null>(null)
 
   useEffect(() => {
-    fetchResidents({ pageSize: 200 })
-      .then(r => setResidents(r.items))
-      .catch(() => {})
-      .finally(() => setListLoading(false))
     fetchAdminDashboard().then(d => {
       setReintCard(d.cards.find(c => c.id === 'reintegration-ready') ?? null)
     }).catch(() => {})
   }, [])
 
   useEffect(() => {
-    if (!selected) { setVisits([]); return }
-    setVisitsLoading(true)
+    let mounted = true
+    fetchResidents({ pageNum, pageSize: PAGE_SIZE, search: search || undefined })
+      .then(r => {
+        if (mounted) {
+          setResidents(r.items)
+          setTotalCount(r.totalCount)
+        }
+      })
+      .catch(() => {
+        if (mounted) setListError('Failed to load residents.')
+      })
+      .finally(() => {
+        if (mounted) setListLoading(false)
+      })
+    return () => { mounted = false }
+  }, [pageNum, search])
+
+  useEffect(() => {
+    if (!selected) return
     fetchVisitations(selected.residentId)
       .then(r => setVisits(r.items))
       .catch(() => setVisits([]))
       .finally(() => setVisitsLoading(false))
   }, [selected])
 
-  const filtered = search
-    ? residents.filter(r => r.caseControlNo.toLowerCase().includes(search.toLowerCase()))
-    : residents
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   return (
     <AdminLayout>
       <div className="vs-layout">
         <div className="vs-sidebar">
           <div className="vs-sidebar__header">
-            <input className="vs-search" placeholder="Search residents..." value={search} onChange={e => setSearch(e.target.value)} />
+            <input
+              className="vs-search"
+              placeholder="Search residents..."
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value)
+                setPageNum(1)
+              }}
+            />
           </div>
           <div className="vs-list">
             {listLoading && <div className="inline-loading">Loading...</div>}
-            {!listLoading && filtered.length === 0 && <div className="empty-state">No residents found.</div>}
-            {!listLoading && filtered.map(r => (
-              <button key={r.residentId} className={`vs-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`} onClick={() => setSelected(r)}>
+            {listError && <p className="admin-error" style={{ padding: '1rem' }}>{listError}</p>}
+            {!listLoading && !listError && residents.length === 0 && <div className="empty-state">No residents found.</div>}
+            {!listLoading && !listError && residents.map(r => (
+              <button
+                key={r.residentId}
+                className={`vs-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`}
+                onClick={() => {
+                  setSelected(r)
+                  setVisits([])
+                  setVisitsLoading(true)
+                }}
+              >
                 <span className="vs-row__id">{r.caseControlNo}</span>
                 <span className="vs-row__meta">{statusBadge(r.caseStatus)}</span>
               </button>
             ))}
+          </div>
+          <div className="vs-pager">
+            <span className="vs-pager__info">Page {pageNum} of {totalPages}, {totalCount} records</span>
+            <button className="vs-pager__btn" disabled={pageNum <= 1} onClick={() => setPageNum(p => p - 1)}>Prev</button>
+            <button className="vs-pager__btn" disabled={pageNum >= totalPages} onClick={() => setPageNum(p => p + 1)}>Next</button>
           </div>
         </div>
 
@@ -92,7 +130,7 @@ export default function VisitationsPage() {
 
               {reintCard && (
                 <div className="vs-ml-box">
-                  <p className="vs-ml-box__label">Reintegration Readiness</p>
+                  <p className="vs-ml-box__label">Visit Signal</p>
                   <p>{reintCard.plainLanguage} {reintCard.detail}</p>
                 </div>
               )}

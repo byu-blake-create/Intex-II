@@ -2,33 +2,27 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/auth'
 import { usePublicTheme } from '../../lib/usePublicTheme'
+import type { AuthUser } from '../../contexts/auth'
 import './HomePage.css'
 
-const DEMO_ACCOUNTS = [
-  {
-    label: 'Admin access',
-    role: 'Admin workspace',
-    email: 'admin@northstarshelter.org',
-    password: 'NorthStarAdmin123',
-    note: 'Returns to home and unlocks the Admin tab.',
-  },
-  {
-    label: 'Donor access',
-    role: 'Donor portal',
-    email: 'donor@northstarshelter.org',
-    password: 'NorthStarDonor123',
-    note: 'Returns to home and unlocks the Donations tab.',
-  },
-]
-
 export default function LoginPage() {
-  const { login } = useAuth()
+  const { login, register } = useAuth()
   const navigate = useNavigate()
   const { theme } = usePublicTheme()
+  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  function destinationFor(user: AuthUser) {
+    if (user.roles.includes('Staff') || user.roles.includes('Admin')) return '/staff'
+    if (user.roles.includes('Donor')) return '/donations'
+    return '/'
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -36,10 +30,19 @@ export default function LoginPage() {
     setSubmitting(true)
 
     try {
-      await login(email, password)
-      navigate('/')
-    } catch {
-      setError('Invalid email or password.')
+      if (mode === 'register') {
+        if (password !== confirmPassword) {
+          throw new Error('Passwords do not match.')
+        }
+
+        const user = await register(email, password, firstName, lastName)
+        navigate(destinationFor(user))
+      } else {
+        const user = await login(email, password)
+        navigate(destinationFor(user))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid email or password.')
     } finally {
       setSubmitting(false)
     }
@@ -87,9 +90,7 @@ export default function LoginPage() {
             alignItems: 'start',
           }}
         >
-          <section
-            className="login-page__feature-card"
-          >
+          <section className="login-page__feature-card">
             <p
               style={{
                 margin: 0,
@@ -102,54 +103,87 @@ export default function LoginPage() {
             >
               Account access
             </p>
-            <h1 style={{ margin: 0 }}>Sign in to continue with North Star Shelter</h1>
+            <h1 style={{ margin: 0 }}>
+              {mode === 'register'
+                ? 'Create your North Star Shelter donor account'
+                : 'Sign in with your North Star Shelter account'}
+            </h1>
             <p style={{ margin: 0, lineHeight: 1.8 }}>
-              Sign in returns you to the home page and unlocks the tab that matches your role.
-              Admin users will see an <strong>Admin</strong> tab. Donor users will see a
-              <strong> Donations</strong> tab.
+              {mode === 'register'
+                ? 'New accounts are created in the live database and automatically receive the donor role.'
+                : 'This sign-in now uses the production database account store. Staff and admin users unlock the staff workspace after authentication.'}
             </p>
 
             <div
               style={{
+                padding: '1rem 1.1rem',
+                borderRadius: '18px',
+                border: '1px solid var(--page-chip-border)',
+                background: 'var(--page-card-bg)',
                 display: 'grid',
-                gap: '0.9rem',
-                marginTop: '0.25rem',
+                gap: '0.5rem',
               }}
             >
-              {DEMO_ACCOUNTS.map(account => (
-                <button
-                  key={account.email}
-                  type="button"
-                  onClick={() => {
-                    setEmail(account.email)
-                    setPassword(account.password)
-                    setError('')
-                  }}
-                  style={{
-                    display: 'grid',
-                    gap: '0.35rem',
-                    textAlign: 'left',
-                    padding: '1rem 1.1rem',
-                    borderRadius: '20px',
-                    border: '1px solid var(--page-chip-border)',
-                    background: 'var(--page-card-bg)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <span style={{ fontWeight: 800, color: 'var(--page-ink)' }}>{account.label}</span>
-                  <span style={{ color: 'var(--page-muted)', fontSize: '0.92rem' }}>{account.role}</span>
-                  <span style={{ fontFamily: 'monospace', fontSize: '0.84rem', color: 'var(--page-accent-deep)' }}>
-                    {account.email}
-                  </span>
-                  <span style={{ color: 'var(--page-muted)', fontSize: '0.84rem' }}>{account.note}</span>
-                </button>
-              ))}
+              <p style={{ margin: 0, fontWeight: 700, color: 'var(--page-ink)' }}>
+                What changed
+              </p>
+              <p style={{ margin: 0, lineHeight: 1.7 }}>
+                Accounts now live in the real SQL-backed identity store. Donor accounts are linked
+                to supporter records so their personal donation history can load after sign-in.
+              </p>
             </div>
           </section>
 
-          <section
-            className="login-page__main-card"
-          >
+          <section className="login-page__main-card">
+            <div
+              style={{
+                display: 'inline-flex',
+                gap: '0.5rem',
+                padding: '0.35rem',
+                borderRadius: '999px',
+                background: 'var(--page-auth-bg)',
+                border: '1px solid var(--page-auth-border)',
+                width: 'fit-content',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('login')
+                  setError('')
+                }}
+                style={{
+                  padding: '0.55rem 0.95rem',
+                  borderRadius: '999px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: mode === 'login' ? 'var(--page-cta-bg)' : 'transparent',
+                  color: mode === 'login' ? 'var(--page-cta-ink)' : 'var(--page-ink)',
+                  fontWeight: 700,
+                }}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('register')
+                  setError('')
+                }}
+                style={{
+                  padding: '0.55rem 0.95rem',
+                  borderRadius: '999px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: mode === 'register' ? 'var(--page-cta-bg)' : 'transparent',
+                  color: mode === 'register' ? 'var(--page-cta-ink)' : 'var(--page-ink)',
+                  fontWeight: 700,
+                }}
+              >
+                Register
+              </button>
+            </div>
+
             <div style={{ display: 'grid', gap: '0.35rem' }}>
               <p
                 style={{
@@ -161,10 +195,12 @@ export default function LoginPage() {
                   fontWeight: 800,
                 }}
               >
-                Sign In
+                {mode === 'register' ? 'Register' : 'Sign In'}
               </p>
               <p style={{ margin: 0, lineHeight: 1.7 }}>
-                Use your account credentials to unlock your role-specific experience.
+                {mode === 'register'
+                  ? 'Create a donor account with your name, email, and a password of at least 10 characters.'
+                  : 'Enter the email and password for your North Star Shelter account.'}
               </p>
             </div>
 
@@ -175,6 +211,46 @@ export default function LoginPage() {
                 gap: '1rem',
               }}
             >
+              {mode === 'register' && (
+                <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
+                  <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
+                    <span>First name</span>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={e => setFirstName(e.target.value)}
+                      required
+                      autoComplete="given-name"
+                      style={{
+                        padding: '0.9rem 1rem',
+                        borderRadius: '14px',
+                        border: '1px solid var(--page-chip-border)',
+                        background: 'var(--page-card-bg)',
+                        color: 'var(--page-ink)',
+                      }}
+                    />
+                  </label>
+
+                  <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
+                    <span>Last name</span>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={e => setLastName(e.target.value)}
+                      required
+                      autoComplete="family-name"
+                      style={{
+                        padding: '0.9rem 1rem',
+                        borderRadius: '14px',
+                        border: '1px solid var(--page-chip-border)',
+                        background: 'var(--page-card-bg)',
+                        color: 'var(--page-ink)',
+                      }}
+                    />
+                  </label>
+                </div>
+              )}
+
               <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
                 <span>Email</span>
                 <input
@@ -200,7 +276,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
-                  autoComplete="current-password"
+                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
                   style={{
                     padding: '0.9rem 1rem',
                     borderRadius: '14px',
@@ -210,6 +286,26 @@ export default function LoginPage() {
                   }}
                 />
               </label>
+
+              {mode === 'register' && (
+                <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
+                  <span>Confirm password</span>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    required
+                    autoComplete="new-password"
+                    style={{
+                      padding: '0.9rem 1rem',
+                      borderRadius: '14px',
+                      border: '1px solid var(--page-chip-border)',
+                      background: 'var(--page-card-bg)',
+                      color: 'var(--page-ink)',
+                    }}
+                  />
+                </label>
+              )}
 
               {error && (
                 <p role="alert" style={{ margin: 0, color: 'var(--page-accent)' }}>
@@ -231,26 +327,11 @@ export default function LoginPage() {
                   opacity: submitting ? 0.78 : 1,
                 }}
               >
-                {submitting ? 'Signing in...' : 'Sign In'}
+                {submitting
+                  ? (mode === 'register' ? 'Creating account...' : 'Signing in...')
+                  : (mode === 'register' ? 'Create Account' : 'Sign In')}
               </button>
             </form>
-
-            <div
-              style={{
-                padding: '1rem 1.1rem',
-                borderRadius: '18px',
-                border: '1px solid var(--page-chip-border)',
-                background: 'var(--page-card-bg)',
-              }}
-            >
-              <p style={{ marginBottom: '0.5rem', fontWeight: 700, color: 'var(--page-ink)' }}>
-                How it works
-              </p>
-              <p style={{ margin: 0, lineHeight: 1.7 }}>
-                After sign-in, the home page becomes your entry point. You will see either the
-                Admin tab or the Donations tab depending on your account role.
-              </p>
-            </div>
           </section>
         </div>
       </main>

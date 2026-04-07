@@ -55,12 +55,8 @@ export default function CaseloadPage() {
     }).catch(() => {})
   }, [])
 
-  useEffect(() => { setPageNum(1) }, [debouncedSearch, safehouseFilter, statusFilter])
-
   useEffect(() => {
     let mounted = true
-    setListLoading(true)
-    setListError(null)
     fetchResidents({
       pageNum,
       pageSize: PAGE_SIZE,
@@ -75,9 +71,7 @@ export default function CaseloadPage() {
   }, [pageNum, debouncedSearch, safehouseFilter, statusFilter])
 
   useEffect(() => {
-    if (!selected) { setVisits([]); setSessions([]); return }
-    setVisitsLoading(true)
-    setSessionsLoading(true)
+    if (!selected) return
     fetchVisitations(selected.residentId)
       .then(r => setVisits(r.items))
       .catch(() => setVisits([]))
@@ -101,13 +95,39 @@ export default function CaseloadPage() {
       <div className="cl-layout">
         <div className="cl-sidebar">
           <div className="cl-sidebar__header">
-            <input className="cl-search" placeholder="Search residents..." value={search} onChange={e => setSearch(e.target.value)} />
+            <input
+              className="cl-search"
+              placeholder="Search residents..."
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value)
+                setPageNum(1)
+                setListLoading(true)
+                setListError(null)
+              }}
+            />
             <div className="cl-filters">
-              <select value={safehouseFilter} onChange={e => setSafehouseFilter(e.target.value)}>
+              <select
+                value={safehouseFilter}
+                onChange={e => {
+                  setSafehouseFilter(e.target.value)
+                  setPageNum(1)
+                  setListLoading(true)
+                  setListError(null)
+                }}
+              >
                 <option value="">All safehouses</option>
                 {safehouses.map(s => <option key={s.safehouseId} value={s.safehouseId}>{s.name}</option>)}
               </select>
-              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+              <select
+                value={statusFilter}
+                onChange={e => {
+                  setStatusFilter(e.target.value)
+                  setPageNum(1)
+                  setListLoading(true)
+                  setListError(null)
+                }}
+              >
                 <option value="">All statuses</option>
                 <option value="Active">Active</option>
                 <option value="Closed">Closed</option>
@@ -119,7 +139,17 @@ export default function CaseloadPage() {
             {listError && <p className="admin-error" style={{ padding: '1rem' }}>{listError}</p>}
             {!listLoading && !listError && residents.length === 0 && <div className="empty-state">No residents found.</div>}
             {!listLoading && !listError && residents.map(r => (
-              <button key={r.residentId} className={`cl-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`} onClick={() => setSelected(r)}>
+              <button
+                key={r.residentId}
+                className={`cl-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`}
+                onClick={() => {
+                  setSelected(r)
+                  setVisits([])
+                  setSessions([])
+                  setVisitsLoading(true)
+                  setSessionsLoading(true)
+                }}
+              >
                 <span className="cl-row__id">{r.caseControlNo}</span>
                 <span className="cl-row__meta">
                   {statusBadge(r.caseStatus)}
@@ -131,8 +161,24 @@ export default function CaseloadPage() {
           </div>
           <div className="cl-pager">
             <span className="cl-pager__info">Page {pageNum} of {totalPages}, {totalCount} records</span>
-            <button className="cl-pager__btn" disabled={pageNum <= 1} onClick={() => setPageNum(p => p - 1)}>Prev</button>
-            <button className="cl-pager__btn" disabled={pageNum >= totalPages} onClick={() => setPageNum(p => p + 1)}>Next</button>
+            <button
+              className="cl-pager__btn"
+              disabled={pageNum <= 1}
+              onClick={() => {
+                setPageNum(p => p - 1)
+                setListLoading(true)
+                setListError(null)
+              }}
+            >Prev</button>
+            <button
+              className="cl-pager__btn"
+              disabled={pageNum >= totalPages}
+              onClick={() => {
+                setPageNum(p => p + 1)
+                setListLoading(true)
+                setListError(null)
+              }}
+            >Next</button>
           </div>
         </div>
 
@@ -142,7 +188,7 @@ export default function CaseloadPage() {
             <>
               {triageCard && (
                 <div className="cl-ml-box">
-                  <p className="cl-ml-box__label">ML Triage Signal</p>
+                  <p className="cl-ml-box__label">Resident Signal</p>
                   <p>{triageCard.plainLanguage} {triageCard.detail}</p>
                 </div>
               )}

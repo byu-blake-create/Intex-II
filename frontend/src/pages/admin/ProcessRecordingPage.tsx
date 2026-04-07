@@ -5,6 +5,8 @@ import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
 import type { Resident, ProcessRecording } from '../../types/domain'
 import './ProcessRecordingPage.css'
 
+const PAGE_SIZE = 30
+
 function statusBadge(status: string | null | undefined) {
   if (!status) return <span className="badge badge--gray">Unknown</span>
   return status.toLowerCase() === 'active'
@@ -14,48 +16,81 @@ function statusBadge(status: string | null | undefined) {
 
 export default function ProcessRecordingPage() {
   const [residents, setResidents] = useState<Resident[]>([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [pageNum, setPageNum] = useState(1)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Resident | null>(null)
   const [sessions, setSessions] = useState<ProcessRecording[]>([])
   const [sessionsLoading, setSessionsLoading] = useState(false)
   const [listLoading, setListLoading] = useState(true)
+  const [listError, setListError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchResidents({ pageSize: 200 })
-      .then(r => setResidents(r.items))
-      .catch(() => {})
-      .finally(() => setListLoading(false))
-  }, [])
+    let mounted = true
+    fetchResidents({ pageNum, pageSize: PAGE_SIZE, search: search || undefined })
+      .then(r => {
+        if (mounted) {
+          setResidents(r.items)
+          setTotalCount(r.totalCount)
+        }
+      })
+      .catch(() => {
+        if (mounted) setListError('Failed to load residents.')
+      })
+      .finally(() => {
+        if (mounted) setListLoading(false)
+      })
+    return () => { mounted = false }
+  }, [pageNum, search])
 
   useEffect(() => {
-    if (!selected) { setSessions([]); return }
-    setSessionsLoading(true)
+    if (!selected) return
     fetchProcessRecordings(selected.residentId)
       .then(r => setSessions(r.items))
       .catch(() => setSessions([]))
       .finally(() => setSessionsLoading(false))
   }, [selected])
 
-  const filtered = search
-    ? residents.filter(r => r.caseControlNo.toLowerCase().includes(search.toLowerCase()))
-    : residents
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   return (
     <AdminLayout>
       <div className="pr-layout">
         <div className="pr-sidebar">
           <div className="pr-sidebar__header">
-            <input className="pr-search" placeholder="Search residents..." value={search} onChange={e => setSearch(e.target.value)} />
+            <input
+              className="pr-search"
+              placeholder="Search residents..."
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value)
+                setPageNum(1)
+              }}
+            />
           </div>
           <div className="pr-list">
             {listLoading && <div className="inline-loading">Loading...</div>}
-            {!listLoading && filtered.length === 0 && <div className="empty-state">No residents found.</div>}
-            {!listLoading && filtered.map(r => (
-              <button key={r.residentId} className={`pr-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`} onClick={() => setSelected(r)}>
+            {listError && <p className="admin-error" style={{ padding: '1rem' }}>{listError}</p>}
+            {!listLoading && !listError && residents.length === 0 && <div className="empty-state">No residents found.</div>}
+            {!listLoading && !listError && residents.map(r => (
+              <button
+                key={r.residentId}
+                className={`pr-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`}
+                onClick={() => {
+                  setSelected(r)
+                  setSessions([])
+                  setSessionsLoading(true)
+                }}
+              >
                 <span className="pr-row__id">{r.caseControlNo}</span>
                 <span className="pr-row__meta">{statusBadge(r.caseStatus)}</span>
               </button>
             ))}
+          </div>
+          <div className="pr-pager">
+            <span className="pr-pager__info">Page {pageNum} of {totalPages}, {totalCount} records</span>
+            <button className="pr-pager__btn" disabled={pageNum <= 1} onClick={() => setPageNum(p => p - 1)}>Prev</button>
+            <button className="pr-pager__btn" disabled={pageNum >= totalPages} onClick={() => setPageNum(p => p + 1)}>Next</button>
           </div>
         </div>
 

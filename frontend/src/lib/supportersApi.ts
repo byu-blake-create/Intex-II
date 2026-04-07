@@ -2,11 +2,18 @@ import { apiGet } from './api'
 import type { PaginatedList } from '../types/api'
 import type { Supporter } from '../types/domain'
 
-export function supportersUrl(params: { pageNum?: number; pageSize?: number; supporterType?: string; status?: string }) {
+export function supportersUrl(params: {
+  pageNum?: number
+  pageSize?: number
+  supporterType?: string
+  search?: string
+  status?: string
+}) {
   const q = new URLSearchParams()
   if (params.pageNum) q.set('pageNum', String(params.pageNum))
   if (params.pageSize) q.set('pageSize', String(params.pageSize))
   if (params.supporterType) q.set('supporterType', params.supporterType)
+  if (params.search) q.set('search', params.search)
   if (params.status) q.set('status', params.status)
   const qs = q.toString()
   return `/api/supporters${qs ? `?${qs}` : ''}`

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NorthStarShelter.API.Data;
@@ -13,8 +14,21 @@ namespace NorthStarShelter.API.Controllers;
 public class DonationsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly UserManager<AppUser> _userManager;
 
-    public DonationsController(AppDbContext db) => _db = db;
+    public DonationsController(AppDbContext db, UserManager<AppUser> userManager)
+    {
+        _db = db;
+        _userManager = userManager;
+    }
+
+    public record DonorDonationsResponse(
+        int? SupporterId,
+        string DisplayName,
+        string Email,
+        int DonationCount,
+        decimal TotalAmount,
+        PaginatedList<Donation> Donations);
 
     [HttpGet]
     public async Task<ActionResult<PaginatedList<Donation>>> GetList(
@@ -28,6 +42,67 @@ public class DonationsController : ControllerBase
             query = query.Where(d => d.SupporterId == supporterId.Value);
         var (items, total) = await query.ToPageAsync(pageNum, pageSize, cancellationToken);
         return Ok(new PaginatedList<Donation>(items, total));
+    }
+
+    [HttpGet("mine")]
+    [Authorize(Roles = "Donor,Admin,Staff")]
+    public async Task<ActionResult<DonorDonationsResponse>> GetMine(
+        [FromQuery] int pageNum = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        if (!user.SupporterId.HasValue && !string.IsNullOrWhiteSpace(user.Email))
+        {
+            var supporter = await _db.Supporters
+                .OrderBy(s => s.SupporterId)
+                .FirstOrDefaultAsync(s => s.Email == user.Email, cancellationToken);
+
+            if (supporter is not null)
+            {
+                var linkedUserExists = await _db.Users.AnyAsync(
+                    existing => existing.Id != user.Id && existing.SupporterId == supporter.SupporterId,
+                    cancellationToken);
+                if (!linkedUserExists)
+                {
+                    user.SupporterId = supporter.SupporterId;
+                    user.DisplayName ??= supporter.DisplayName;
+                    await _userManager.UpdateAsync(user);
+                }
+            }
+        }
+
+        if (!user.SupporterId.HasValue)
+        {
+            return Ok(new DonorDonationsResponse(
+                null,
+                user.DisplayName ?? user.Email ?? "Donor",
+                user.Email ?? string.Empty,
+                0,
+                0,
+                new PaginatedList<Donation>([], 0)));
+        }
+
+        var donationsQuery = _db.Donations.AsNoTracking()
+            .Where(d => d.SupporterId == user.SupporterId.Value)
+            .OrderByDescending(d => d.DonationDate)
+            .ThenByDescending(d => d.DonationId);
+
+        var totalAmount = await donationsQuery.SumAsync(d => d.Amount ?? 0, cancellationToken);
+        var (items, total) = await donationsQuery.ToPageAsync(pageNum, pageSize, cancellationToken);
+
+        return Ok(new DonorDonationsResponse(
+            user.SupporterId,
+            user.DisplayName ?? user.Email ?? "Donor",
+            user.Email ?? string.Empty,
+            total,
+            totalAmount,
+            new PaginatedList<Donation>(items, total)));
     }
 
     [HttpGet("{id:int}")]

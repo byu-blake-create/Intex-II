@@ -9,5 +9,7 @@ services:
         value: Production
       - key: ConnectionStrings__DefaultConnection
         sync: false
+      - key: Seed__AdminPassword
+        sync: false
       - key: FrontendUrl
         sync: false
