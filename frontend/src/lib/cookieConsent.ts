@@ -8,21 +8,6 @@ const OPTIONAL_ANALYTICS_COOKIE_PREFIXES = ['_ga', '_gid', '_gat']
 
 export type ConsentDecision = 'accepted' | 'declined'
 
-function readCookie(name: string): string | null {
-  const entry = document.cookie
-    .split(';')
-    .map(cookie => cookie.trim())
-    .find(cookie => cookie.startsWith(`${name}=`))
-
-  return entry ? decodeURIComponent(entry.slice(name.length + 1)) : null
-}
-
-function writeCookie(name: string, value: string) {
-  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
-  // Session cookie: expires when the browser session ends.
-  document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; SameSite=Lax${secure}`
-}
-
 function expireCookie(name: string, domain?: string) {
   const domainAttr = domain ? `; Domain=${domain}` : ''
   const secure = window.location.protocol === 'https:' ? '; Secure' : ''
