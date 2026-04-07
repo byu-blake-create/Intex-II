@@ -33,6 +33,21 @@ public class AppDbContext : IdentityDbContext<IdentityUser>
     {
         base.OnModelCreating(builder);
 
+        // Several imported Lighthouse-style entities use primary key names that
+        // do not match EF Core's default `<TypeName>Id` convention, so define
+        // them explicitly to keep model validation stable in production.
+        builder.Entity<DonationAllocation>().HasKey(a => a.AllocationId);
+        builder.Entity<HealthWellbeingRecord>().HasKey(h => h.HealthRecordId);
+        builder.Entity<HomeVisitation>().HasKey(v => v.VisitationId);
+        builder.Entity<InKindDonationItem>().HasKey(i => i.ItemId);
+        builder.Entity<IncidentReport>().HasKey(i => i.IncidentId);
+        builder.Entity<InterventionPlan>().HasKey(p => p.PlanId);
+        builder.Entity<PartnerAssignment>().HasKey(a => a.AssignmentId);
+        builder.Entity<ProcessRecording>().HasKey(p => p.RecordingId);
+        builder.Entity<PublicImpactSnapshot>().HasKey(p => p.SnapshotId);
+        builder.Entity<SafehouseMonthlyMetric>().HasKey(m => m.MetricId);
+        builder.Entity<SocialMediaPost>().HasKey(p => p.PostId);
+
         builder.Entity<Resident>()
             .HasOne(r => r.Safehouse)
             .WithMany(s => s.Residents)
