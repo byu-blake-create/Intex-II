@@ -11,15 +11,13 @@ import LoginPage from './pages/public/LoginPage'
 // Lazy-loaded pages — split into separate chunks
 const ImpactPage = lazy(() => import('./pages/public/ImpactPage'))
 const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage'))
-
-// Staff pages
-import AdminDashboard from './pages/admin/AdminDashboard'
-import DonorsPage from './pages/admin/DonorsPage'
-import CaseloadPage from './pages/admin/CaseloadPage'
-import ProcessRecordingPage from './pages/admin/ProcessRecordingPage'
-import VisitationsPage from './pages/admin/VisitationsPage'
-import ReportsPage from './pages/admin/ReportsPage'
-import SocialSuitePage from './pages/admin/SocialSuitePage'
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const DonorsPage = lazy(() => import('./pages/admin/DonorsPage'))
+const CaseloadPage = lazy(() => import('./pages/admin/CaseloadPage'))
+const ProcessRecordingPage = lazy(() => import('./pages/admin/ProcessRecordingPage'))
+const VisitationsPage = lazy(() => import('./pages/admin/VisitationsPage'))
+const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'))
+const SocialSuitePage = lazy(() => import('./pages/admin/SocialSuitePage'))
 
 export default function App() {
   return (

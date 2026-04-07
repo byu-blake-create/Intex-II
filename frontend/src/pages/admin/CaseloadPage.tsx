@@ -18,6 +18,15 @@ function statusBadge(status: string | null | undefined) {
   return <span className="badge badge--blue">{status}</span>
 }
 
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(id)
+  }, [value, delay])
+  return debounced
+}
+
 export default function CaseloadPage() {
   const [residents, setResidents] = useState<Resident[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -35,6 +44,9 @@ export default function CaseloadPage() {
   const [listError, setListError] = useState<string | null>(null)
   const [triageCard, setTriageCard] = useState<AdminDashboardCard | null>(null)
 
+  // Debounce text input to avoid an API call per keystroke
+  const debouncedSearch = useDebounce(search, 350)
+
   useEffect(() => {
     fetchSafehouses().then(r => setSafehouses(r.items)).catch(() => {})
     fetchAdminDashboard().then(d => {
@@ -43,7 +55,7 @@ export default function CaseloadPage() {
     }).catch(() => {})
   }, [])
 
-  useEffect(() => { setPageNum(1) }, [search, safehouseFilter, statusFilter])
+  useEffect(() => { setPageNum(1) }, [debouncedSearch, safehouseFilter, statusFilter])
 
   useEffect(() => {
     let mounted = true
@@ -54,13 +66,13 @@ export default function CaseloadPage() {
       pageSize: PAGE_SIZE,
       safehouseId: safehouseFilter ? Number(safehouseFilter) : undefined,
       caseStatus: statusFilter || undefined,
-      search: search || undefined,
+      search: debouncedSearch || undefined,
     })
       .then(r => { if (mounted) { setResidents(r.items); setTotalCount(r.totalCount) } })
       .catch(() => { if (mounted) setListError('Failed to load residents.') })
       .finally(() => { if (mounted) setListLoading(false) })
     return () => { mounted = false }
-  }, [pageNum, search, safehouseFilter, statusFilter])
+  }, [pageNum, debouncedSearch, safehouseFilter, statusFilter])
 
   useEffect(() => {
     if (!selected) { setVisits([]); setSessions([]); return }
