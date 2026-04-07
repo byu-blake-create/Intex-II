@@ -19,6 +19,13 @@ const DEMO_ACCOUNTS = [
     password: 'NorthStarDonor123',
     note: 'Returns to home and unlocks the Donations tab.',
   },
+  {
+    label: 'Donor testing fallback',
+    role: 'Dev testing only',
+    email: 'demo.donor@northstarshelter.org',
+    password: 'TestDonor123!',
+    note: 'Use this if backend auth is down during local testing.',
+  },
 ]
 
 export default function LoginPage() {
