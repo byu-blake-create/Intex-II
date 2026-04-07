@@ -10,6 +10,7 @@ import LoginPage from './pages/public/LoginPage'
 
 // Lazy-loaded pages — split into separate chunks
 const ImpactPage = lazy(() => import('./pages/public/ImpactPage'))
+const DonationsPage = lazy(() => import('./pages/public/DonationsPage'))
 const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage'))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const DonorsPage = lazy(() => import('./pages/admin/DonorsPage'))
@@ -28,17 +29,18 @@ export default function App() {
         {/* Public */}
         <Route path="/" element={<HomePage />} />
         <Route path="/impact" element={<ImpactPage />} />
+        <Route path="/donations" element={<ProtectedRoute requiredRole="Donor"><DonationsPage /></ProtectedRoute>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
         {/* Shared staff workspace */}
-        <Route path="/staff" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-        <Route path="/staff/donors" element={<ProtectedRoute><DonorsPage /></ProtectedRoute>} />
-        <Route path="/staff/caseload" element={<ProtectedRoute><CaseloadPage /></ProtectedRoute>} />
-        <Route path="/staff/process-recording" element={<ProtectedRoute><ProcessRecordingPage /></ProtectedRoute>} />
-        <Route path="/staff/visitations" element={<ProtectedRoute><VisitationsPage /></ProtectedRoute>} />
-        <Route path="/staff/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
-        <Route path="/staff/social" element={<ProtectedRoute><SocialSuitePage /></ProtectedRoute>} />
+        <Route path="/staff" element={<ProtectedRoute requiredRole="Staff"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/staff/donors" element={<ProtectedRoute requiredRole="Staff"><DonorsPage /></ProtectedRoute>} />
+        <Route path="/staff/caseload" element={<ProtectedRoute requiredRole="Staff"><CaseloadPage /></ProtectedRoute>} />
+        <Route path="/staff/process-recording" element={<ProtectedRoute requiredRole="Staff"><ProcessRecordingPage /></ProtectedRoute>} />
+        <Route path="/staff/visitations" element={<ProtectedRoute requiredRole="Staff"><VisitationsPage /></ProtectedRoute>} />
+        <Route path="/staff/reports" element={<ProtectedRoute requiredRole="Staff"><ReportsPage /></ProtectedRoute>} />
+        <Route path="/staff/social" element={<ProtectedRoute requiredRole="Staff"><SocialSuitePage /></ProtectedRoute>} />
 
         {/* Keep older links working while the app standardizes on /staff. */}
         <Route path="/admin" element={<Navigate to="/staff" replace />} />

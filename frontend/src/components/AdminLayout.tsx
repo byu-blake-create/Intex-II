@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../contexts/auth'
 import './AdminLayout.css'
 
 const primaryLinks = [
@@ -35,6 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [theme])
 
   const workbenchLabel = workbenchLabels[pathname]
+  const nextTheme = theme === 'dark' ? 'light' : 'dark'
 
   return (
     <div className="admin-layout" data-theme={theme}>
@@ -71,24 +72,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           )}
 
-          <div className="admin-layout__theme-switch" role="group" aria-label="Color theme">
-            <button
-              type="button"
-              className={theme === 'light' ? 'is-active' : undefined}
-              onClick={() => setTheme('light')}
-              aria-pressed={theme === 'light'}
-            >
-              Light
-            </button>
-            <button
-              type="button"
-              className={theme === 'dark' ? 'is-active' : undefined}
-              onClick={() => setTheme('dark')}
-              aria-pressed={theme === 'dark'}
-            >
-              Dark
-            </button>
-          </div>
+          <button
+            type="button"
+            className="admin-layout__theme-toggle"
+            onClick={() => setTheme(nextTheme)}
+            aria-label={`Switch to ${nextTheme} mode`}
+            title={`Switch to ${nextTheme} mode`}
+          >
+            <span className="admin-layout__theme-toggle-track" aria-hidden="true">
+              <span className="admin-layout__theme-toggle-stars">
+                <span />
+                <span />
+                <span />
+              </span>
+              <span className="admin-layout__theme-toggle-clouds">
+                <span />
+                <span />
+              </span>
+              <span className="admin-layout__theme-toggle-thumb">
+                <span className="admin-layout__theme-toggle-sun" />
+                <span className="admin-layout__theme-toggle-moon" />
+              </span>
+            </span>
+          </button>
 
           <div className="admin-layout__user">
             <span className="admin-layout__email">{user?.email}</span>

@@ -1,10 +1,30 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../contexts/auth'
+import { usePublicTheme } from '../../lib/usePublicTheme'
+import './HomePage.css'
+
+const DEMO_ACCOUNTS = [
+  {
+    label: 'Admin access',
+    role: 'Admin workspace',
+    email: 'admin@northstarshelter.org',
+    password: 'NorthStarAdmin123',
+    note: 'Returns to home and unlocks the Admin tab.',
+  },
+  {
+    label: 'Donor access',
+    role: 'Donor portal',
+    email: 'donor@northstarshelter.org',
+    password: 'NorthStarDonor123',
+    note: 'Returns to home and unlocks the Donations tab.',
+  },
+]
 
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const { theme } = usePublicTheme()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -17,7 +37,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password)
-      navigate('/staff')
+      navigate('/')
     } catch {
       setError('Invalid email or password.')
     } finally {
@@ -26,7 +46,7 @@ export default function LoginPage() {
   }
 
   return (
-    <>
+    <div className="public-site login-page" data-theme={theme}>
       <Link
         to="/"
         style={{
@@ -36,14 +56,14 @@ export default function LoginPage() {
           position: 'fixed',
           top: '1.25rem',
           left: '1.25rem',
-          color: '#221813',
+          color: 'var(--page-ink)',
           textDecoration: 'none',
           fontWeight: 700,
           padding: '0.7rem 1rem',
           borderRadius: '999px',
-          border: '1px solid rgba(82, 60, 47, 0.14)',
-          background: 'rgba(255, 250, 244, 0.92)',
-          boxShadow: '0 12px 30px rgba(61, 36, 20, 0.08)',
+          border: '1px solid var(--page-auth-border)',
+          background: 'var(--page-auth-bg)',
+          boxShadow: 'var(--page-shadow)',
           backdropFilter: 'blur(12px)',
           zIndex: 10,
         }}
@@ -51,118 +71,189 @@ export default function LoginPage() {
         <span aria-hidden="true">←</span>
         Back to home
       </Link>
+
       <main
         style={{
-          maxWidth: 520,
+          maxWidth: 1040,
           margin: '0 auto',
-          padding: '4rem 1.25rem 5rem',
+          padding: '4.5rem 1.25rem 5rem',
         }}
       >
-      <p
-        style={{
-          marginBottom: '0.75rem',
-          textTransform: 'uppercase',
-          letterSpacing: '0.14em',
-          fontSize: '0.78rem',
-        }}
-      >
-        Staff access
-      </p>
-      <h1 style={{ marginBottom: '1rem' }}>Sign in to the North Star Shelter staff workspace</h1>
-      <p style={{ marginBottom: '2rem', lineHeight: 1.7 }}>
-        Staff and admins share the same internal workspace. This temporary login is only here
-        until Supabase-backed authentication is connected.
-      </p>
-
-      {import.meta.env.DEV && (
         <div
           style={{
-            marginBottom: '1.5rem',
-            padding: '1rem 1.1rem',
-            borderRadius: '18px',
-            border: '1px solid rgba(82, 60, 47, 0.14)',
-            background: 'rgba(255, 250, 244, 0.9)',
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1.05fr) minmax(320px, 0.95fr)',
+            gap: '1.5rem',
+            alignItems: 'start',
           }}
         >
-          <p style={{ marginBottom: '0.5rem', fontWeight: 700, color: '#221813' }}>
-            Local development login
-          </p>
-          <p style={{ marginBottom: '0.35rem', fontFamily: 'monospace' }}>
-            Email: staff@northstarshelter.org
-          </p>
-          <p style={{ margin: 0, fontFamily: 'monospace' }}>Password: NorthStarStaff123</p>
+          <section
+            className="login-page__feature-card"
+          >
+            <p
+              style={{
+                margin: 0,
+                textTransform: 'uppercase',
+                letterSpacing: '0.14em',
+                fontSize: '0.78rem',
+                color: 'var(--page-accent-deep)',
+                fontWeight: 800,
+              }}
+            >
+              Account access
+            </p>
+            <h1 style={{ margin: 0 }}>Sign in to continue with North Star Shelter</h1>
+            <p style={{ margin: 0, lineHeight: 1.8 }}>
+              Sign in returns you to the home page and unlocks the tab that matches your role.
+              Admin users will see an <strong>Admin</strong> tab. Donor users will see a
+              <strong> Donations</strong> tab.
+            </p>
+
+            <div
+              style={{
+                display: 'grid',
+                gap: '0.9rem',
+                marginTop: '0.25rem',
+              }}
+            >
+              {DEMO_ACCOUNTS.map(account => (
+                <button
+                  key={account.email}
+                  type="button"
+                  onClick={() => {
+                    setEmail(account.email)
+                    setPassword(account.password)
+                    setError('')
+                  }}
+                  style={{
+                    display: 'grid',
+                    gap: '0.35rem',
+                    textAlign: 'left',
+                    padding: '1rem 1.1rem',
+                    borderRadius: '20px',
+                    border: '1px solid var(--page-chip-border)',
+                    background: 'var(--page-card-bg)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span style={{ fontWeight: 800, color: 'var(--page-ink)' }}>{account.label}</span>
+                  <span style={{ color: 'var(--page-muted)', fontSize: '0.92rem' }}>{account.role}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: '0.84rem', color: 'var(--page-accent-deep)' }}>
+                    {account.email}
+                  </span>
+                  <span style={{ color: 'var(--page-muted)', fontSize: '0.84rem' }}>{account.note}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section
+            className="login-page__main-card"
+          >
+            <div style={{ display: 'grid', gap: '0.35rem' }}>
+              <p
+                style={{
+                  margin: 0,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.14em',
+                  fontSize: '0.76rem',
+                  color: 'var(--page-accent-deep)',
+                  fontWeight: 800,
+                }}
+              >
+                Sign In
+              </p>
+              <p style={{ margin: 0, lineHeight: 1.7 }}>
+                Use your account credentials to unlock your role-specific experience.
+              </p>
+            </div>
+
+            <form
+              onSubmit={handleSubmit}
+              style={{
+                display: 'grid',
+                gap: '1rem',
+              }}
+            >
+              <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
+                <span>Email</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  style={{
+                    padding: '0.9rem 1rem',
+                    borderRadius: '14px',
+                    border: '1px solid var(--page-chip-border)',
+                    background: 'var(--page-card-bg)',
+                    color: 'var(--page-ink)',
+                  }}
+                />
+              </label>
+
+              <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
+                <span>Password</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  style={{
+                    padding: '0.9rem 1rem',
+                    borderRadius: '14px',
+                    border: '1px solid var(--page-chip-border)',
+                    background: 'var(--page-card-bg)',
+                    color: 'var(--page-ink)',
+                  }}
+                />
+              </label>
+
+              {error && (
+                <p role="alert" style={{ margin: 0, color: 'var(--page-accent)' }}>
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                style={{
+                  padding: '0.95rem 1.2rem',
+                  border: 'none',
+                  borderRadius: '999px',
+                  background: 'var(--page-cta-bg)',
+                  color: 'var(--page-cta-ink)',
+                  fontWeight: 700,
+                  cursor: submitting ? 'progress' : 'pointer',
+                  opacity: submitting ? 0.78 : 1,
+                }}
+              >
+                {submitting ? 'Signing in...' : 'Sign In'}
+              </button>
+            </form>
+
+            <div
+              style={{
+                padding: '1rem 1.1rem',
+                borderRadius: '18px',
+                border: '1px solid var(--page-chip-border)',
+                background: 'var(--page-card-bg)',
+              }}
+            >
+              <p style={{ marginBottom: '0.5rem', fontWeight: 700, color: 'var(--page-ink)' }}>
+                How it works
+              </p>
+              <p style={{ margin: 0, lineHeight: 1.7 }}>
+                After sign-in, the home page becomes your entry point. You will see either the
+                Admin tab or the Donations tab depending on your account role.
+              </p>
+            </div>
+          </section>
         </div>
-      )}
-
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: 'grid',
-          gap: '1rem',
-          padding: '1.5rem',
-          borderRadius: '24px',
-          background: 'rgba(255, 250, 244, 0.72)',
-          border: '1px solid rgba(82, 60, 47, 0.14)',
-        }}
-      >
-        <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
-          <span>Email</span>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-            style={{
-              padding: '0.9rem 1rem',
-              borderRadius: '14px',
-              border: '1px solid rgba(82, 60, 47, 0.16)',
-              background: '#fffdf9',
-            }}
-          />
-        </label>
-
-        <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
-          <span>Password</span>
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-            style={{
-              padding: '0.9rem 1rem',
-              borderRadius: '14px',
-              border: '1px solid rgba(82, 60, 47, 0.16)',
-              background: '#fffdf9',
-            }}
-          />
-        </label>
-
-        {error && (
-          <p role="alert" style={{ margin: 0, color: '#9f2f1f' }}>
-            {error}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={submitting}
-          style={{
-            padding: '0.95rem 1.2rem',
-            border: 'none',
-            borderRadius: '999px',
-            background: '#221813',
-            color: '#fff9f5',
-            fontWeight: 700,
-            cursor: submitting ? 'progress' : 'pointer',
-            opacity: submitting ? 0.78 : 1,
-          }}
-        >
-          {submitting ? 'Signing in...' : 'Sign In'}
-        </button>
-      </form>
       </main>
-    </>
+    </div>
   )
 }
