@@ -3,12 +3,14 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/auth'
 import './AdminLayout.css'
 
-const workbenchLabels: Record<string, string> = {
-  '/admin/donors': 'Donors',
-  '/admin/caseload': 'Caseload',
-  '/admin/process-recording': 'Process recording',
-  '/admin/visitations': 'Visitations',
-}
+const WORKBENCH_ROUTES = [
+  { to: '/admin/donors', label: 'Donors' },
+  { to: '/admin/caseload', label: 'Caseload' },
+  { to: '/admin/process-recording', label: 'Process Recording' },
+  { to: '/admin/visitations', label: 'Visitations' },
+]
+
+const WORKBENCH_PATHS = WORKBENCH_ROUTES.map(r => r.to)
 
 type AdminTheme = 'dark' | 'light'
 
@@ -29,12 +31,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     window.localStorage.setItem(ADMIN_THEME_STORAGE_KEY, theme)
   }, [theme])
 
-  const workbenchLabel = workbenchLabels[pathname]
+  const isOnWorkbench = WORKBENCH_PATHS.some(p => pathname.startsWith(p))
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   const primaryLinks = [
-    { to: '/admin', label: 'Dashboard' },
-    { to: '/admin/social', label: 'Social Suite' },
-    ...(isAdmin ? [{ to: '/admin/database', label: 'Database' }] : []),
+    { to: '/admin', label: 'Dashboard', end: true },
+    { to: '/admin/donors', label: 'Workbenches', end: false, matchPrefix: '/admin/donors,/admin/caseload,/admin/process-recording,/admin/visitations' },
+    { to: '/admin/social', label: 'Social Suite', end: false },
+    ...(isAdmin ? [{ to: '/admin/database', label: 'Database', end: false }] : []),
   ]
 
   return (
@@ -53,8 +56,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NavLink
               key={link.to}
               to={link.to}
-              end={link.to === '/admin'}
-              className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+              end={link.end}
+              className={() => {
+                if (link.matchPrefix) {
+                  return isOnWorkbench ? 'is-active' : undefined
+                }
+                return undefined
+              }}
             >
               {link.label}
             </NavLink>
@@ -62,16 +70,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="admin-layout__actions">
-          {workbenchLabel && (
-            <div className="admin-layout__context">
-              <span className="admin-layout__context-label">Workbench</span>
-              <span className="admin-layout__context-value">{workbenchLabel}</span>
-              <Link to="/admin" className="admin-layout__context-link">
-                Back to dashboard
-              </Link>
-            </div>
-          )}
-
           <button
             type="button"
             className="admin-layout__theme-toggle"
@@ -104,6 +102,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
       </header>
+
+      {isOnWorkbench && (
+        <nav className="admin-layout__workbench-subnav" aria-label="Workbench">
+          {WORKBENCH_ROUTES.map(link => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
+      )}
+
       <div className="admin-layout__body">{children}</div>
     </div>
   )
