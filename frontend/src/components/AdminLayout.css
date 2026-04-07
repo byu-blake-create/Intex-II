@@ -435,6 +435,15 @@
   transform: translateY(-1px);
 }
 
+.admin-layout__workbench-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: min(1220px, calc(100% - 32px));
+  margin: 0.75rem auto 0;
+  padding: 0 0.5rem;
+}
+
 .admin-layout__body {
   flex: 1;
   padding: 1.5rem;

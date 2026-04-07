@@ -61,14 +61,37 @@ public class ReportsController : ControllerBase
         IReadOnlyList<CommandCenterPriorityDto> Priorities,
         IReadOnlyList<CommandCenterLaneDto> Lanes);
 
+    // Returns the first day of the month after the latest recorded data date.
+    // This lets the dashboard behave as if "today" is just after the data ends,
+    // preventing all time-windowed queries from returning zero because real UTC now
+    // is far ahead of the data set.
+    private async Task<DateOnly> GetReferenceDateAsync(CancellationToken ct)
+    {
+        // Anchor to donations — they drive the 30/90-day donor windows and tend to
+        // lag behind visit/session data. Using a newer table's max date would push
+        // the window forward and make donation queries return zero.
+        var actualToday = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var latestDonation = await _db.Donations.AsNoTracking()
+            .Where(d => d.DonationDate != null && d.DonationDate <= actualToday)
+            .MaxAsync(d => (DateOnly?)d.DonationDate, ct);
+
+        if (!latestDonation.HasValue)
+            return actualToday;
+
+        // Step to the first of the month after the latest donation month
+        return new DateOnly(latestDonation.Value.Year, latestDonation.Value.Month, 1).AddMonths(1);
+    }
+
     [HttpGet("summary")]
     [AllowAnonymous]
     [ResponseCache(Duration = 60)]
     public async Task<ActionResult<SummaryDto>> Summary(CancellationToken cancellationToken)
     {
-        var since = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30));
-        var from = DateOnly.FromDateTime(DateTime.UtcNow);
-        var to = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(60));
+        var referenceDate = await GetReferenceDateAsync(cancellationToken);
+        var since = referenceDate.AddDays(-30);
+        var from = referenceDate;
+        var to = referenceDate.AddDays(60);
 
         var row = await _db.Database
             .SqlQueryRaw<SummaryRow>(
@@ -93,12 +116,11 @@ public class ReportsController : ControllerBase
     [ResponseCache(Duration = 60)]
     public async Task<ActionResult<CommandCenterDto>> CommandCenter(CancellationToken cancellationToken)
     {
-        var now = DateTime.UtcNow;
-        var today = DateOnly.FromDateTime(now);
+        var today = await GetReferenceDateAsync(cancellationToken);
         var recentDonationsSince = today.AddDays(-30);
         var outreachSince = today.AddDays(-90);
         var recentVisitSince = today.AddDays(-90);
-        var snapshotLabel = $"Updated {now:MMM d, yyyy}";
+        var snapshotLabel = $"Data through {today.AddDays(-1):MMM yyyy}";
 
         var activeResidents = await _db.Residents.AsNoTracking()
             .CountAsync(r => r.CaseStatus == "Active", cancellationToken);
@@ -308,10 +330,9 @@ public class ReportsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         months = Math.Clamp(months, 1, 36);
-        var utcNow = DateTime.UtcNow;
-        var currentUtcMonthStart = new DateOnly(utcNow.Year, utcNow.Month, 1);
-        var start = currentUtcMonthStart.AddMonths(-months);
-        var endExclusive = currentUtcMonthStart;
+        var referenceDate = await GetReferenceDateAsync(cancellationToken);
+        var start = referenceDate.AddMonths(-months);
+        var endExclusive = referenceDate;
 
         var grouped = await _db.Donations.AsNoTracking()
             .Where(d => d.DonationDate >= start && d.DonationDate < endExclusive && d.Amount != null)
