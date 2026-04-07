@@ -38,10 +38,10 @@ public class ReportsController : ControllerBase
             .SqlQueryRaw<SummaryRow>(
                 """
                 SELECT
-                    (SELECT count(*)::int FROM residents WHERE case_status = 'Active') AS active_residents,
-                    (SELECT count(*)::int FROM donations WHERE donation_date >= {0}) AS donation_count,
-                    (SELECT coalesce(sum(amount), 0) FROM donations WHERE donation_date >= {0}) AS donation_sum,
-                    (SELECT count(*)::int FROM intervention_plans WHERE case_conference_date >= {1} AND case_conference_date <= {2}) AS conferences
+                    (SELECT CAST(count(*) AS int) FROM Residents WHERE CaseStatus = 'Active') AS ActiveResidents,
+                    (SELECT CAST(count(*) AS int) FROM Donations WHERE DonationDate >= {0}) AS DonationCount,
+                    (SELECT ISNULL(SUM(Amount), 0) FROM Donations WHERE DonationDate >= {0}) AS DonationSum,
+                    (SELECT CAST(count(*) AS int) FROM InterventionPlans WHERE CaseConferenceDate >= {1} AND CaseConferenceDate <= {2}) AS Conferences
                 """, since, from, to)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -71,7 +71,7 @@ public class ReportsController : ControllerBase
         months = Math.Clamp(months, 1, 36);
         var start = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-months));
 
-        // Group and sum entirely in Postgres — never pull individual rows.
+        // Group and sum entirely in SQL Server — never pull individual rows.
         var grouped = await _db.Donations.AsNoTracking()
             .Where(d => d.DonationDate >= start && d.Amount != null)
             .GroupBy(d => new { d.DonationDate!.Value.Year, d.DonationDate!.Value.Month })

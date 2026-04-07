@@ -18,8 +18,7 @@ builder.Services.AddSwaggerGen();
 if (!string.IsNullOrWhiteSpace(connectionString))
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString)
-            .UseSnakeCaseNamingConvention());
+        options.UseSqlServer(connectionString));
 }
 
 // Temporary cookie auth lets the staff workspace function before Supabase is wired in.
@@ -68,6 +67,13 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Create tables on first run (safe for fresh Azure SQL databases).
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetService<AppDbContext>();
+    db?.Database.EnsureCreated();
+}
 
 if (app.Environment.IsDevelopment())
 {
