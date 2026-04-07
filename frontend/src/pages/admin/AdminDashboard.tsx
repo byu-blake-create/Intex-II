@@ -79,7 +79,9 @@ export default function AdminDashboard() {
     }
   }, [])
 
-  const alertCards = dashData?.cards.filter(c => c.tone === 'alert') ?? []
+  const allAlertCards = dashData?.cards.filter(c => c.tone === 'alert') ?? []
+  const safetyAlertCards = allAlertCards.filter(c => c.route.includes('caseload') || c.route.includes('visitations'))
+  const attentionCards = allAlertCards.filter(c => !c.route.includes('caseload') && !c.route.includes('visitations'))
 
   return (
     <AdminLayout>
@@ -100,11 +102,11 @@ export default function AdminDashboard() {
         {error && <p className="dash__error" role="alert">{error}</p>}
 
         {/* Safety Alerts strip */}
-        {!loading && !error && alertCards.length > 0 && (
+        {!loading && !error && safetyAlertCards.length > 0 && (
           <section className="dash__safety-alerts">
             <span className="dash__safety-label">Safety Alerts</span>
             <div className="dash__safety-strip">
-              {alertCards.map(card => (
+              {safetyAlertCards.map(card => (
                 <div key={card.id} className="dash__safety-item">
                   <span className="dash__safety-item__title">{card.title}</span>
                   <span className="dash__safety-item__value">{card.value}</span>
@@ -149,36 +151,31 @@ export default function AdminDashboard() {
         )}
 
         {/* Action Items / Needs Attention */}
-        {!loading && !error && summary && dashData && (() => {
-          const hasConferences = summary.upcomingCaseConferences > 0
-          const hasAlerts = alertCards.length > 0
-          const hasItems = hasConferences || hasAlerts
-          return (
-            <section className="dash__action-items">
-              <span className="dash__action-label">Needs Attention</span>
-              {hasItems ? (
-                <div className="dash__action-list">
-                  {hasConferences && (
-                    <div className="dash__action-row">
-                      <span className="dash__action-row__text">
-                        {summary.upcomingCaseConferences} upcoming case conference{summary.upcomingCaseConferences !== 1 ? 's' : ''}
-                      </span>
-                      <Link to="/admin/caseload" className="dash__action-row__link">View caseload &rarr;</Link>
-                    </div>
-                  )}
-                  {alertCards.map(card => (
-                    <div key={card.id} className="dash__action-row">
-                      <span className="dash__action-row__text">{card.title}</span>
-                      <Link to={card.route} className="dash__action-row__link">{card.routeLabel} &rarr;</Link>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <span className="dash__action-clear">&#10003; All clear</span>
-              )}
-            </section>
-          )
-        })()}
+        {!loading && !error && summary && (
+          <section className="dash__action-items">
+            <span className="dash__action-label">Needs Attention</span>
+            {(summary.upcomingCaseConferences > 0 || attentionCards.length > 0) ? (
+              <div className="dash__action-list">
+                {summary.upcomingCaseConferences > 0 && (
+                  <div className="dash__action-row">
+                    <span className="dash__action-row__text">
+                      {summary.upcomingCaseConferences} upcoming case conference{summary.upcomingCaseConferences !== 1 ? 's' : ''}
+                    </span>
+                    <Link to="/admin/caseload" className="dash__action-row__link">View caseload &rarr;</Link>
+                  </div>
+                )}
+                {attentionCards.map(card => (
+                  <div key={card.id} className="dash__action-row">
+                    <span className="dash__action-row__text">{card.title}</span>
+                    <Link to={card.route} className="dash__action-row__link">{card.routeLabel} &rarr;</Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className="dash__action-clear">&#10003; All clear</span>
+            )}
+          </section>
+        )}
 
         {/* Signals */}
         {!loading && !error && dashData && dashData.cards.length > 0 && (
