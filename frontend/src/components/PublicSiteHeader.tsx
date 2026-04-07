@@ -21,7 +21,7 @@ export default function PublicSiteHeader({
   return (
     <header className="home-nav">
       <Link className="home-brand" to="/" aria-label="North Star Shelter home">
-        <span className="home-brand__mark">N</span>
+        <img src="/logo.png" alt="" className="home-brand__mark" aria-hidden="true" />
         <span>
           <strong>North Star Shelter</strong>
           <small>Safety-led care and measurable impact</small>
