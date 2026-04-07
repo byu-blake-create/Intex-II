@@ -22,6 +22,9 @@ interface SnapshotWithMetrics {
   effectiveDate: Date
 }
 
+const YEAR_MONTH_PATTERN = /^(\d{4})-(\d{2})$/
+const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
+
 export interface ImpactTrendPoint {
   id: number
   label: string
@@ -39,6 +42,24 @@ export interface ImpactDashboardModel {
   educationDelta: number | null
   healthDelta: number | null
   supportPerResident: number | null
+}
+
+function parseImpactDate(value: string): Date | null {
+  const trimmed = value.trim()
+  const yearMonthMatch = YEAR_MONTH_PATTERN.exec(trimmed)
+  if (yearMonthMatch) {
+    const [, year, month] = yearMonthMatch
+    return new Date(Date.UTC(Number(year), Number(month) - 1, 1, 12))
+  }
+
+  const isoDateMatch = ISO_DATE_PATTERN.exec(trimmed)
+  if (isoDateMatch) {
+    const [, year, month, day] = isoDateMatch
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), 12))
+  }
+
+  const parsed = new Date(trimmed)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
 function coerceNumber(value: unknown): number | null {
@@ -93,9 +114,8 @@ function parseEffectiveDate(snapshot: PublicImpactSnapshot, metrics: ImpactMetri
 
   for (const candidate of candidates) {
     if (!candidate) continue
-    const value = candidate.length === 7 ? `${candidate}-01` : candidate
-    const date = new Date(value)
-    if (!Number.isNaN(date.getTime())) return date
+    const date = parseImpactDate(candidate)
+    if (date) return date
   }
 
   return null
@@ -104,18 +124,17 @@ function parseEffectiveDate(snapshot: PublicImpactSnapshot, metrics: ImpactMetri
 function isMeaningfulSnapshot(metrics: ImpactMetrics): boolean {
   return Boolean(
     (metrics.totalResidents ?? 0) > 0 &&
-      ((metrics.avgHealthScore ?? 0) > 0 ||
-        (metrics.avgEducationProgress ?? 0) > 0 ||
-        (metrics.donationsTotalForMonth ?? 0) > 0),
+      ((metrics.avgHealthScore ?? 0) > 0 || (metrics.avgEducationProgress ?? 0) > 0),
   )
 }
 
 export function formatImpactMonth(value?: string | null): string {
   if (!value) return 'Unknown period'
-  const normalized = value.length === 7 ? `${value}-01` : value
-  const date = new Date(normalized)
-  if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(date)
+  const date = parseImpactDate(value)
+  if (!date) return value
+  return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(
+    date,
+  )
 }
 
 export function formatImpactNumber(value: number, fractionDigits = 0): string {
