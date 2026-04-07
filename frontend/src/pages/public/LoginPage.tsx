@@ -19,7 +19,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false)
 
   function destinationFor(user: AuthUser) {
-    if (user.roles.includes('Staff') || user.roles.includes('Admin')) return '/staff'
+    if (user.roles.includes('Staff') || user.roles.includes('Admin')) return '/admin'
     if (user.roles.includes('Donor')) return '/donations'
     return '/'
   }

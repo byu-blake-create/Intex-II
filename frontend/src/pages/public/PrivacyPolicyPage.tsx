@@ -1,32 +1,9 @@
-import { useEffect, useState } from 'react'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
-import {
-  areOptionalAnalyticsConfigured,
-  CONSENT_EVENT,
-  getConsentDecision,
-  resetConsentDecision,
-  setConsentDecision,
-} from '../../lib/cookieConsent'
 import { usePublicTheme } from '../../lib/usePublicTheme'
 import './PrivacyPolicyPage.css'
 
 export default function PrivacyPolicyPage() {
   const { theme, setTheme } = usePublicTheme()
-  const [consent, setConsent] = useState(getConsentDecision())
-  const analyticsConfigured = areOptionalAnalyticsConfigured()
-
-  useEffect(() => {
-    const sync = () => setConsent(getConsentDecision())
-    window.addEventListener(CONSENT_EVENT, sync)
-    return () => window.removeEventListener(CONSENT_EVENT, sync)
-  }, [])
-
-  const consentStatus =
-    consent === 'accepted'
-      ? 'Optional analytics are allowed for this browser.'
-      : consent === 'declined'
-        ? 'Optional analytics are blocked for this browser.'
-        : 'No optional-cookie choice has been saved for this browser yet.'
 
   return (
     <div className="public-site privacy-site" data-theme={theme}>
@@ -100,27 +77,6 @@ export default function PrivacyPolicyPage() {
               consent by clearing cookies or adjusting your browser.
             </li>
           </ul>
-        </section>
-
-        <section className="privacy-page__panel">
-          <h2>Cookie settings</h2>
-          <p>{consentStatus}</p>
-          <p>
-            {analyticsConfigured
-              ? 'This deployment is configured to load Google Analytics only after consent.'
-              : 'This deployment is not currently configured to load optional analytics, so declining keeps it that way.'}
-          </p>
-          <div className="privacy-page__actions">
-            <button type="button" className="privacy-page__primary" onClick={() => setConsentDecision('accepted')}>
-              Allow optional analytics
-            </button>
-            <button type="button" className="privacy-page__secondary" onClick={() => setConsentDecision('declined')}>
-              Decline non-essential cookies
-            </button>
-            <button type="button" className="privacy-page__secondary" onClick={resetConsentDecision}>
-              Ask me again
-            </button>
-          </div>
         </section>
 
         <section>

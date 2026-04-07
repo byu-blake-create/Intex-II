@@ -1,26 +1,12 @@
 export const CONSENT_COOKIE = 'nss_cookie_consent'
 export const CONSENT_EVENT = 'nss:cookie-consent'
+const CONSENT_SESSION_KEY = 'nss_cookie_consent_session'
 
-const ONE_YEAR = 60 * 60 * 24 * 365
 const ANALYTICS_SCRIPT_ID = 'nss-analytics-script'
 const ANALYTICS_BOOTSTRAP_ID = 'nss-analytics-bootstrap'
 const OPTIONAL_ANALYTICS_COOKIE_PREFIXES = ['_ga', '_gid', '_gat']
 
 export type ConsentDecision = 'accepted' | 'declined'
-
-function readCookie(name: string): string | null {
-  const entry = document.cookie
-    .split(';')
-    .map(cookie => cookie.trim())
-    .find(cookie => cookie.startsWith(`${name}=`))
-
-  return entry ? decodeURIComponent(entry.slice(name.length + 1)) : null
-}
-
-function writeCookie(name: string, value: string, maxAge: number) {
-  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
-  document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`
-}
 
 function expireCookie(name: string, domain?: string) {
   const domainAttr = domain ? `; Domain=${domain}` : ''
@@ -75,7 +61,7 @@ function notifyConsentChanged(decision: ConsentDecision | null) {
 }
 
 export function getConsentDecision(): ConsentDecision | null {
-  const value = readCookie(CONSENT_COOKIE)
+  const value = window.sessionStorage.getItem(CONSENT_SESSION_KEY)
   if (value === 'accepted' || value === 'declined') return value
   return null
 }
@@ -144,7 +130,10 @@ export function syncOptionalAnalytics() {
 }
 
 export function setConsentDecision(decision: ConsentDecision) {
-  writeCookie(CONSENT_COOKIE, decision, ONE_YEAR)
+  // Keep consent to the current browser session only.
+  window.sessionStorage.setItem(CONSENT_SESSION_KEY, decision)
+  // Clear legacy persisted cookie values so older decisions do not suppress the popup.
+  deleteCookieEverywhere(CONSENT_COOKIE)
 
   if (decision === 'accepted') {
     loadAnalyticsIfConfigured()
@@ -160,6 +149,7 @@ export function setConsentDecision(decision: ConsentDecision) {
 }
 
 export function resetConsentDecision() {
+  window.sessionStorage.removeItem(CONSENT_SESSION_KEY)
   deleteCookieEverywhere(CONSENT_COOKIE)
   setAnalyticsDisabled(true)
   removeAnalyticsScript(ANALYTICS_SCRIPT_ID)

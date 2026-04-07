@@ -3,17 +3,11 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/auth'
 import './AdminLayout.css'
 
-const primaryLinks = [
-  { to: '/staff', label: 'Dashboard' },
-  { to: '/staff/reports', label: 'Reports' },
-  { to: '/staff/social', label: 'Social Suite' },
-]
-
 const workbenchLabels: Record<string, string> = {
-  '/staff/donors': 'Donors',
-  '/staff/caseload': 'Caseload',
-  '/staff/process-recording': 'Process recording',
-  '/staff/visitations': 'Visitations',
+  '/admin/donors': 'Donors',
+  '/admin/caseload': 'Caseload',
+  '/admin/process-recording': 'Process recording',
+  '/admin/visitations': 'Visitations',
 }
 
 type AdminTheme = 'dark' | 'light'
@@ -23,6 +17,7 @@ const ADMIN_THEME_STORAGE_KEY = 'admin-theme'
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
   const { user, logout } = useAuth()
+  const isAdmin = user?.roles.includes('Admin') ?? false
   const [theme, setTheme] = useState<AdminTheme>(() => {
     if (typeof window === 'undefined') return 'dark'
 
@@ -36,11 +31,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const workbenchLabel = workbenchLabels[pathname]
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
+  const primaryLinks = [
+    { to: '/admin', label: 'Dashboard' },
+    { to: '/admin/social', label: 'Social Suite' },
+    ...(isAdmin ? [{ to: '/admin/database', label: 'Database' }] : []),
+  ]
 
   return (
     <div className="admin-layout" data-theme={theme}>
       <header className="admin-layout__header">
-        <Link to="/staff" className="admin-layout__brand" aria-label="North Star Shelter dashboard">
+        <Link to="/" className="admin-layout__brand" aria-label="Back to North Star Shelter home">
           <img src="/logo.png" alt="" className="admin-layout__brand-mark" aria-hidden="true" />
           <span className="admin-layout__brand-copy">
             <strong>North Star Shelter</strong>
@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NavLink
               key={link.to}
               to={link.to}
-              end={link.to === '/staff'}
+              end={link.to === '/admin'}
               className={({ isActive }) => (isActive ? 'is-active' : undefined)}
             >
               {link.label}
@@ -66,7 +66,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="admin-layout__context">
               <span className="admin-layout__context-label">Workbench</span>
               <span className="admin-layout__context-value">{workbenchLabel}</span>
-              <Link to="/staff" className="admin-layout__context-link">
+              <Link to="/admin" className="admin-layout__context-link">
                 Back to dashboard
               </Link>
             </div>
