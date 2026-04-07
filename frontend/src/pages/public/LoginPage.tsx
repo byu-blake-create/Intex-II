@@ -206,14 +206,11 @@ export default function LoginPage() {
 
             <form
               onSubmit={handleSubmit}
-              style={{
-                display: 'grid',
-                gap: '1rem',
-              }}
+              className="login-page__form"
             >
               {mode === 'register' && (
-                <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
-                  <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
+                <div className="login-page__name-grid">
+                  <label className="login-page__field">
                     <span>First name</span>
                     <input
                       type="text"
@@ -221,17 +218,11 @@ export default function LoginPage() {
                       onChange={e => setFirstName(e.target.value)}
                       required
                       autoComplete="given-name"
-                      style={{
-                        padding: '0.9rem 1rem',
-                        borderRadius: '14px',
-                        border: '1px solid var(--page-chip-border)',
-                        background: 'var(--page-card-bg)',
-                        color: 'var(--page-ink)',
-                      }}
+                      className="login-page__input"
                     />
                   </label>
 
-                  <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
+                  <label className="login-page__field">
                     <span>Last name</span>
                     <input
                       type="text"
@@ -239,19 +230,13 @@ export default function LoginPage() {
                       onChange={e => setLastName(e.target.value)}
                       required
                       autoComplete="family-name"
-                      style={{
-                        padding: '0.9rem 1rem',
-                        borderRadius: '14px',
-                        border: '1px solid var(--page-chip-border)',
-                        background: 'var(--page-card-bg)',
-                        color: 'var(--page-ink)',
-                      }}
+                      className="login-page__input"
                     />
                   </label>
                 </div>
               )}
 
-              <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
+              <label className="login-page__field">
                 <span>Email</span>
                 <input
                   type="email"
@@ -259,17 +244,11 @@ export default function LoginPage() {
                   onChange={e => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  style={{
-                    padding: '0.9rem 1rem',
-                    borderRadius: '14px',
-                    border: '1px solid var(--page-chip-border)',
-                    background: 'var(--page-card-bg)',
-                    color: 'var(--page-ink)',
-                  }}
+                  className="login-page__input"
                 />
               </label>
 
-              <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
+              <label className="login-page__field">
                 <span>Password</span>
                 <input
                   type="password"
@@ -277,18 +256,12 @@ export default function LoginPage() {
                   onChange={e => setPassword(e.target.value)}
                   required
                   autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                  style={{
-                    padding: '0.9rem 1rem',
-                    borderRadius: '14px',
-                    border: '1px solid var(--page-chip-border)',
-                    background: 'var(--page-card-bg)',
-                    color: 'var(--page-ink)',
-                  }}
+                  className="login-page__input"
                 />
               </label>
 
               {mode === 'register' && (
-                <label style={{ display: 'grid', gap: '0.45rem', textAlign: 'left' }}>
+                <label className="login-page__field">
                   <span>Confirm password</span>
                   <input
                     type="password"
@@ -296,13 +269,7 @@ export default function LoginPage() {
                     onChange={e => setConfirmPassword(e.target.value)}
                     required
                     autoComplete="new-password"
-                    style={{
-                      padding: '0.9rem 1rem',
-                      borderRadius: '14px',
-                      border: '1px solid var(--page-chip-border)',
-                      background: 'var(--page-card-bg)',
-                      color: 'var(--page-ink)',
-                    }}
+                    className="login-page__input"
                   />
                 </label>
               )}
