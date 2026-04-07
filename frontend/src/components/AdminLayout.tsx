@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="admin-layout" data-theme={theme}>
       <header className="admin-layout__header">
         <Link to="/" className="admin-layout__brand" aria-label="Back to North Star Shelter home">
-          <span className="admin-layout__brand-mark">N</span>
+          <img src="/logo.png" alt="" className="admin-layout__brand-mark" aria-hidden="true" />
           <span className="admin-layout__brand-copy">
             <strong>North Star Shelter</strong>
             <small>Safety-led care and measurable impact</small>
