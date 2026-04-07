@@ -25,7 +25,7 @@ This document is **normative**. An agent with access to this repo’s **Cursor s
 6. **Apply cybersecurity** using **`security-baseline.md`** (CORS, HTTPS, secrets, validation, EF parameterized access, auth posture per interview).
 7. **Apply design** using **frontend-design** and **ui-ux-pro-max** together (typography, palette, layout, component discipline—not generic “AI slop” UI).
 8. **Test** the site with **webapp-testing** (Playwright: critical flows, API integration, regression notes).
-9. **Supabase (database)** per **§5.1**: **provision and configure for the user** (project, schema/migrations, keys, connection string) so the app can use real Postgres **while developing locally**. If tools/MCP are missing, **stop** and walk the user through setup—do not defer Supabase until production-only.
+9. **Azure SQL (database)** per **§5.1**: **provision and configure for the user** (server, database, firewall rules, connection string) so the app can use real SQL Server **while developing locally**. If tools/CLI are missing, **stop** and walk the user through setup—do not defer database setup until production-only.
 10. **Local-first delivery**: the full stack MUST run **entirely on the developer machine** (Vite + ASP.NET per the full-stack skill—two processes, documented README) **without** deploying the frontend to Vercel or the API to Azure. **Do not** start **§5.4–§5.7** (Azure/Vercel) until **§5.3** (user sign-off) is complete.
 11. **Deploy Azure + Vercel** per **§5.4–§5.7** **only after §5.3**: the user has **explicitly confirmed** they are happy with the web app **and** that it **works** in local testing. If **Vercel or Azure** plugins/MCP/tools are **not** available, **do not skip**: **stop, tell the user**, and **walk them through** enabling access or manual steps with copy-ready commands/screens.
 12. **Stakeholder deck**: produce a **native `.pptx`** that summarizes CRISP-DM findings **and** the web app solution, using the **pptx-plugin / PptxGenJS** workflow consistent with your slide-making conventions (structured builds, readable fonts, mandatory slide hygiene from the pptx skill pack if present in the user’s environment).
@@ -33,8 +33,8 @@ This document is **normative**. An agent with access to this repo’s **Cursor s
 ### MUST NOT
 
 1. Replace the **ASP.NET Core** backend with **Python serverless**, **Node-only BFF**, or **“database-only backend”** unless the user **explicitly** approves that exception in writing in-thread.
-2. Collapse “backend” into Supabase **except** as the **managed Postgres** (+ optional Auth/RLS): **business logic and model serving APIs remain on .NET on Azure** unless the user explicitly approves otherwise.
-3. Skip **Supabase setup** or **Azure/Vercel deployment** by assuming lack of MCP access without **documenting** the gap and **engaging the user** (see **§5**).
+2. Collapse “backend” into a managed database service: **business logic and model serving APIs remain on .NET on Azure** unless the user explicitly approves otherwise.
+3. Skip **Azure SQL setup** or **Azure/Vercel deployment** by assuming lack of MCP access without **documenting** the gap and **engaging the user** (see **§5**).
 4. Deploy to **Azure** or **Vercel** before **§5.3** (user sign-off) completes.
 5. Skip tests because “it looks fine.”
 
@@ -104,7 +104,7 @@ Follow **`.cursor/skills/full-stack-react-dotnet/SKILL.md`**:
 2. **Skeleton:** solution layout, `frontend/` + `backend/<ProjectName>.API/`, ports, CORS, Swagger in dev.
 3. **Implement** APIs and UI from the brief; **integrate the optimized model**:
    - Preferred: approach documented in Project brief (e.g. ONNX + ML.NET, persisted coefficients, dedicated inference project, or documented **internal** call pattern). The API contract MUST be stable for the React app.
-4. **Persistence:** Target **Supabase Postgres** for the real database. The agent MUST **set up Supabase for the user** per **§5.1** so **local** `backend/` uses the Supabase connection string (User Secrets / `appsettings.Development.json` excluded from git). Use SQLite **only** if the Project brief explicitly allows a temporary local DB; default path is **Supabase from first working integration onward**.
+4. **Persistence:** Target **Azure SQL Server** for the real database. The agent MUST **set up Azure SQL for the user** per **§5.1** so **local** `backend/` uses the Azure SQL connection string (User Secrets / `appsettings.Development.json` excluded from git). Use the in-memory provider **only** if the Project brief explicitly allows a temporary local DB; default path is **Azure SQL from first working integration onward**.
 
 ### §3.2 Cybersecurity — **MUST**
 
@@ -132,7 +132,7 @@ Implement **`.cursor/skills/full-stack-react-dotnet/security-baseline.md`** comp
    - **Business & success criteria** — from CRISP-DM Phase 1.
    - **Data & methodology** — scope, leakage safeguards, key charts (from data skills).
    - **Model results** — baselines, final metrics, confusion/calibration or equivalent; researcher summary.
-   - **Solution architecture** — React (Vercel) + API (Azure) + DB (Supabase), security highlights.
+   - **Solution architecture** — React (Vercel) + API (Azure) + DB (Azure SQL), security highlights.
    - **Live / screenshots** — web app flows (from webapp-testing captures if available).
    - **Recommendation & next steps** — monitoring, retrain triggers.
 2. Use **pptx-plugin / PptxGenJS** (or equivalent in the user’s pptx skill pack) with **palette discipline** and **page numbers** per that skill’s rules.
@@ -144,21 +144,21 @@ Implement **`.cursor/skills/full-stack-react-dotnet/security-baseline.md`** comp
 
 ### §5.0 Principles — **MUST**
 
-1. **Supabase early:** Provision Postgres (Supabase) **during development**, not as a post-deploy afterthought, so local `.NET` + local Vite exercise the **same** schema and policies the team will ship.
+1. **Database early:** Provision Azure SQL **during development**, not as a post-deploy afterthought, so local `.NET` + local Vite exercise the **same** schema and policies the team will ship.
 2. **Local-first:** The app MUST be **fully functional locally** — `frontend/` talking to local `backend/` URLs — **with no dependency on Vercel or Azure** for the code to run. Cloud hosting is an **optional promotion** step after acceptance.
 3. **Deploy late:** **Azure** (API) and **Vercel** (frontend)—sections **§5.4–§5.7**—happen **only after §5.3**.
 
-### §5.1 Supabase setup — **MUST (before or as part of Phase B completion)**
+### §5.1 Azure SQL setup — **MUST (before or as part of Phase B completion)**
 
-1. **Create or use** a Supabase project with the user (MCP/plugins, Supabase CLI, or guided dashboard steps).
-2. **Apply migrations** / SQL for the schema the app requires (align with EF migrations or document the source of truth).
-3. Supply the user with **connection details** the backend needs (host, database, user, password or pooler string) and any **anon/service** keys if the frontend uses Supabase client features—via secure channel, **never** committed.
-4. **Walk the user** through any dashboard steps they must perform (org, billing, network). If you lack tool access, **stop** and instruct; do not skip.
+1. **Create or use** an Azure SQL Server and database with the user (Azure Portal, Azure CLI, or guided steps).
+2. **Apply migrations** via EF Core (`dotnet ef database update`) or document the source of truth.
+3. Supply the user with **connection details** the backend needs (server, database, user, password) via secure channel, **never** committed.
+4. **Walk the user** through any portal steps they must perform (firewall rules, networking). If you lack tool access, **stop** and instruct; do not skip.
 
 ### §5.2 Local operation — **MUST**
 
 1. Document in README how to run **`backend/`** (HTTPS dev cert, port) and **`frontend/`** (Vite, `VITE_API_BASE_URL` or proxy) together.
-2. Confirm **end-to-end** flows work: UI → .NET API → Supabase Postgres → response (plus model/scoring paths).
+2. Confirm **end-to-end** flows work: UI → .NET API → Azure SQL → response (plus model/scoring paths).
 3. **webapp-testing** MUST pass against this **local** stack (or document blockers).
 
 ### §5.3 User acceptance gate — **MUST**
@@ -174,13 +174,13 @@ If the user wants changes, iterate **locally** until they confirm.
 
 | Layer | Platform | Owns |
 |-------|----------|------|
-| Database | **Supabase** | Already live from **§5.1**; production URL/keys unchanged unless rotating secrets |
+| Database | **Azure SQL** | Already live from **§5.1**; production connection string unchanged unless rotating secrets |
 | Backend | **Microsoft Azure** | ASP.NET Core API (App Service, Container Apps, or equivalent—document choice) |
 | Frontend | **Vercel** | Built static/SSR output from `frontend/` |
 
 ### §5.5 Tooling
 
-- Prefer **Vercel**, **Supabase**, and **Azure** **MCP servers / CLI / official plugins** when available.
+- Prefer **Vercel** and **Azure** **MCP servers / CLI / official plugins** when available.
 - **Never** silently skip because tools are missing.
 
 ### §5.6 If tools are unavailable — **MUST**
@@ -188,8 +188,8 @@ If the user wants changes, iterate **locally** until they confirm.
 1. **State clearly** which integration is missing (e.g. “No Azure MCP configured”).
 2. **Ask the user** to enable the server, log in, or grant network access.
 3. Provide **step-by-step** manual runbooks:
-   - **Supabase** (if still pending): project → SQL → connection string → app settings.  
-   - **Azure**: app service / container → publish → connection string env → health check.  
+   - **Azure SQL** (if still pending): server → database → firewall rules → connection string → app settings.
+   - **Azure App Service**: app service → publish → connection string env → health check.
    - **Vercel**: import repo → build → env `VITE_API_BASE_URL` → preview URL → CORS update on Azure for that origin.
 
 ### §5.7 Configuration hygiene
@@ -211,8 +211,8 @@ The agent MUST verify each item or mark it **blocked** with user-facing instruct
 - [ ] Optimized model integrated and callable from **.NET**; versioning documented.
 - [ ] **frontend-design** + **ui-ux-pro-max** reflected in UI quality.
 - [ ] **webapp-testing** executed against **local** stack; failures fixed or documented.
-- [ ] **Supabase** project and schema **live**; **local** backend connects and persists correctly.
-- [ ] README documents **local run** (frontend + backend + Supabase) with no requirement for Azure/Vercel.
+- [ ] **Azure SQL** database and schema **live**; **local** backend connects and persists correctly.
+- [ ] README documents **local run** (frontend + backend + Azure SQL) with no requirement for Azure App Service/Vercel.
 - [ ] User **explicit sign-off** recorded in thread (**§5.3**) before any Azure/Vercel deploy.
 - [ ] **After sign-off:** Azure API live; Vercel frontend live; production smoke **passes** or **blocker** filed with user.
 - [ ] `.pptx` deck delivered and referenced in README.
