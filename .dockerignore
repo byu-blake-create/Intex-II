@@ -1,0 +1,16 @@
+.git
+.gitignore
+.vs
+.claude
+.omc
+.omx
+
+**/bin
+**/obj
+**/__pycache__
+
+frontend/node_modules
+frontend/dist
+
+*.log
+.DS_Store

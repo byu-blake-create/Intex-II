@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using NorthStarShelter.API;
 using NorthStarShelter.API.Data;
@@ -17,8 +18,7 @@ builder.Services.AddSwaggerGen();
 if (!string.IsNullOrWhiteSpace(connectionString))
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseNpgsql(connectionString)
-            .UseSnakeCaseNamingConvention());
+        options.UseSqlServer(connectionString));
 }
 
 // Temporary cookie auth lets the staff workspace function before Supabase is wired in.
@@ -48,6 +48,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 builder.Services.Configure<DemoAuthOptions>(builder.Configuration.GetSection(DemoAuthOptions.SectionName));
 
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(FrontendCorsPolicy, policy =>
@@ -61,12 +68,20 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Create tables on first run (safe for fresh Azure SQL databases).
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetService<AppDbContext>();
+    db?.Database.EnsureCreated();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+app.UseResponseCompression();
 app.UseCors(FrontendCorsPolicy);
 
 app.Use(async (ctx, next) =>
