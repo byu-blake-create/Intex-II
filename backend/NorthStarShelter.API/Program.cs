@@ -16,18 +16,23 @@ var builder = WebApplication.CreateBuilder(args);
 const string FrontendCorsPolicy = "FrontendClient";
 var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:3000";
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    throw new InvalidOperationException(
-        "ConnectionStrings:DefaultConnection must be configured before the API can start.");
-}
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Local/dev fallback keeps public endpoints and auth-backed pages bootable even when
+// a SQL connection string has not been configured yet.
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure()));
+{
+    if (!string.IsNullOrWhiteSpace(connectionString))
+    {
+        options.UseSqlServer(connectionString, sqlOptions => sqlOptions.EnableRetryOnFailure());
+        return;
+    }
+
+    options.UseInMemoryDatabase("NorthStarShelterDev");
+});
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -94,7 +99,18 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-await DatabaseInitializer.InitializeAsync(app.Services, app.Configuration);
+if (!string.IsNullOrWhiteSpace(connectionString))
+{
+    await DatabaseInitializer.InitializeAsync(app.Services, app.Configuration);
+}
+else
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.EnsureCreatedAsync();
+    await LocalDemoData.EnsureSeededAsync(db);
+    await SeedData.InitializeAsync(scope.ServiceProvider, app.Configuration);
+}
 
 if (app.Environment.IsDevelopment())
 {

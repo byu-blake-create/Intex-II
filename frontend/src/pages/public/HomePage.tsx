@@ -1,5 +1,13 @@
+import { useEffect, useState } from 'react'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
+import {
+  buildImpactDashboardModel,
+  formatImpactMonth,
+  formatImpactNumber,
+} from '../../lib/publicImpact'
+import { fetchPublishedSnapshots } from '../../lib/snapshotsApi'
 import { usePublicTheme } from '../../lib/usePublicTheme'
+import type { PublicImpactSnapshot } from '../../types/domain'
 import './HomePage.css'
 
 const carePillars = [
@@ -94,6 +102,56 @@ const heroPromises = [
 
 export default function HomePage() {
   const { theme, setTheme } = usePublicTheme()
+  const [snapshots, setSnapshots] = useState<PublicImpactSnapshot[]>([])
+  const [impactLoading, setImpactLoading] = useState(true)
+  const [impactError, setImpactError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetchPublishedSnapshots(1, 50)
+      .then(result => {
+        if (!cancelled) {
+          setSnapshots(result.items)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setImpactError('The public impact dashboard is temporarily unavailable.')
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setImpactLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const impactDashboard = buildImpactDashboardModel(snapshots)
+  const latestMetrics = impactDashboard?.latest.metrics
+  const previousMetrics = impactDashboard?.previous?.metrics
+  const latestMonthLabel = impactDashboard
+    ? formatImpactMonth(latestMetrics?.month ?? impactDashboard.latest.snapshot.snapshotDate)
+    : null
+  const previousMonthLabel = impactDashboard?.previous
+    ? formatImpactMonth(previousMetrics?.month ?? impactDashboard.previous.snapshot.snapshotDate)
+    : null
+  const healthDelta =
+    latestMetrics?.avgHealthScore != null && previousMetrics?.avgHealthScore != null
+      ? latestMetrics.avgHealthScore - previousMetrics.avgHealthScore
+      : null
+  const educationDelta =
+    latestMetrics?.avgEducationProgress != null && previousMetrics?.avgEducationProgress != null
+      ? latestMetrics.avgEducationProgress - previousMetrics.avgEducationProgress
+      : null
+  const donationDelta =
+    latestMetrics?.donationsTotalForMonth != null && previousMetrics?.donationsTotalForMonth != null
+      ? latestMetrics.donationsTotalForMonth - previousMetrics.donationsTotalForMonth
+      : null
 
   return (
     <div className="public-site home-page" data-theme={theme}>
@@ -115,8 +173,8 @@ export default function HomePage() {
               <a className="button button--primary" href="#services">
                 What We Do
               </a>
-              <a className="button button--ghost" href="#mission">
-                Our Mission
+              <a className="button button--ghost" href="#impact-dashboard">
+                View Impact
               </a>
             </div>
 
@@ -170,6 +228,200 @@ export default function HomePage() {
               strength and belonging.
             </p>
           </div>
+        </section>
+
+        <section className="impact-dashboard-section" id="impact-dashboard">
+          <div className="section-heading impact-dashboard-section__heading">
+            <div>
+              <p className="eyebrow">Impact dashboard</p>
+              <h2>Anonymous public reporting that shows outcomes, progress, and support levels.</h2>
+            </div>
+            <p className="impact-dashboard-section__lede">
+              This section uses published monthly snapshots only. It stays aggregated and
+              anonymized so visitors can understand momentum without exposing resident-level data.
+            </p>
+          </div>
+
+          {impactLoading && (
+            <div className="impact-dashboard-section__status">
+              Loading the latest public impact snapshot…
+            </div>
+          )}
+
+          {!impactLoading && impactError && (
+            <div className="impact-dashboard-section__status impact-dashboard-section__status--error">
+              {impactError}
+            </div>
+          )}
+
+          {!impactLoading && !impactError && impactDashboard && (
+            <div className="impact-dashboard">
+              <article className="impact-dashboard__spotlight">
+                <p className="impact-dashboard__meta">
+                  Latest meaningful snapshot
+                  {latestMonthLabel ? ` · ${latestMonthLabel}` : ''}
+                </p>
+                <h3>{impactDashboard.latest.snapshot.headline ?? 'Public impact update'}</h3>
+                <p className="impact-dashboard__summary">
+                  {impactDashboard.latest.snapshot.summaryText ??
+                    'Published monthly impact data for North Star Shelter.'}
+                </p>
+              </article>
+
+              <div className="impact-dashboard__kpis">
+                <article className="impact-kpi-card">
+                  <p className="impact-kpi-card__label">Residents supported</p>
+                  <strong>{formatImpactNumber(latestMetrics?.totalResidents ?? 0)}</strong>
+                  <p className="impact-kpi-card__detail">
+                    Active residents represented in the latest published snapshot.
+                  </p>
+                </article>
+
+                <article className="impact-kpi-card">
+                  <p className="impact-kpi-card__label">Average health score</p>
+                  <strong>{formatImpactNumber(latestMetrics?.avgHealthScore ?? 0, 2)} / 5</strong>
+                  <p className="impact-kpi-card__detail">
+                    Monthly average of residents&apos; general health score on a 1 to 5 scale.
+                  </p>
+                  <p className="impact-kpi-card__detail impact-kpi-card__detail--secondary">
+                    {healthDelta == null || !previousMonthLabel
+                      ? 'No prior published comparison available.'
+                      : `${healthDelta >= 0 ? '+' : ''}${formatImpactNumber(healthDelta, 2)} vs ${previousMonthLabel}`}
+                  </p>
+                </article>
+
+                <article className="impact-kpi-card">
+                  <p className="impact-kpi-card__label">Education progress</p>
+                  <strong>{formatImpactNumber(latestMetrics?.avgEducationProgress ?? 0, 1)}%</strong>
+                  <p className="impact-kpi-card__detail">
+                    Average education-plan completion across residents&apos; active education records.
+                  </p>
+                  <p className="impact-kpi-card__detail impact-kpi-card__detail--secondary">
+                    {educationDelta == null || !previousMonthLabel
+                      ? 'No prior published comparison available.'
+                      : `${educationDelta >= 0 ? '+' : ''}${formatImpactNumber(educationDelta, 1)} pts vs ${previousMonthLabel}`}
+                  </p>
+                </article>
+
+                <article className="impact-kpi-card">
+                  <p className="impact-kpi-card__label">Reported donation total</p>
+                  <strong>{formatImpactNumber(latestMetrics?.donationsTotalForMonth ?? 0)}</strong>
+                  <p className="impact-kpi-card__detail">
+                    {donationDelta == null || !previousMonthLabel
+                      ? 'Monthly funding reported in the snapshot.'
+                      : `${donationDelta >= 0 ? '+' : ''}${formatImpactNumber(donationDelta, 0)} vs ${previousMonthLabel}`}
+                  </p>
+                </article>
+              </div>
+
+              <div className="impact-dashboard__insights">
+                <article className="impact-insight-card">
+                  <p className="impact-insight-card__label">Progress over the recent window</p>
+                  <h3>
+                    {impactDashboard.educationDelta == null
+                      ? 'Tracking now'
+                      : `${impactDashboard.educationDelta >= 0 ? '+' : ''}${formatImpactNumber(impactDashboard.educationDelta, 1)} pts in education progress`}
+                  </h3>
+                  <p>
+                    The dashboard compares the latest meaningful snapshot against the oldest one in
+                    the recent six-snapshot window.
+                  </p>
+                </article>
+
+                <article className="impact-insight-card">
+                  <p className="impact-insight-card__label">Recent support level</p>
+                  <h3>{formatImpactNumber(impactDashboard.sixMonthDonations)} reported across six snapshots</h3>
+                  <p>
+                    Recent public updates show how much support was recorded while care outcomes
+                    continued to move forward.
+                  </p>
+                </article>
+
+                <article className="impact-insight-card">
+                  <p className="impact-insight-card__label">Support per resident</p>
+                  <h3>
+                    {impactDashboard.supportPerResident == null
+                      ? 'Not available'
+                      : `${formatImpactNumber(impactDashboard.supportPerResident)} per active resident`}
+                  </h3>
+                  <p>
+                    A simple anonymous funding-density signal based on the latest published
+                    donation total and active resident count.
+                  </p>
+                </article>
+              </div>
+
+              <div className="impact-trend-panel">
+                <div className="impact-trend-panel__copy">
+                  <p className="impact-kpi-card__label">Six-snapshot trend</p>
+                  <h3>Progress stays visible month by month.</h3>
+                  <p>
+                    The bar shows average education-plan completion on a 0 to 100 scale. The
+                    health value is a separate 1 to 5 average from monthly wellbeing records.
+                  </p>
+                </div>
+
+                <div className="impact-trend-grid">
+                  {impactDashboard.trend.map(point => (
+                    <article className="impact-trend-card" key={point.id}>
+                      <div className="impact-trend-card__header">
+                        <p>{point.label}</p>
+                        <strong>{formatImpactNumber(point.educationProgress, 1)}%</strong>
+                      </div>
+
+                      <div
+                        className="impact-trend-card__meter"
+                        aria-label={`Average education progress for ${point.label}`}
+                      >
+                        <span style={{ width: `${Math.max(0, Math.min(point.educationProgress, 100))}%` }} />
+                      </div>
+                      <p className="impact-trend-card__caption">
+                        Education-plan completion average for the month.
+                      </p>
+
+                      <dl className="impact-trend-card__stats">
+                        <div>
+                          <dt>Health</dt>
+                          <dd>{formatImpactNumber(point.healthScore, 2)} / 5</dd>
+                        </div>
+                        <div>
+                          <dt>Residents</dt>
+                          <dd>{formatImpactNumber(point.residents)}</dd>
+                        </div>
+                        <div>
+                          <dt>Funding</dt>
+                          <dd>{formatImpactNumber(point.donations)}</dd>
+                        </div>
+                      </dl>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <div className="impact-dashboard__method">
+                <p className="impact-kpi-card__label">How to read this</p>
+                <p>
+                  Health score is the mean general health score from monthly health and wellbeing
+                  records on a 1.0 to 5.0 scale. Education progress is the mean progress percent
+                  from education records on a 0 to 100 scale, so the bars show how far residents
+                  are on average through their current education plans.
+                </p>
+              </div>
+
+              <div className="impact-dashboard__footer">
+                <a className="button button--ghost" href="/impact">
+                  Browse published impact updates
+                </a>
+              </div>
+            </div>
+          )}
+
+          {!impactLoading && !impactError && !impactDashboard && (
+            <div className="impact-dashboard-section__status">
+              No published impact snapshots are available yet. Check back after the next public
+              reporting cycle.
+            </div>
+          )}
         </section>
 
         <section className="pillars-section">
