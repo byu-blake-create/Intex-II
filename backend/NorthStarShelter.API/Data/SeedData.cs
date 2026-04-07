@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using NorthStarShelter.API.Models;
 
 namespace NorthStarShelter.API.Data;
@@ -12,16 +13,17 @@ public static class SeedData
         CancellationToken cancellationToken = default)
     {
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        foreach (var role in new[] { "Admin", "Staff", "Donor" })
+        var roleCount = await roleManager.Roles.CountAsync(cancellationToken);
+        if (roleCount == 0)
         {
-            if (await roleManager.RoleExistsAsync(role))
-                continue;
-
-            var createRole = await roleManager.CreateAsync(new IdentityRole(role));
-            if (!createRole.Succeeded)
+            foreach (var role in new[] { "Admin", "Donor" })
             {
-                throw new InvalidOperationException(
-                    $"Failed to create role '{role}': {string.Join("; ", createRole.Errors.Select(e => e.Description))}");
+                var createRole = await roleManager.CreateAsync(new IdentityRole(role));
+                if (!createRole.Succeeded)
+                {
+                    throw new InvalidOperationException(
+                        $"Failed to create role '{role}': {string.Join("; ", createRole.Errors.Select(e => e.Description))}");
+                }
             }
         }
 
@@ -31,7 +33,6 @@ public static class SeedData
         if (admin != null)
         {
             await EnsureRoleAsync(userManager, admin, "Admin");
-            await EnsureRoleAsync(userManager, admin, "Staff");
             return;
         }
 
@@ -57,7 +58,6 @@ public static class SeedData
         }
 
         await EnsureRoleAsync(userManager, admin, "Admin");
-        await EnsureRoleAsync(userManager, admin, "Staff");
     }
 
     private static async Task EnsureRoleAsync(UserManager<AppUser> userManager, AppUser user, string role)
