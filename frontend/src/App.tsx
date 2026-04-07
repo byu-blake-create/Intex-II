@@ -20,6 +20,7 @@ const ProcessRecordingPage = lazy(() => import('./pages/admin/ProcessRecordingPa
 const VisitationsPage = lazy(() => import('./pages/admin/VisitationsPage'))
 const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'))
 const SocialSuitePage = lazy(() => import('./pages/admin/SocialSuitePage'))
+const DatabasePage = lazy(() => import('./pages/admin/DatabasePage'))
 
 export default function App() {
   return (
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/staff/visitations" element={<ProtectedRoute requiredRole="Staff"><VisitationsPage /></ProtectedRoute>} />
         <Route path="/staff/reports" element={<ProtectedRoute requiredRole="Staff"><ReportsPage /></ProtectedRoute>} />
         <Route path="/staff/social" element={<ProtectedRoute requiredRole="Staff"><SocialSuitePage /></ProtectedRoute>} />
+        <Route path="/staff/database" element={<ProtectedRoute requiredRole="Admin"><DatabasePage /></ProtectedRoute>} />
 
         {/* Keep older links working while the app standardizes on /staff. */}
         <Route path="/admin" element={<Navigate to="/staff" replace />} />
@@ -54,6 +56,7 @@ export default function App() {
         <Route path="/admin/visitations" element={<Navigate to="/staff/visitations" replace />} />
         <Route path="/admin/reports" element={<Navigate to="/staff/reports" replace />} />
         <Route path="/admin/social" element={<Navigate to="/staff/social" replace />} />
+        <Route path="/admin/database" element={<Navigate to="/staff/database" replace />} />
       </Routes>
       </Suspense>
     </AuthProvider>
