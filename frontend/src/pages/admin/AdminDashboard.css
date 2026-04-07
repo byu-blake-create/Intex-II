@@ -128,9 +128,9 @@
 .dash__error {
   padding: 0.85rem 1rem;
   border-radius: 10px;
-  background: rgba(255, 80, 80, 0.08);
-  border: 1px solid rgba(255, 80, 80, 0.2);
-  color: #ff8080;
+  background: var(--adm-danger-bg);
+  border: 1px solid var(--adm-danger-border);
+  color: var(--adm-danger-ink);
   font-weight: 600;
 }
 
@@ -164,7 +164,7 @@
 }
 
 .dash-card:hover {
-  box-shadow: inset 4px 0 0 transparent, 0 8px 28px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 4px 0 0 transparent, var(--adm-shadow-soft);
 }
 
 /* Tone left-border stripe */
@@ -175,19 +175,19 @@
 .dash-card[data-tone="forecast"]    { box-shadow: inset 4px 0 0 #4e9fdc; }
 .dash-card[data-tone="outreach"]    { box-shadow: inset 4px 0 0 #9b6ecf; }
 
-.dash-card[data-tone="alert"]:hover       { box-shadow: inset 4px 0 0 #e05c3a, 0 8px 28px rgba(0,0,0,0.35); }
-.dash-card[data-tone="opportunity"]:hover { box-shadow: inset 4px 0 0 #d4960a, 0 8px 28px rgba(0,0,0,0.35); }
-.dash-card[data-tone="care"]:hover        { box-shadow: inset 4px 0 0 #c95858, 0 8px 28px rgba(0,0,0,0.35); }
-.dash-card[data-tone="progress"]:hover    { box-shadow: inset 4px 0 0 #2ab87e, 0 8px 28px rgba(0,0,0,0.35); }
-.dash-card[data-tone="forecast"]:hover    { box-shadow: inset 4px 0 0 #4e9fdc, 0 8px 28px rgba(0,0,0,0.35); }
-.dash-card[data-tone="outreach"]:hover    { box-shadow: inset 4px 0 0 #9b6ecf, 0 8px 28px rgba(0,0,0,0.35); }
+.dash-card[data-tone="alert"]:hover       { box-shadow: inset 4px 0 0 #e05c3a, var(--adm-shadow-soft); }
+.dash-card[data-tone="opportunity"]:hover { box-shadow: inset 4px 0 0 #d4960a, var(--adm-shadow-soft); }
+.dash-card[data-tone="care"]:hover        { box-shadow: inset 4px 0 0 #c95858, var(--adm-shadow-soft); }
+.dash-card[data-tone="progress"]:hover    { box-shadow: inset 4px 0 0 #2ab87e, var(--adm-shadow-soft); }
+.dash-card[data-tone="forecast"]:hover    { box-shadow: inset 4px 0 0 #4e9fdc, var(--adm-shadow-soft); }
+.dash-card[data-tone="outreach"]:hover    { box-shadow: inset 4px 0 0 #9b6ecf, var(--adm-shadow-soft); }
 
 .dash-card__inner {
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 1.25rem 1.25rem 0;
-  gap: 0.55rem;
+  padding: 1.5rem;
+  gap: 1rem;
 }
 
 /* Top row: pill + model name */
@@ -234,7 +234,7 @@
 }
 
 .dash-card__value {
-  font-size: 2.6rem;
+  font-size: 2.8rem;
   font-family: var(--font-display);
   line-height: 1;
   font-weight: 800;
@@ -262,27 +262,6 @@
   line-height: 1.5;
 }
 
-.dash-card__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  border-top: 1px solid var(--adm-border);
-  padding: 0.75rem 1.25rem;
-  margin-top: 0.75rem;
-}
-
-.dash-card__model-meta {
-  font-size: 0.75rem;
-  color: var(--adm-muted);
-  line-height: 1.4;
-}
-
-.dash-card__model-metric {
-  font-weight: 700;
-  color: var(--adm-muted);
-}
-
 .dash-card__link {
   display: inline-flex;
   align-items: center;
@@ -292,6 +271,8 @@
   color: var(--adm-accent);
   white-space: nowrap;
   flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 0.25rem;
   transition: opacity 0.15s;
 }
 
@@ -320,7 +301,7 @@
 
 .dash__lane-card:hover {
   background: var(--adm-surface);
-  box-shadow: inset 4px 0 0 var(--adm-accent), 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 4px 0 0 var(--adm-accent), var(--adm-shadow-soft);
 }
 
 .dash__lane-copy {
@@ -352,6 +333,12 @@
   transform: translateX(3px);
 }
 
+/* ─── Stat grid ──────────────────────────────────────────── */
+.dash__stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+.dash__section-header { display:flex; align-items:baseline; gap:1rem; margin:0 0 1rem; }
+.dash__ml-label { font-size:0.75rem; font-weight:800; text-transform:uppercase; letter-spacing:0.12em; color:var(--adm-muted); }
+.dash__snapshot-date { font-size:0.78rem; color:var(--adm-muted); }
+
 /* ─── Responsive ──────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .dash__cards {
@@ -360,6 +347,9 @@
 }
 
 @media (max-width: 860px) {
+  .dash__stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .dash__lanes {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -381,6 +371,9 @@
 }
 
 @media (max-width: 560px) {
+  .dash__stat-grid {
+    grid-template-columns: 1fr;
+  }
   .dash__lanes {
     grid-template-columns: 1fr;
   }

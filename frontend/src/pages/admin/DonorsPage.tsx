@@ -1,114 +1,174 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
-import { fetchDonations } from '../../lib/donationsApi'
 import { fetchSupporters } from '../../lib/supportersApi'
-import type { Donation, Supporter } from '../../types/domain'
+import { fetchDonations } from '../../lib/donationsApi'
+import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
+import type { Supporter, Donation } from '../../types/domain'
+import './DonorsPage.css'
+
+const PAGE_SIZE = 50
+
+function statusBadge(status: string | null | undefined) {
+  if (!status) return <span className="badge badge--gray">Unknown</span>
+  return status.toLowerCase() === 'active'
+    ? <span className="badge badge--green">Active</span>
+    : <span className="badge badge--gray">{status}</span>
+}
+
+function typeBadge(t: string) {
+  return <span className="badge badge--blue">{t}</span>
+}
 
 export default function DonorsPage() {
   const [supporters, setSupporters] = useState<Supporter[]>([])
-  const [supTotal, setSupTotal] = useState(0)
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [totalCount, setTotalCount] = useState(0)
+  const [pageNum, setPageNum] = useState(1)
+  const [search, setSearch] = useState('')
+  const [typeFilter, setTypeFilter] = useState('')
+  const [selected, setSelected] = useState<Supporter | null>(null)
   const [donations, setDonations] = useState<Donation[]>([])
-  const [donTotal, setDonTotal] = useState(0)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [donLoading, setDonLoading] = useState(false)
+  const [listLoading, setListLoading] = useState(true)
+  const [listError, setListError] = useState<string | null>(null)
+  const [watchlistCard, setWatchlistCard] = useState<AdminDashboardCard | null>(null)
 
   useEffect(() => {
-    setLoading(true)
-    fetchSupporters({ pageNum: 1, pageSize: 100 })
-      .then(r => {
-        setSupporters(r.items)
-        setSupTotal(r.totalCount)
-        if (r.items.length && selectedId == null) setSelectedId(r.items[0].supporterId)
-      })
-      .catch(() => setError('Unable to load supporters.'))
-      .finally(() => setLoading(false))
+    fetchAdminDashboard().then(d => {
+      setWatchlistCard(d.cards.find(c => c.id === 'donor-watchlist') ?? null)
+    }).catch(() => {})
   }, [])
 
+  useEffect(() => { setPageNum(1) }, [search, typeFilter])
+
   useEffect(() => {
-    if (selectedId == null) return
-    fetchDonations({ supporterId: selectedId, pageNum: 1, pageSize: 100 })
-      .then(r => {
-        setDonations(r.items)
-        setDonTotal(r.totalCount)
-      })
-      .catch(() => setError('Unable to load donations for this supporter.'))
-  }, [selectedId])
+    let mounted = true
+    setListLoading(true)
+    setListError(null)
+    fetchSupporters({
+      pageNum,
+      pageSize: PAGE_SIZE,
+      supporterType: typeFilter || undefined,
+    })
+      .then(r => { if (mounted) { setSupporters(r.items); setTotalCount(r.totalCount) } })
+      .catch(() => { if (mounted) setListError('Failed to load supporters.') })
+      .finally(() => { if (mounted) setListLoading(false) })
+    return () => { mounted = false }
+  }, [pageNum, typeFilter])
+
+  useEffect(() => {
+    if (!selected) { setDonations([]); return }
+    setDonLoading(true)
+    fetchDonations({ supporterId: selected.supporterId, pageSize: 200 })
+      .then(r => setDonations(r.items))
+      .catch(() => setDonations([]))
+      .finally(() => setDonLoading(false))
+  }, [selected])
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+
+  const filtered = search
+    ? supporters.filter(s =>
+        s.displayName.toLowerCase().includes(search.toLowerCase()) ||
+        (s.email ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (s.organizationName ?? '').toLowerCase().includes(search.toLowerCase()))
+    : supporters
+
+  const donationTotal = donations.reduce((sum, d) => sum + (d.amount ?? 0), 0)
 
   return (
     <AdminLayout>
-      <section className="admin-panel">
-        <h1>Donors &amp; contributions</h1>
-        <p style={{ color: 'var(--base-muted)' }}>
-          Select a supporter to view their donation history ({supTotal} supporters).
-        </p>
-        {loading && <p>Loading…</p>}
-        {error && <p className="admin-error">{error}</p>}
-        {!loading && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px,1fr) minmax(0,2fr)', gap: '1.5rem' }}>
-            <div>
-              <h2 style={{ fontSize: '1rem', marginTop: 0 }}>Supporters</h2>
-              <div className="admin-table-wrap" style={{ maxHeight: 420, overflow: 'auto' }}>
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Type</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {supporters.map(s => (
-                      <tr
-                        key={s.supporterId}
-                        onClick={() => setSelectedId(s.supporterId)}
-                        style={{
-                          cursor: 'pointer',
-                          background: selectedId === s.supporterId ? 'rgba(187,95,60,0.12)' : undefined,
-                        }}
-                      >
-                        <td>{s.displayName}</td>
-                        <td>{s.supporterType}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div>
-              <h2 style={{ fontSize: '1rem', marginTop: 0 }}>
-                Donations {selectedId != null ? `(ID ${selectedId})` : ''}
-              </h2>
-              <p style={{ fontSize: '0.85rem', color: 'var(--base-muted)' }}>{donTotal} records</p>
-              <div className="admin-table-wrap">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Type</th>
-                      <th>Amount</th>
-                      <th>Campaign</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {donations.map((d: Donation) => (
-                      <tr key={d.donationId}>
-                        <td>{d.donationDate ?? '—'}</td>
-                        <td>{d.donationType}</td>
-                        <td>
-                          {d.amount != null
-                            ? `${d.currencyCode ?? ''} ${d.amount.toLocaleString()}`.trim()
-                            : '—'}
-                        </td>
-                        <td>{d.campaignName ?? '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+      <div className="dn-layout">
+        <div className="dn-sidebar">
+          <div className="dn-sidebar__header">
+            <input className="dn-search" placeholder="Search donors..." value={search} onChange={e => setSearch(e.target.value)} />
+            <div className="dn-filters">
+              <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
+                <option value="">All types</option>
+                <option value="Individual">Individual</option>
+                <option value="Organization">Organization</option>
+              </select>
             </div>
           </div>
-        )}
-      </section>
+          <div className="dn-list">
+            {listLoading && <div className="inline-loading">Loading...</div>}
+            {listError && <p className="admin-error" style={{ padding: '1rem' }}>{listError}</p>}
+            {!listLoading && !listError && filtered.length === 0 && <div className="empty-state">No supporters found.</div>}
+            {!listLoading && !listError && filtered.map(s => (
+              <button key={s.supporterId} className={`dn-row${selected?.supporterId === s.supporterId ? ' is-selected' : ''}`} onClick={() => setSelected(s)}>
+                <span className="dn-row__name">{s.displayName}</span>
+                <span className="dn-row__meta">
+                  {typeBadge(s.supporterType)}
+                  {statusBadge(s.status)}
+                </span>
+                {s.organizationName && <span className="dn-row__org">{s.organizationName}</span>}
+                {s.email && <span className="dn-row__email">{s.email}</span>}
+              </button>
+            ))}
+          </div>
+          <div className="dn-pager">
+            <span className="dn-pager__info">Page {pageNum} of {totalPages}, {totalCount} records</span>
+            <button className="dn-pager__btn" disabled={pageNum <= 1} onClick={() => setPageNum(p => p - 1)}>Prev</button>
+            <button className="dn-pager__btn" disabled={pageNum >= totalPages} onClick={() => setPageNum(p => p + 1)}>Next</button>
+          </div>
+        </div>
+
+        <div className="dn-detail">
+          {!selected && <div className="dn-detail__empty">Select a supporter to view details</div>}
+          {selected && (
+            <>
+              <div className="dn-header">
+                <h2>{selected.displayName}</h2>
+                {selected.organizationName && <span className="dn-header__org">{selected.organizationName}</span>}
+                {selected.email && <span className="dn-header__email">{selected.email}</span>}
+                <div className="dn-header__badges">
+                  {typeBadge(selected.supporterType)}
+                  {statusBadge(selected.status)}
+                </div>
+              </div>
+
+              {watchlistCard && (
+                <div className="dn-ml-box">
+                  <p className="dn-ml-box__label">Retention Signal</p>
+                  <p>{watchlistCard.plainLanguage} {watchlistCard.detail}</p>
+                </div>
+              )}
+
+              <p className="section-title">Donation History</p>
+              {donLoading && <div className="inline-loading">Loading donations...</div>}
+              {!donLoading && donations.length === 0 && <div className="empty-state">No donations recorded</div>}
+              {!donLoading && donations.length > 0 && (
+                <>
+                  <div className="admin-table-wrap">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Type</th>
+                          <th>Amount</th>
+                          <th>Campaign</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {donations
+                          .sort((a, b) => (b.donationDate ?? '').localeCompare(a.donationDate ?? ''))
+                          .map(d => (
+                          <tr key={d.donationId}>
+                            <td>{d.donationDate ?? '\u2014'}</td>
+                            <td>{d.donationType}</td>
+                            <td>{d.amount != null ? `${d.currencyCode ?? '$'}${d.amount.toLocaleString()}` : '\u2014'}</td>
+                            <td>{d.campaignName ?? '\u2014'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="dn-summary">{donations.length} donations &middot; Total: ${donationTotal.toLocaleString()}</p>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </AdminLayout>
   )
 }

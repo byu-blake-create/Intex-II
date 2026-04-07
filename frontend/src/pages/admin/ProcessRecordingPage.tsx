@@ -1,85 +1,99 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
-import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
 import { fetchResidents } from '../../lib/residentsApi'
-import type { ProcessRecording, Resident } from '../../types/domain'
+import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
+import type { Resident, ProcessRecording } from '../../types/domain'
+import './ProcessRecordingPage.css'
+
+function statusBadge(status: string | null | undefined) {
+  if (!status) return <span className="badge badge--gray">Unknown</span>
+  return status.toLowerCase() === 'active'
+    ? <span className="badge badge--green">Active</span>
+    : <span className="badge badge--gray">{status}</span>
+}
 
 export default function ProcessRecordingPage() {
   const [residents, setResidents] = useState<Resident[]>([])
-  const [residentId, setResidentId] = useState<number | ''>('')
-  const [rows, setRows] = useState<ProcessRecording[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [selected, setSelected] = useState<Resident | null>(null)
+  const [sessions, setSessions] = useState<ProcessRecording[]>([])
+  const [sessionsLoading, setSessionsLoading] = useState(false)
+  const [listLoading, setListLoading] = useState(true)
 
   useEffect(() => {
-    fetchResidents({ pageNum: 1, pageSize: 200 })
-      .then(r => {
-        setResidents(r.items)
-        if (r.items.length && residentId === '') setResidentId(r.items[0].residentId)
-      })
-      .catch(() => setError('Could not load residents.'))
-      .finally(() => setLoading(false))
+    fetchResidents({ pageSize: 200 })
+      .then(r => setResidents(r.items))
+      .catch(() => {})
+      .finally(() => setListLoading(false))
   }, [])
 
   useEffect(() => {
-    if (residentId === '') return
-    setLoading(true)
-    fetchProcessRecordings(Number(residentId))
-      .then(r => setRows(r.items))
-      .catch(() => setError('Could not load process recordings.'))
-      .finally(() => setLoading(false))
-  }, [residentId])
+    if (!selected) { setSessions([]); return }
+    setSessionsLoading(true)
+    fetchProcessRecordings(selected.residentId)
+      .then(r => setSessions(r.items))
+      .catch(() => setSessions([]))
+      .finally(() => setSessionsLoading(false))
+  }, [selected])
+
+  const filtered = search
+    ? residents.filter(r => r.caseControlNo.toLowerCase().includes(search.toLowerCase()))
+    : residents
 
   return (
     <AdminLayout>
-      <section className="admin-panel">
-        <h1>Process recording</h1>
-        <p style={{ color: 'var(--base-muted)' }}>Session notes per resident (chronological).</p>
-
-        <div className="admin-toolbar">
-          <label>
-            Resident
-            <select
-              value={residentId === '' ? '' : String(residentId)}
-              onChange={e => setResidentId(e.target.value ? Number(e.target.value) : '')}
-            >
-              {residents.map((r: Resident) => (
-                <option key={r.residentId} value={r.residentId}>
-                  {r.caseControlNo} — {r.caseStatus ?? '—'}
-                </option>
-              ))}
-            </select>
-          </label>
+      <div className="pr-layout">
+        <div className="pr-sidebar">
+          <div className="pr-sidebar__header">
+            <input className="pr-search" placeholder="Search residents..." value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <div className="pr-list">
+            {listLoading && <div className="inline-loading">Loading...</div>}
+            {!listLoading && filtered.length === 0 && <div className="empty-state">No residents found.</div>}
+            {!listLoading && filtered.map(r => (
+              <button key={r.residentId} className={`pr-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`} onClick={() => setSelected(r)}>
+                <span className="pr-row__id">{r.caseControlNo}</span>
+                <span className="pr-row__meta">{statusBadge(r.caseStatus)}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {loading && <p>Loading…</p>}
-        {error && <p className="admin-error">{error}</p>}
+        <div className="pr-detail">
+          {!selected && <div className="pr-detail__empty">Select a resident to view session notes</div>}
+          {selected && (
+            <>
+              <header className="page-header">
+                <h1 style={{ fontFamily: 'monospace' }}>{selected.caseControlNo}</h1>
+                <p>Session journal</p>
+              </header>
 
-        {!loading && !error && (
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Worker</th>
-                  <th>Narrative</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((p: ProcessRecording) => (
-                  <tr key={p.recordingId}>
-                    <td>{p.sessionDate ?? '—'}</td>
-                    <td>{p.sessionType ?? '—'}</td>
-                    <td>{p.socialWorker ?? '—'}</td>
-                    <td style={{ maxWidth: 360 }}>{p.sessionNarrative ?? '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+              <p className="section-title">Sessions</p>
+              {sessionsLoading && <div className="inline-loading">Loading sessions...</div>}
+              {!sessionsLoading && sessions.length === 0 && <div className="empty-state">No sessions recorded</div>}
+              {!sessionsLoading && sessions.length > 0 && (
+                <div className="pr-journal">
+                  {sessions.map(s => (
+                    <div key={s.recordingId} className="pr-card">
+                      <div className="pr-card__header">
+                        <span className="pr-card__date">{s.sessionDate ?? 'No date'}</span>
+                        {s.sessionType && <span className="badge badge--purple">{s.sessionType}</span>}
+                        {s.notesRestricted === 'Y' && <span className="badge badge--red">Restricted</span>}
+                        <span className="pr-card__worker">{s.socialWorker}</span>
+                      </div>
+                      {s.sessionNarrative ? (
+                        <p className="pr-card__narrative">{s.sessionNarrative}</p>
+                      ) : (
+                        <p className="pr-card__narrative pr-card__narrative--empty">No narrative recorded</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </AdminLayout>
   )
 }

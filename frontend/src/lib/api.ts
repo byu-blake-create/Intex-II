@@ -5,7 +5,15 @@ export function apiUrl(path: string): string {
   return `${base}${p}`
 }
 
+const USE_MOCK = import.meta.env.VITE_MOCK === 'true'
+
 export async function apiGet<T>(path: string): Promise<T> {
+  if (USE_MOCK) {
+    const { mockFetch } = await import('./mockHandlers')
+    const r = mockFetch(apiUrl(path))
+    if (!r.ok) throw new Error(await r.text())
+    return r.json() as Promise<T>
+  }
   const r = await fetch(apiUrl(path), { credentials: 'include' })
   if (!r.ok) throw new Error(await r.text())
   return r.json() as Promise<T>

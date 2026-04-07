@@ -16,6 +16,7 @@ import CaseloadPage from './pages/admin/CaseloadPage'
 import ProcessRecordingPage from './pages/admin/ProcessRecordingPage'
 import VisitationsPage from './pages/admin/VisitationsPage'
 import ReportsPage from './pages/admin/ReportsPage'
+import SocialSuitePage from './pages/admin/SocialSuitePage'
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/staff/process-recording" element={<ProtectedRoute><ProcessRecordingPage /></ProtectedRoute>} />
         <Route path="/staff/visitations" element={<ProtectedRoute><VisitationsPage /></ProtectedRoute>} />
         <Route path="/staff/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+        <Route path="/staff/social" element={<ProtectedRoute><SocialSuitePage /></ProtectedRoute>} />
 
         {/* Keep older links working while the app standardizes on /staff. */}
         <Route path="/admin" element={<Navigate to="/staff" replace />} />
