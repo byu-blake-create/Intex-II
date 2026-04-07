@@ -62,16 +62,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div className="admin-layout__actions">
-          {workbenchLabel && (
-            <div className="admin-layout__context">
-              <span className="admin-layout__context-label">Workbench</span>
-              <span className="admin-layout__context-value">{workbenchLabel}</span>
-              <Link to="/admin" className="admin-layout__context-link">
-                Back to dashboard
-              </Link>
-            </div>
-          )}
-
           <button
             type="button"
             className="admin-layout__theme-toggle"
@@ -104,6 +94,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
       </header>
+      {workbenchLabel && (
+        <div className="admin-layout__workbench-bar">
+          <span className="admin-layout__context-label">Workbench</span>
+          <span className="admin-layout__context-value">{workbenchLabel}</span>
+          <Link to="/admin" className="admin-layout__context-link">
+            Back to dashboard
+          </Link>
+        </div>
+      )}
       <div className="admin-layout__body">{children}</div>
     </div>
   )
