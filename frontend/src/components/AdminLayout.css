@@ -421,13 +421,20 @@
 }
 
 .admin-layout__logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  min-width: 96px;
   border: 1px solid var(--adm-border);
   background: var(--adm-card);
-  padding: 0.35rem 0.9rem;
+  padding: 0 1rem;
   border-radius: 999px;
   cursor: pointer;
   font-weight: 700;
   color: var(--adm-ink);
+  position: relative;
+  z-index: 1;
   transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.15s;
 }
 

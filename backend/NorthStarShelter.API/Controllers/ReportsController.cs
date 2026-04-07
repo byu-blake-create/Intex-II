@@ -179,7 +179,7 @@ public class ReportsController : ControllerBase
                 topRecentDonor is null
                     ? "No recent donation activity has been recorded yet."
                     : $"{topRecentDonor.DisplayName} currently leads recent giving with ${topRecentDonor.Total:N0} in the last 30 days.",
-                "/staff/donors",
+                "/admin/donors",
                 "Open donor workbench",
                 new CommandCenterModelDto("Live donor activity", "db-live", snapshotLabel, "Window", "90 days", "Based on the last recorded donation date per supporter.")),
             new(
@@ -191,7 +191,7 @@ public class ReportsController : ControllerBase
                 topRecentDonor is null
                     ? "Recent donor activity will appear here once new donations are recorded."
                     : $"{topRecentDonor.DisplayName} is the top donor in the current 30-day window.",
-                "/staff/donors",
+                "/admin/donors",
                 "Review recent donors",
                 new CommandCenterModelDto("Recent gifts", "db-live", snapshotLabel, "Window", "30 days", "Counts supporters with at least one recent donation.")),
             new(
@@ -203,7 +203,7 @@ public class ReportsController : ControllerBase
                 latestIncident is null
                     ? "No unresolved incident reports are currently open."
                     : $"Resident {latestIncident.ResidentId} is the latest open case ({latestIncident.Severity ?? "severity unspecified"}) from {latestIncident.IncidentDate:yyyy-MM-dd}.",
-                "/staff/caseload",
+                "/admin/caseload",
                 "Open caseload",
                 new CommandCenterModelDto("Incident backlog", "db-live", snapshotLabel, "Status", "Unresolved", "Derived from incident records flagged unresolved or follow-up required.")),
             new(
@@ -215,7 +215,7 @@ public class ReportsController : ControllerBase
                 topResidentVisitCount is null
                     ? "No positive visit outcomes are available in the current lookback window."
                     : $"Resident {topResidentVisitCount.ResidentId} has the highest count of recent positive visit outcomes ({topResidentVisitCount.Count}).",
-                "/staff/visitations",
+                "/admin/visitations",
                 "Open visitation planning",
                 new CommandCenterModelDto("Visit outcomes", "db-live", snapshotLabel, "Window", "90 days", "Counts positive home visitation outcomes.")),
             new(
@@ -227,7 +227,7 @@ public class ReportsController : ControllerBase
                 safehouseLoad is null
                     ? "No safehouse occupancy data is available."
                     : "Active resident counts are derived directly from the current resident roster.",
-                "/staff/reports",
+                "/admin/reports",
                 "Open operational reports",
                 new CommandCenterModelDto("Current occupancy", "db-live", snapshotLabel, "Scope", "Active residents", "Calculated from the live Residents table.")),
             new(
@@ -241,7 +241,7 @@ public class ReportsController : ControllerBase
                 topPlatform is null
                     ? "Populate the SocialMediaPosts table to unlock outreach analytics."
                     : $"{topPlatform.PostCount} posts contributed to the current average engagement rate.",
-                "/staff/social",
+                "/admin/social",
                 "Open social workspace",
                 new CommandCenterModelDto("Social engagement", "db-live", snapshotLabel, "Posts sampled", topPlatform?.PostCount.ToString() ?? "0", "Averages the stored engagement rate by platform.")),
         };
@@ -251,28 +251,28 @@ public class ReportsController : ControllerBase
             new(
                 "Work the outreach queue",
                 "Start with supporters who have gone 90 days without a recorded gift, then review the recent-donor list while activity is fresh.",
-                "/staff/donors",
+                "/admin/donors",
                 "Open donor workbench"),
             new(
                 "Clear open incident follow-up",
                 unresolvedIncidentCount == 0
                     ? "There are no unresolved incident reports right now."
                     : "Review unresolved incident reports before opening new resident work.",
-                "/staff/caseload",
+                "/admin/caseload",
                 "Open caseload"),
             new(
                 "Use recent visit outcomes for reintegration review",
                 "Positive visit history is the clearest live signal available for reintegration conversations today.",
-                "/staff/visitations",
+                "/admin/visitations",
                 "Open visitations"),
         };
 
         var lanes = new List<CommandCenterLaneDto>
         {
-            new("Donors", "Live supporter and donation records from the production database.", "/staff/donors"),
-            new("Caseload", "Resident records, incidents, and protected case details from the production database.", "/staff/caseload"),
-            new("Visitations", "Home visitation history and recent outcomes from the production database.", "/staff/visitations"),
-            new("Reports", "Operational summaries and donation trends computed from the production database.", "/staff/reports"),
+            new("Donors", "Live supporter and donation records from the production database.", "/admin/donors"),
+            new("Caseload", "Resident records, incidents, and protected case details from the production database.", "/admin/caseload"),
+            new("Visitations", "Home visitation history and recent outcomes from the production database.", "/admin/visitations"),
+            new("Reports", "Operational summaries and donation trends computed from the production database.", "/admin/reports"),
         };
 
         var heroChips = new List<string>

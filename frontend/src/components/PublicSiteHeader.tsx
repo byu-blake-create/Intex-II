@@ -13,7 +13,7 @@ export default function PublicSiteHeader({
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   const hasAdminAccess = Boolean(user && (user.roles.includes('Staff') || user.roles.includes('Admin')))
   const roleLink = hasAdminAccess
-    ? { label: 'Admin', to: '/staff' }
+    ? { label: 'Admin', to: '/admin' }
     : user?.roles.includes('Donor')
       ? { label: 'Donations', to: '/donations' }
       : null
