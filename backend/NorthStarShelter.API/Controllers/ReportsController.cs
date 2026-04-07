@@ -26,56 +26,75 @@ public class ReportsController : ControllerBase
 
     [HttpGet("summary")]
     [AllowAnonymous]
+    [ResponseCache(Duration = 60)]
     public async Task<ActionResult<SummaryDto>> Summary(CancellationToken cancellationToken)
     {
-        var active = await _db.Residents.AsNoTracking().CountAsync(r => r.CaseStatus == "Active", cancellationToken);
         var since = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30));
-        var donationCount = 0;
-        var donationSum = 0m;
-
-        try
-        {
-            // Keep the heavy lifting in Postgres so the dashboard summary does not
-            // time out pulling donation rows over the network.
-            donationCount = await _db.Donations.AsNoTracking()
-                .CountAsync(d => d.DonationDate >= since, cancellationToken);
-            donationSum = await _db.Donations.AsNoTracking()
-                .Where(d => d.DonationDate >= since)
-                .SumAsync(d => d.Amount ?? 0, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Dashboard donation aggregates timed out. Returning fallback values.");
-        }
-
         var from = DateOnly.FromDateTime(DateTime.UtcNow);
         var to = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(60));
-        var conferences = await _db.InterventionPlans.AsNoTracking()
-            .CountAsync(p => p.CaseConferenceDate >= from && p.CaseConferenceDate <= to, cancellationToken);
-        return Ok(new SummaryDto(active, donationCount, donationSum, conferences));
+
+        // Single round-trip: compute all four aggregates in one SQL statement.
+        var row = await _db.Database
+            .SqlQueryRaw<SummaryRow>(
+                """
+                SELECT
+                    (SELECT count(*)::int FROM residents WHERE case_status = 'Active') AS active_residents,
+                    (SELECT count(*)::int FROM donations WHERE donation_date >= {0}) AS donation_count,
+                    (SELECT coalesce(sum(amount), 0) FROM donations WHERE donation_date >= {0}) AS donation_sum,
+                    (SELECT count(*)::int FROM intervention_plans WHERE case_conference_date >= {1} AND case_conference_date <= {2}) AS conferences
+                """, since, from, to)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return Ok(new SummaryDto(
+            row?.ActiveResidents ?? 0,
+            row?.DonationCount ?? 0,
+            row?.DonationSum ?? 0,
+            row?.Conferences ?? 0));
+    }
+
+    // Matches the column aliases returned by the summary SQL above.
+    private sealed class SummaryRow
+    {
+        public int ActiveResidents { get; set; }
+        public int DonationCount { get; set; }
+        public decimal DonationSum { get; set; }
+        public int Conferences { get; set; }
     }
 
     [HttpGet("donations-by-month")]
     [AllowAnonymous]
+    [ResponseCache(Duration = 60)]
     public async Task<ActionResult<IReadOnlyList<object>>> DonationsByMonth(
         [FromQuery] int months = 12,
         CancellationToken cancellationToken = default)
     {
         months = Math.Clamp(months, 1, 36);
         var start = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-months));
-        var rows = await _db.Donations.AsNoTracking()
+
+        // Group and sum entirely in Postgres — never pull individual rows.
+        var grouped = await _db.Donations.AsNoTracking()
             .Where(d => d.DonationDate >= start && d.Amount != null)
+            .GroupBy(d => new { d.DonationDate!.Value.Year, d.DonationDate!.Value.Month })
+            .Select(g => new
+            {
+                year = g.Key.Year,
+                mo = g.Key.Month,
+                total = g.Sum(x => x.Amount ?? 0)
+            })
+            .OrderBy(g => g.year).ThenBy(g => g.mo)
             .ToListAsync(cancellationToken);
-        var grouped = rows
-            .GroupBy(d => d.DonationDate!.Value.ToString("yyyy-MM"))
-            .Select(g => new { month = g.Key, total = g.Sum(x => x.Amount ?? 0) })
-            .OrderBy(x => x.month)
-            .ToList();
-        return Ok(grouped);
+
+        var result = grouped.Select(g => new
+        {
+            month = $"{g.year}-{g.mo:D2}",
+            g.total
+        });
+        return Ok(result);
     }
 
     [HttpGet("residents-by-category")]
     [Authorize]
+    [ResponseCache(Duration = 60)]
     public async Task<ActionResult<Dictionary<string, int>>> ResidentsByCategory(CancellationToken cancellationToken)
     {
         var data = await _db.Residents.AsNoTracking()

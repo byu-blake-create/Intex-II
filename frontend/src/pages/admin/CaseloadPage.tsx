@@ -1,8 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
 import { fetchResidents } from '../../lib/residentsApi'
 import { fetchSafehouses } from '../../lib/safehousesApi'
 import type { Resident, Safehouse } from '../../types/domain'
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(id)
+  }, [value, delay])
+  return debounced
+}
 
 export default function CaseloadPage() {
   const [residents, setResidents] = useState<Resident[]>([])
@@ -17,16 +26,21 @@ export default function CaseloadPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Debounce text inputs to avoid an API call per keystroke
+  const debouncedStatus = useDebounce(caseStatus, 350)
+  const debouncedCategory = useDebounce(caseCategory, 350)
+  const debouncedSearch = useDebounce(search, 350)
+
   const filters = useMemo(
     () => ({
       pageNum,
       pageSize,
       safehouseId: safehouseId ? Number(safehouseId) : undefined,
-      caseStatus: caseStatus || undefined,
-      caseCategory: caseCategory || undefined,
-      search: search.trim() || undefined,
+      caseStatus: debouncedStatus || undefined,
+      caseCategory: debouncedCategory || undefined,
+      search: debouncedSearch.trim() || undefined,
     }),
-    [pageNum, safehouseId, caseStatus, caseCategory, search],
+    [pageNum, safehouseId, debouncedStatus, debouncedCategory, debouncedSearch],
   )
 
   useEffect(() => {

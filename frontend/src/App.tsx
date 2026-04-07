@@ -1,26 +1,28 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import CookieConsent from './components/CookieConsent'
 
-// Public pages
+// Public pages — lightweight, keep eager
 import HomePage from './pages/public/HomePage'
-import ImpactPage from './pages/public/ImpactPage'
 import LoginPage from './pages/public/LoginPage'
-import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage'
 
-// Staff pages
-import AdminDashboard from './pages/admin/AdminDashboard'
-import DonorsPage from './pages/admin/DonorsPage'
-import CaseloadPage from './pages/admin/CaseloadPage'
-import ProcessRecordingPage from './pages/admin/ProcessRecordingPage'
-import VisitationsPage from './pages/admin/VisitationsPage'
-import ReportsPage from './pages/admin/ReportsPage'
+// Lazy-loaded pages — split into separate chunks
+const ImpactPage = lazy(() => import('./pages/public/ImpactPage'))
+const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage'))
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const DonorsPage = lazy(() => import('./pages/admin/DonorsPage'))
+const CaseloadPage = lazy(() => import('./pages/admin/CaseloadPage'))
+const ProcessRecordingPage = lazy(() => import('./pages/admin/ProcessRecordingPage'))
+const VisitationsPage = lazy(() => import('./pages/admin/VisitationsPage'))
+const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'))
 
 export default function App() {
   return (
     <AuthProvider>
       <CookieConsent />
+      <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center' }}>Loading…</div>}>
       <Routes>
         {/* Public */}
         <Route path="/" element={<HomePage />} />
@@ -44,6 +46,7 @@ export default function App() {
         <Route path="/admin/visitations" element={<Navigate to="/staff/visitations" replace />} />
         <Route path="/admin/reports" element={<Navigate to="/staff/reports" replace />} />
       </Routes>
+      </Suspense>
     </AuthProvider>
   )
 }
