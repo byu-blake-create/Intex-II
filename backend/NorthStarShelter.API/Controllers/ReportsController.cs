@@ -10,8 +10,13 @@ namespace NorthStarShelter.API.Controllers;
 public class ReportsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly ILogger<ReportsController> _logger;
 
-    public ReportsController(AppDbContext db) => _db = db;
+    public ReportsController(AppDbContext db, ILogger<ReportsController> logger)
+    {
+        _db = db;
+        _logger = logger;
+    }
 
     public record SummaryDto(
         int ActiveResidents,
@@ -25,13 +30,24 @@ public class ReportsController : ControllerBase
     {
         var active = await _db.Residents.AsNoTracking().CountAsync(r => r.CaseStatus == "Active", cancellationToken);
         var since = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30));
-        // Keep the heavy lifting in Postgres so the dashboard summary does not
-        // time out when donation history grows.
-        var donationCount = await _db.Donations.AsNoTracking()
-            .CountAsync(d => d.DonationDate >= since, cancellationToken);
-        var donationSum = await _db.Donations.AsNoTracking()
-            .Where(d => d.DonationDate >= since)
-            .SumAsync(d => d.Amount ?? 0, cancellationToken);
+        var donationCount = 0;
+        var donationSum = 0m;
+
+        try
+        {
+            // Keep the heavy lifting in Postgres so the dashboard summary does not
+            // time out pulling donation rows over the network.
+            donationCount = await _db.Donations.AsNoTracking()
+                .CountAsync(d => d.DonationDate >= since, cancellationToken);
+            donationSum = await _db.Donations.AsNoTracking()
+                .Where(d => d.DonationDate >= since)
+                .SumAsync(d => d.Amount ?? 0, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Dashboard donation aggregates timed out. Returning fallback values.");
+        }
+
         var from = DateOnly.FromDateTime(DateTime.UtcNow);
         var to = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(60));
         var conferences = await _db.InterventionPlans.AsNoTracking()
