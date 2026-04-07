@@ -74,3 +74,24 @@ export interface DashboardSummary {
   donationAmountLast30Days: number
   upcomingCaseConferences: number
 }
+
+export interface SocialMediaPost {
+  postId: number
+  platform?: string | null
+  postUrl?: string | null
+  createdAt?: string | null
+  postType?: string | null
+  mediaType?: string | null
+  caption?: string | null
+  campaignName?: string | null
+  sentimentTone?: string | null
+  impressions?: number | null
+  reach?: number | null
+  likes?: number | null
+  comments?: number | null
+  shares?: number | null
+  saves?: number | null
+  clickThroughs?: number | null
+  engagementRate?: number | null
+  donationReferrals?: number | null
+}

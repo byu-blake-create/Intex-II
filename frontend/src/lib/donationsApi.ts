@@ -14,3 +14,16 @@ export function donationsUrl(params: { pageNum?: number; pageSize?: number; supp
 export function fetchDonations(params: Parameters<typeof donationsUrl>[0]) {
   return apiGet<PaginatedList<Donation>>(donationsUrl(params))
 }
+
+export interface MyDonationsResponse {
+  supporterId?: number | null
+  displayName: string
+  email: string
+  donationCount: number
+  totalAmount: number
+  donations: PaginatedList<Donation>
+}
+
+export function fetchMyDonations(pageNum = 1, pageSize = 20) {
+  return apiGet<MyDonationsResponse>(`/api/donations/mine?pageNum=${pageNum}&pageSize=${pageSize}`)
+}

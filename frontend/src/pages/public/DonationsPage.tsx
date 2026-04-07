@@ -1,139 +1,164 @@
-import { Fragment, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { fetchMyDonations, type MyDonationsResponse } from '../../lib/donationsApi'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
 import { usePublicTheme } from '../../lib/usePublicTheme'
 import './HomePage.css'
 import './DonationsPage.css'
 
-type DonationRow = {
-  donationId: number
-  date: string
-  amount: number
-  frequency: 'One-time' | 'Monthly' | 'Corporate Match'
-  campaign: string
-  paymentMethod: string
-  receiptId: string
-  note: string
-}
-
-const demoDonations: DonationRow[] = [
-  {
-    donationId: 90214,
-    date: '2026-04-01',
-    amount: 150,
-    frequency: 'Monthly',
-    campaign: 'Monthly Hope Fund',
-    paymentMethod: 'Visa ending in 8241',
-    receiptId: 'NS-2026-APR-90214',
-    note: 'Recurring contribution supporting shelter meals and care kits.',
-  },
-  {
-    donationId: 89103,
-    date: '2026-03-12',
-    amount: 250,
-    frequency: 'One-time',
-    campaign: 'Emergency Shelter Support',
-    paymentMethod: 'Apple Pay',
-    receiptId: 'NS-2026-MAR-89103',
-    note: 'Directed to emergency housing and immediate safety resources.',
-  },
-  {
-    donationId: 87455,
-    date: '2025-12-02',
-    amount: 300,
-    frequency: 'One-time',
-    campaign: 'Holiday Family Support',
-    paymentMethod: 'Mastercard ending in 4102',
-    receiptId: 'NS-2025-DEC-87455',
-    note: 'Holiday response giving for winter shelter capacity.',
-  },
-  {
-    donationId: 86220,
-    date: '2025-10-19',
-    amount: 125,
-    frequency: 'Corporate Match',
-    campaign: 'Community Match Week',
-    paymentMethod: 'Employer Match',
-    receiptId: 'NS-2025-OCT-86220',
-    note: 'Employer-matched contribution from a workplace giving program.',
-  },
-]
-
 export default function DonationsPage() {
   const { theme, setTheme } = usePublicTheme()
-  const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
+  const [data, setData] = useState<MyDonationsResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const totalGiving = demoDonations.reduce((sum, donation) => sum + donation.amount, 0)
-
-  function toggleExpanded(id: number) {
-    setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }))
-  }
+  useEffect(() => {
+    let mounted = true
+    fetchMyDonations()
+      .then(result => {
+        if (mounted) setData(result)
+      })
+      .catch(() => {
+        if (mounted) setError('Could not load your donation history right now.')
+      })
+      .finally(() => {
+        if (mounted) setLoading(false)
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   return (
     <div className="public-site donations-page" data-theme={theme}>
       <PublicSiteHeader theme={theme} setTheme={setTheme} />
-      <main className="donations-page__main">
-        <section className="donations-card">
-          <p className="donations-card__eyebrow">Donations</p>
-          <h1>Your donation history</h1>
-          <p className="donations-card__subtext">
-            Thanks for your support. This testing view uses demo data to preview the donor table
-            experience in the new website layout.
+
+      <main
+        style={{
+          width: 'min(1180px, 100%)',
+          margin: '0 auto',
+          padding: '42px 24px 48px',
+        }}
+      >
+        <section
+          style={{
+            display: 'grid',
+            gap: '1rem',
+            padding: '34px',
+            borderRadius: '32px',
+            border: '1px solid var(--page-line)',
+            background: 'var(--page-panel)',
+            boxShadow: '0 18px 60px rgba(61, 36, 20, 0.08)',
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              color: 'var(--page-accent-deep)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.16em',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+            }}
+          >
+            Donations
           </p>
+          <h1 style={{ margin: 0, maxWidth: '14ch' }}>
+            {data ? `Welcome back, ${data.displayName}.` : 'Your donor dashboard'}
+          </h1>
+          <p style={{ margin: 0, lineHeight: 1.8 }}>
+            This page now pulls your donor record from the live database and shows the donations
+            currently associated with your account.
+          </p>
+        </section>
 
-          <div className="donations-metrics">
-            <article>
-              <span>Total donations</span>
-              <strong>{demoDonations.length}</strong>
-            </article>
-            <article>
-              <span>Total given</span>
-              <strong>${totalGiving.toLocaleString()}</strong>
-            </article>
+        <section
+          style={{
+            display: 'grid',
+            gap: '1rem',
+            marginTop: '1.25rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          }}
+        >
+          <div
+            style={{
+              padding: '1.2rem',
+              borderRadius: '24px',
+              border: '1px solid var(--page-line)',
+              background: 'var(--page-panel)',
+            }}
+          >
+            <p style={{ margin: 0, color: 'var(--page-muted)', fontSize: '0.85rem' }}>Donation count</p>
+            <p style={{ margin: '0.35rem 0 0', fontSize: '2rem', fontWeight: 800 }}>
+              {data?.donationCount ?? 0}
+            </p>
           </div>
+          <div
+            style={{
+              padding: '1.2rem',
+              borderRadius: '24px',
+              border: '1px solid var(--page-line)',
+              background: 'var(--page-panel)',
+            }}
+          >
+            <p style={{ margin: 0, color: 'var(--page-muted)', fontSize: '0.85rem' }}>Total donated</p>
+            <p style={{ margin: '0.35rem 0 0', fontSize: '2rem', fontWeight: 800 }}>
+              ${data?.totalAmount.toLocaleString() ?? '0'}
+            </p>
+          </div>
+        </section>
 
-          <div className="donations-table-wrap">
-            <table className="donations-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {demoDonations.map(donation => {
-                  const isExpanded = !!expandedRows[donation.donationId]
-                  return (
-                    <Fragment key={donation.donationId}>
-                      <tr>
-                        <td>{donation.date}</td>
-                        <td>${donation.amount.toLocaleString()}</td>
-                        <td className="donations-table__actions">
-                          <button type="button" onClick={() => toggleExpanded(donation.donationId)}>
-                            {isExpanded ? 'See less' : 'See more'}
-                          </button>
-                        </td>
-                      </tr>
-                      {isExpanded && (
-                        <tr className="donations-table__details">
-                          <td colSpan={3}>
-                            <div className="donation-details-grid">
-                              <p><strong>Donation ID:</strong> {donation.donationId}</p>
-                              <p><strong>Frequency:</strong> {donation.frequency}</p>
-                              <p><strong>Campaign:</strong> {donation.campaign}</p>
-                              <p><strong>Payment method:</strong> {donation.paymentMethod}</p>
-                              <p><strong>Receipt:</strong> {donation.receiptId}</p>
-                              <p><strong>Note:</strong> {donation.note}</p>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+        <section
+          style={{
+            display: 'grid',
+            gap: '1rem',
+            marginTop: '1.25rem',
+            padding: '28px',
+            borderRadius: '32px',
+            border: '1px solid var(--page-line)',
+            background: 'var(--page-panel)',
+            boxShadow: '0 18px 60px rgba(61, 36, 20, 0.08)',
+          }}
+        >
+          <h2 style={{ margin: 0 }}>Your donation history</h2>
+          {loading && <p style={{ margin: 0 }}>Loading your donations...</p>}
+          {error && <p style={{ margin: 0, color: 'var(--page-accent)' }}>{error}</p>}
+          {!loading && !error && data && data.donations.items.length === 0 && (
+            <p style={{ margin: 0, lineHeight: 1.8 }}>
+              Your account is active as a donor, but there are no donations linked yet.
+            </p>
+          )}
+          {!loading && !error && data && data.donations.items.length > 0 && (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '0.8rem 0.5rem' }}>Date</th>
+                    <th style={{ textAlign: 'left', padding: '0.8rem 0.5rem' }}>Type</th>
+                    <th style={{ textAlign: 'left', padding: '0.8rem 0.5rem' }}>Campaign</th>
+                    <th style={{ textAlign: 'right', padding: '0.8rem 0.5rem' }}>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.donations.items.map(donation => (
+                    <tr key={donation.donationId}>
+                      <td style={{ padding: '0.8rem 0.5rem', borderTop: '1px solid var(--page-line)' }}>
+                        {donation.donationDate ?? '—'}
+                      </td>
+                      <td style={{ padding: '0.8rem 0.5rem', borderTop: '1px solid var(--page-line)' }}>
+                        {donation.donationType}
+                      </td>
+                      <td style={{ padding: '0.8rem 0.5rem', borderTop: '1px solid var(--page-line)' }}>
+                        {donation.campaignName ?? '—'}
+                      </td>
+                      <td style={{ padding: '0.8rem 0.5rem', borderTop: '1px solid var(--page-line)', textAlign: 'right' }}>
+                        {donation.amount != null ? `${donation.currencyCode ?? '$'}${donation.amount.toLocaleString()}` : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       </main>
     </div>

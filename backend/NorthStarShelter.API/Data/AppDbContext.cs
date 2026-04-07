@@ -1,11 +1,10 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NorthStarShelter.API.Models;
 
 namespace NorthStarShelter.API.Data;
 
-public class AppDbContext : IdentityDbContext<IdentityUser>
+public class AppDbContext : IdentityDbContext<AppUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -59,6 +58,12 @@ public class AppDbContext : IdentityDbContext<IdentityUser>
             .WithMany(s => s.Donations)
             .HasForeignKey(d => d.SupporterId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<AppUser>()
+            .HasOne(u => u.Supporter)
+            .WithOne(s => s.User)
+            .HasForeignKey<AppUser>(u => u.SupporterId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.Entity<Donation>()
             .HasOne(d => d.ReferralPost)

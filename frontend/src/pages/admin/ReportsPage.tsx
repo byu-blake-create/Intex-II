@@ -66,7 +66,7 @@ export default function ReportsPage() {
       <div className="rp">
         <header className="page-header">
           <h1>Reports &amp; Analytics</h1>
-          <p>Operational metrics, donation trends, and ML model performance</p>
+          <p>Operational metrics, donation trends, and live database-backed signals</p>
         </header>
 
         {loading && <div className="inline-loading">Loading reports...</div>}
@@ -105,7 +105,7 @@ export default function ReportsPage() {
 
         {!loading && !error && dashData && (
           <>
-            <p className="section-title">ML Model Performance</p>
+            <p className="section-title">Signal Details</p>
             <div className="rp__model-grid">
               {dashData.cards.map(card => (
                 <div key={card.id} className="rp__model-card">
@@ -119,7 +119,7 @@ export default function ReportsPage() {
                       {TONE_LABELS[card.tone] ?? card.tone}
                     </span>
                   </div>
-                  <span className="rp__model-trained">Trained: {card.model.trainedAt}</span>
+                  <span className="rp__model-trained">Refreshed: {card.model.trainedAt}</span>
                   {card.model.topFactor && <span className="rp__model-factor">{card.model.topFactor}</span>}
                 </div>
               ))}

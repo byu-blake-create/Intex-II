@@ -21,12 +21,21 @@ public class SupportersController : ControllerBase
         [FromQuery] int pageNum = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] string? supporterType = null,
+        [FromQuery] string? search = null,
         [FromQuery] string? status = null,
         CancellationToken cancellationToken = default)
     {
         var query = _db.Supporters.AsNoTracking().AsQueryable();
         if (!string.IsNullOrWhiteSpace(supporterType))
             query = query.Where(s => s.SupporterType == supporterType);
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(s =>
+                s.DisplayName.Contains(term) ||
+                (s.OrganizationName != null && s.OrganizationName.Contains(term)) ||
+                (s.Email != null && s.Email.Contains(term)));
+        }
         if (!string.IsNullOrWhiteSpace(status))
             query = query.Where(s => s.Status == status);
         query = query.OrderBy(s => s.SupporterId);

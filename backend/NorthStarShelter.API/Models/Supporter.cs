@@ -18,5 +18,6 @@ public class Supporter
     public DateOnly? FirstDonationDate { get; set; }
     public string? AcquisitionChannel { get; set; }
 
+    public AppUser? User { get; set; }
     public ICollection<Donation> Donations { get; set; } = new List<Donation>();
 }

@@ -3,7 +3,7 @@ import { CONSENT_EVENT, getConsentDecision, setConsentDecision, syncOptionalAnal
 import './CookieConsent.css'
 
 export default function CookieConsent() {
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(() => getConsentDecision() === null)
 
   useEffect(() => {
     const sync = () => {
