@@ -102,9 +102,18 @@
   padding: 0 24px 48px;
 }
 
+#top,
+#mission,
+#services,
+#impact-dashboard,
+#pathway {
+  scroll-margin-top: 112px;
+}
+
 .home-nav,
 .hero-section,
 .mission-band,
+.impact-dashboard-section,
 .pillars-section,
 .systems-section,
 .pathway-section,
@@ -642,6 +651,7 @@
 }
 
 .mission-band,
+.impact-dashboard-section,
 .pillars-section,
 .systems-section,
 .pathway-section,
@@ -655,11 +665,239 @@
 }
 
 .mission-band,
+.impact-dashboard-section,
 .pillars-section,
 .systems-section,
 .pathway-section,
 .principles-section {
   padding: 34px;
+}
+
+.impact-dashboard-section__heading {
+  align-items: end;
+}
+
+.impact-dashboard-section__heading h2 {
+  max-width: 16ch;
+}
+
+.impact-dashboard-section__lede {
+  max-width: 54ch;
+  margin: 0;
+  line-height: 1.8;
+}
+
+.impact-dashboard-section__status {
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px dashed var(--page-chip-border);
+  background: var(--page-card-bg);
+  color: var(--page-muted);
+}
+
+.impact-dashboard-section__status--error {
+  color: #c94835;
+  border-color: rgba(201, 72, 53, 0.25);
+}
+
+.impact-dashboard {
+  display: grid;
+  gap: 18px;
+}
+
+.impact-dashboard__spotlight {
+  display: grid;
+  gap: 14px;
+  padding: 28px;
+  border-radius: 28px;
+  border: 1px solid var(--page-chip-border);
+  background:
+    radial-gradient(circle at top right, rgba(187, 95, 60, 0.16), transparent 26%),
+    linear-gradient(180deg, var(--page-card-bg) 0%, var(--page-panel) 100%);
+}
+
+.impact-dashboard__meta,
+.impact-insight-card__label,
+.impact-kpi-card__label {
+  margin: 0;
+  color: var(--page-accent-deep);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.impact-dashboard__spotlight h3,
+.impact-trend-panel h3,
+.impact-insight-card h3 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  line-height: 1.05;
+}
+
+.impact-dashboard__summary,
+.impact-insight-card p,
+.impact-trend-panel__copy p {
+  margin: 0;
+  line-height: 1.8;
+}
+
+.impact-dashboard__signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.impact-dashboard__signals span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--page-chip-border);
+  background: var(--page-chip-bg);
+  color: var(--page-muted);
+}
+
+.impact-dashboard__kpis,
+.impact-dashboard__insights,
+.impact-trend-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.impact-dashboard__kpis {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.impact-dashboard__insights {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.impact-kpi-card,
+.impact-insight-card,
+.impact-trend-card {
+  min-height: 100%;
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid var(--page-chip-border);
+  background: var(--page-card-bg);
+}
+
+.impact-kpi-card strong {
+  display: block;
+  margin: 12px 0 10px;
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+  line-height: 0.95;
+}
+
+.impact-kpi-card__detail {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.impact-kpi-card__detail--secondary {
+  color: var(--page-muted);
+  opacity: 0.9;
+}
+
+.impact-insight-card {
+  display: grid;
+  gap: 10px;
+}
+
+.impact-trend-panel {
+  display: grid;
+  gap: 18px;
+  padding: 28px;
+  border-radius: 28px;
+  border: 1px solid var(--page-chip-border);
+  background: var(--page-panel);
+}
+
+.impact-trend-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.impact-trend-card {
+  display: grid;
+  gap: 14px;
+}
+
+.impact-trend-card__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.impact-trend-card__header p,
+.impact-trend-card__stats dt,
+.impact-trend-card__stats dd {
+  margin: 0;
+}
+
+.impact-trend-card__header strong {
+  font-size: 1.3rem;
+}
+
+.impact-trend-card__caption {
+  margin: 0;
+  color: var(--page-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.impact-trend-card__meter {
+  overflow: hidden;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(127, 61, 38, 0.12);
+}
+
+.impact-trend-card__meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--page-accent) 0%, #f3b06f 100%);
+}
+
+.impact-trend-card__stats {
+  display: grid;
+  gap: 10px;
+}
+
+.impact-trend-card__stats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.impact-trend-card__stats dt {
+  color: var(--page-muted);
+}
+
+.impact-trend-card__stats dd {
+  color: var(--page-ink);
+  font-weight: 700;
+}
+
+.impact-dashboard__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.impact-dashboard__method {
+  padding: 22px 24px;
+  border-radius: 24px;
+  border: 1px solid var(--page-chip-border);
+  background: var(--page-card-bg);
+}
+
+.impact-dashboard__method p:last-child {
+  margin: 10px 0 0;
+  line-height: 1.75;
 }
 
 .mission-band__intro {
@@ -882,6 +1120,9 @@
 
   .hero-section,
   .mission-band__grid,
+  .impact-dashboard__kpis,
+  .impact-dashboard__insights,
+  .impact-trend-grid,
   .principles-section,
   .cta-section {
     grid-template-columns: 1fr;
@@ -946,6 +1187,7 @@
   }
 
   .mission-band,
+  .impact-dashboard-section,
   .pillars-section,
   .systems-section,
   .pathway-section,
@@ -955,6 +1197,7 @@
   }
 
   .mission-band,
+  .impact-dashboard-section,
   .pillars-section,
   .systems-section,
   .pathway-section,
@@ -970,5 +1213,13 @@
 
   .pathway-step span {
     justify-content: flex-start;
+  }
+
+  .impact-dashboard__footer {
+    justify-content: stretch;
+  }
+
+  .impact-dashboard__footer .button {
+    width: 100%;
   }
 }
