@@ -21,6 +21,7 @@ public static class DatabaseInitializer
         else
         {
             await EnsureIdentityTablesAsync(db, cancellationToken);
+            await EnsureAdminDashboardSchemaAsync(db, cancellationToken);
         }
 
         await SeedData.InitializeAsync(scope.ServiceProvider, configuration);
@@ -180,6 +181,34 @@ public static class DatabaseInitializer
                         FOREIGN KEY ([SupporterId]) REFERENCES [dbo].[Supporters]([SupporterId]) ON DELETE SET NULL;
                 ');
             END;
+            """;
+
+        await ExecuteNonQueryAsync(db, sql, cancellationToken);
+    }
+
+    private static async Task EnsureAdminDashboardSchemaAsync(AppDbContext db, CancellationToken cancellationToken)
+    {
+        const string sql = """
+            IF OBJECT_ID(N'[dbo].[SupporterContacts]', N'U') IS NULL
+            BEGIN
+                CREATE TABLE [dbo].[SupporterContacts](
+                    [SupporterContactId] [int] IDENTITY(1,1) NOT NULL,
+                    [SupporterId] [int] NOT NULL,
+                    [ContactDate] [date] NOT NULL,
+                    [ContactType] [nvarchar](256) NOT NULL,
+                    [Notes] [nvarchar](max) NULL,
+                    [CreatedAt] [datetime2] NULL,
+                    CONSTRAINT [PK_SupporterContacts] PRIMARY KEY ([SupporterContactId]),
+                    CONSTRAINT [FK_SupporterContacts_Supporters_SupporterId]
+                        FOREIGN KEY ([SupporterId]) REFERENCES [dbo].[Supporters]([SupporterId]) ON DELETE CASCADE
+                );
+            END;
+
+            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_SupporterContacts_SupporterId' AND [object_id] = OBJECT_ID(N'[dbo].[SupporterContacts]'))
+                CREATE INDEX [IX_SupporterContacts_SupporterId] ON [dbo].[SupporterContacts] ([SupporterId]);
+
+            IF COL_LENGTH(N'[dbo].[Residents]', N'CaseConferenceDate') IS NULL
+                EXEC(N'ALTER TABLE [dbo].[Residents] ADD [CaseConferenceDate] [date] NULL;');
             """;
 
         await ExecuteNonQueryAsync(db, sql, cancellationToken);

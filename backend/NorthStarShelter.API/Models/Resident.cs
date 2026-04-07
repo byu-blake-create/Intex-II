@@ -50,6 +50,7 @@ public class Resident
     public string? ReintegrationStatus { get; set; }
     public string? InitialRiskLevel { get; set; }
     public string? CurrentRiskLevel { get; set; }
+    public DateOnly? CaseConferenceDate { get; set; }
     public DateOnly? DateEnrolled { get; set; }
     public DateOnly? DateClosed { get; set; }
     public DateTime? CreatedAt { get; set; }
