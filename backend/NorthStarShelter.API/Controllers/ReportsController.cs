@@ -25,11 +25,13 @@ public class ReportsController : ControllerBase
     {
         var active = await _db.Residents.AsNoTracking().CountAsync(r => r.CaseStatus == "Active", cancellationToken);
         var since = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30));
-        var donations = await _db.Donations.AsNoTracking()
+        // Keep the heavy lifting in Postgres so the dashboard summary does not
+        // time out when donation history grows.
+        var donationCount = await _db.Donations.AsNoTracking()
+            .CountAsync(d => d.DonationDate >= since, cancellationToken);
+        var donationSum = await _db.Donations.AsNoTracking()
             .Where(d => d.DonationDate >= since)
-            .ToListAsync(cancellationToken);
-        var donationCount = donations.Count;
-        var donationSum = donations.Sum(d => d.Amount ?? 0);
+            .SumAsync(d => d.Amount ?? 0, cancellationToken);
         var from = DateOnly.FromDateTime(DateTime.UtcNow);
         var to = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(60));
         var conferences = await _db.InterventionPlans.AsNoTracking()
