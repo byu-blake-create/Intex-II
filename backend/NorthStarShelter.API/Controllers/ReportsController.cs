@@ -308,10 +308,13 @@ public class ReportsController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         months = Math.Clamp(months, 1, 36);
-        var start = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-months));
+        var utcNow = DateTime.UtcNow;
+        var currentUtcMonthStart = new DateOnly(utcNow.Year, utcNow.Month, 1);
+        var start = currentUtcMonthStart.AddMonths(-months);
+        var endExclusive = currentUtcMonthStart;
 
         var grouped = await _db.Donations.AsNoTracking()
-            .Where(d => d.DonationDate >= start && d.Amount != null)
+            .Where(d => d.DonationDate >= start && d.DonationDate < endExclusive && d.Amount != null)
             .GroupBy(d => new { d.DonationDate!.Value.Year, d.DonationDate!.Value.Month })
             .Select(g => new
             {

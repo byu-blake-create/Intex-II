@@ -3,12 +3,6 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/auth'
 import './AdminLayout.css'
 
-const primaryLinks = [
-  { to: '/staff', label: 'Dashboard' },
-  { to: '/staff/reports', label: 'Reports' },
-  { to: '/staff/social', label: 'Social Suite' },
-]
-
 const workbenchLabels: Record<string, string> = {
   '/staff/donors': 'Donors',
   '/staff/caseload': 'Caseload',
@@ -23,6 +17,7 @@ const ADMIN_THEME_STORAGE_KEY = 'admin-theme'
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
   const { user, logout } = useAuth()
+  const isAdmin = user?.roles.includes('Admin') ?? false
   const [theme, setTheme] = useState<AdminTheme>(() => {
     if (typeof window === 'undefined') return 'dark'
 
@@ -36,6 +31,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const workbenchLabel = workbenchLabels[pathname]
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
+  const primaryLinks = [
+    { to: '/staff', label: 'Dashboard' },
+    { to: '/staff/social', label: 'Social Suite' },
+    ...(isAdmin ? [{ to: '/staff/database', label: 'Database' }] : []),
+  ]
 
   return (
     <div className="admin-layout" data-theme={theme}>
