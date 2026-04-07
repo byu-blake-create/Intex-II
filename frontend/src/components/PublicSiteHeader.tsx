@@ -29,10 +29,8 @@ export default function PublicSiteHeader({
       </Link>
 
       <nav className="home-nav__links" aria-label="Primary">
-        <Link to={{ pathname: '/', hash: '#mission' }}>Mission</Link>
         <Link to={{ pathname: '/', hash: '#impact-dashboard' }}>Impact</Link>
-        <Link to={{ pathname: '/', hash: '#services' }}>Services</Link>
-        <Link to={{ pathname: '/', hash: '#pathway' }}>Pathway</Link>
+        <Link to={{ pathname: '/', hash: '#services' }}>What We Do</Link>
         <Link to="/privacy">Privacy</Link>
         {roleLink && (
           <Link to={roleLink.to}>{roleLink.label}</Link>
