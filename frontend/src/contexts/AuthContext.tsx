@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { AuthContext, type AuthUser } from './auth'
 import { apiPost, apiUrl } from '../lib/api'
+import { AuthContext, type AuthUser } from './auth'
 
 const SESSION_AUTH_STORAGE_KEY = 'session-auth-user'
 
@@ -52,7 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function register(email: string, password: string, firstName: string, lastName: string) {
-    const data = await apiPost<AuthUser>('/api/auth/register', { email, password, firstName, lastName })
+    const data = await apiPost<AuthUser>('/api/auth/register', {
+      email,
+      password,
+      firstName,
+      lastName,
+    })
     setUser(data)
     writeSessionUser(data)
     return data

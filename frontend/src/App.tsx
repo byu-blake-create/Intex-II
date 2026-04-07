@@ -3,6 +3,7 @@ import { Navigate, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import CookieConsent from './components/CookieConsent'
+import HashScrollManager from './components/HashScrollManager'
 
 // Public pages — lightweight, keep eager
 import HomePage from './pages/public/HomePage'
@@ -24,10 +25,13 @@ export default function App() {
   return (
     <AuthProvider>
       <CookieConsent />
+      <HashScrollManager />
       <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center' }}>Loading…</div>}>
       <Routes>
         {/* Public */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/impactDashboard" element={<Navigate to={{ pathname: '/', hash: '#impact-dashboard' }} replace />} />
+        <Route path="/impact-dashboard" element={<Navigate to={{ pathname: '/', hash: '#impact-dashboard' }} replace />} />
         <Route path="/impact" element={<ImpactPage />} />
         <Route path="/donations" element={<ProtectedRoute requiredRole="Donor"><DonationsPage /></ProtectedRoute>} />
         <Route path="/login" element={<LoginPage />} />
