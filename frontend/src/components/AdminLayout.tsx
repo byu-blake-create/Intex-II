@@ -4,8 +4,6 @@ import { useAuth } from '../contexts/auth'
 import './AdminLayout.css'
 
 const workbenchLabels: Record<string, string> = {
-  '/admin/donors': 'Donors',
-  '/admin/caseload': 'Caseload',
   '/admin/process-recording': 'Process recording',
   '/admin/visitations': 'Visitations',
 }
@@ -33,6 +31,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   const primaryLinks = [
     { to: '/admin', label: 'Dashboard' },
+    { to: '/admin/donors', label: 'Donors' },
+    { to: '/admin/caseload', label: 'Caseload' },
     { to: '/admin/social', label: 'Social Suite' },
     ...(isAdmin ? [{ to: '/admin/database', label: 'Database' }] : []),
   ]

@@ -5,7 +5,9 @@ import { fetchSafehouses } from '../../lib/safehousesApi'
 import { fetchVisitations } from '../../lib/visitationsApi'
 import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
 import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
-import type { Resident, Safehouse, HomeVisitation, ProcessRecording } from '../../types/domain'
+import { fetchSummary } from '../../lib/reportsApi'
+import { apiPost } from '../../lib/api'
+import type { Resident, Safehouse, HomeVisitation, ProcessRecording, DashboardSummary } from '../../types/domain'
 import './CaseloadPage.css'
 
 const PAGE_SIZE = 30
@@ -27,6 +29,16 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced
 }
 
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function daysSince(dateStr: string): number {
+  const then = new Date(dateStr).getTime()
+  const now = Date.now()
+  return Math.floor((now - then) / (1000 * 60 * 60 * 24))
+}
+
 export default function CaseloadPage() {
   const [residents, setResidents] = useState<Resident[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -43,6 +55,17 @@ export default function CaseloadPage() {
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
   const [triageCard, setTriageCard] = useState<AdminDashboardCard | null>(null)
+  const [summary, setSummary] = useState<DashboardSummary | null>(null)
+
+  // Session note modal state
+  const [showNoteModal, setShowNoteModal] = useState(false)
+  const [noteDate, setNoteDate] = useState(todayStr())
+  const [noteType, setNoteType] = useState('Individual')
+  const [noteSocialWorker, setNoteSocialWorker] = useState('')
+  const [noteNarrative, setNoteNarrative] = useState('')
+  const [noteRestricted, setNoteRestricted] = useState(false)
+  const [noteSaving, setNoteSaving] = useState(false)
+  const [noteError, setNoteError] = useState<string | null>(null)
 
   // Debounce text input to avoid an API call per keystroke
   const debouncedSearch = useDebounce(search, 350)
@@ -53,6 +76,7 @@ export default function CaseloadPage() {
       const c = d.cards.find(card => card.id === 'resident-triage') ?? null
       setTriageCard(c)
     }).catch(() => {})
+    fetchSummary().then(s => setSummary(s)).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -89,6 +113,63 @@ export default function CaseloadPage() {
     safehouses.forEach(s => m.set(s.safehouseId, s.name))
     return m
   }, [safehouses])
+
+  // Overdue visit calculation
+  const overdueInfo = useMemo(() => {
+    if (visitsLoading) return null
+    if (visits.length === 0) return { overdue: true, noRecord: true, days: null }
+    const sorted = [...visits]
+      .filter(v => v.visitDate)
+      .sort((a, b) => new Date(b.visitDate!).getTime() - new Date(a.visitDate!).getTime())
+    if (sorted.length === 0) return { overdue: true, noRecord: true, days: null }
+    const days = daysSince(sorted[0].visitDate!)
+    return { overdue: days > 30, noRecord: false, days }
+  }, [visits, visitsLoading])
+
+  // Concern visits
+  const concernVisits = useMemo(
+    () => visits.filter(v => v.visitOutcome?.toLowerCase() === 'concern'),
+    [visits]
+  )
+
+  async function handleSaveNote(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selected) return
+    setNoteSaving(true)
+    setNoteError(null)
+    try {
+      await apiPost('/api/processrecordings', {
+        residentId: selected.residentId,
+        sessionDate: noteDate,
+        sessionType: noteType,
+        socialWorker: noteSocialWorker,
+        sessionNarrative: noteNarrative,
+        notesRestricted: noteRestricted ? 'Y' : 'N',
+      })
+      const updated = await fetchProcessRecordings(selected.residentId)
+      setSessions(updated.items)
+      setShowNoteModal(false)
+      setNoteDate(todayStr())
+      setNoteType('Individual')
+      setNoteSocialWorker('')
+      setNoteNarrative('')
+      setNoteRestricted(false)
+    } catch (err) {
+      setNoteError(err instanceof Error ? err.message : 'Failed to save note.')
+    } finally {
+      setNoteSaving(false)
+    }
+  }
+
+  function openNoteModal() {
+    setNoteDate(todayStr())
+    setNoteType('Individual')
+    setNoteSocialWorker('')
+    setNoteNarrative('')
+    setNoteRestricted(false)
+    setNoteError(null)
+    setShowNoteModal(true)
+  }
 
   return (
     <AdminLayout>
@@ -183,6 +264,13 @@ export default function CaseloadPage() {
         </div>
 
         <div className="cl-detail">
+          {/* Case Conference Countdown — always visible when conferences pending */}
+          {summary && summary.upcomingCaseConferences > 0 && (
+            <a href="/admin/reports" className="cl-conference-notice">
+              &#9889; {summary.upcomingCaseConferences} upcoming case conference{summary.upcomingCaseConferences !== 1 ? 's' : ''} scheduled — review caseloads and prepare documentation.
+            </a>
+          )}
+
           {!selected && <div className="cl-detail__empty">Select a resident to view details</div>}
           {selected && (
             <>
@@ -199,6 +287,16 @@ export default function CaseloadPage() {
                   {safehouseMap.get(selected.safehouseId) ?? `Safehouse ${selected.safehouseId}`}
                 </span>
               </div>
+
+              {/* Overdue Visit Warning */}
+              {!visitsLoading && overdueInfo?.overdue && (
+                <div className="cl-overdue-banner">
+                  {overdueInfo.noRecord
+                    ? 'No visit on record.'
+                    : `No recent home visit recorded — last visit was ${overdueInfo.days} day${overdueInfo.days !== 1 ? 's' : ''} ago.`}
+                </div>
+              )}
+
               <dl className="cl-fields">
                 <div className="cl-field"><dt>Date of Birth</dt><dd>{selected.dateOfBirth ?? '\u2014'}</dd></div>
                 <div className="cl-field"><dt>Sex</dt><dd>{selected.sex ?? '\u2014'}</dd></div>
@@ -210,11 +308,16 @@ export default function CaseloadPage() {
 
               <p className="section-title">Visit History</p>
               {visitsLoading && <div className="inline-loading">Loading visits...</div>}
+              {!visitsLoading && concernVisits.length > 0 && (
+                <div className="cl-concern-callout">
+                  &#9888; {concernVisits.length} visit{concernVisits.length !== 1 ? 's' : ''} flagged with Concern outcome — review observations below.
+                </div>
+              )}
               {!visitsLoading && visits.length === 0 && <div className="empty-state">No visit history</div>}
               {!visitsLoading && visits.length > 0 && (
                 <div className="cl-timeline">
                   {visits.map(v => (
-                    <div key={v.visitationId} className="cl-timeline-card">
+                    <div key={v.visitationId} className={`cl-timeline-card${v.visitOutcome?.toLowerCase() === 'concern' ? ' cl-timeline-card--concern' : ''}`}>
                       <div className="cl-timeline-card__header">
                         <span className="cl-timeline-card__date">{v.visitDate ?? 'No date'}</span>
                         {v.visitType && <span className="badge badge--blue">{v.visitType}</span>}
@@ -227,7 +330,10 @@ export default function CaseloadPage() {
                 </div>
               )}
 
-              <p className="section-title">Session Notes</p>
+              <div className="cl-section-header">
+                <p className="section-title" style={{ margin: 0 }}>Session Notes</p>
+                <button className="cl-add-note-btn" onClick={openNoteModal}>+ Add Note</button>
+              </div>
               {sessionsLoading && <div className="inline-loading">Loading sessions...</div>}
               {!sessionsLoading && sessions.length === 0 && <div className="empty-state">No session notes</div>}
               {!sessionsLoading && sessions.length > 0 && (
@@ -249,6 +355,49 @@ export default function CaseloadPage() {
           )}
         </div>
       </div>
+
+      {/* Add Session Note Modal */}
+      {showNoteModal && (
+        <div className="cl-modal-overlay" onClick={() => setShowNoteModal(false)}>
+          <div className="cl-modal" onClick={e => e.stopPropagation()}>
+            <p className="cl-modal__title">Add Session Note</p>
+            <form onSubmit={handleSaveNote} className="cl-modal__form">
+              <label className="cl-modal__label">
+                Date
+                <input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)} required className="cl-modal__input" />
+              </label>
+              <label className="cl-modal__label">
+                Session Type
+                <select value={noteType} onChange={e => setNoteType(e.target.value)} className="cl-modal__input">
+                  <option>Individual</option>
+                  <option>Group</option>
+                  <option>Family</option>
+                  <option>Crisis</option>
+                  <option>Assessment</option>
+                  <option>Other</option>
+                </select>
+              </label>
+              <label className="cl-modal__label">
+                Social Worker
+                <input type="text" value={noteSocialWorker} onChange={e => setNoteSocialWorker(e.target.value)} placeholder="Social worker name" className="cl-modal__input" />
+              </label>
+              <label className="cl-modal__label">
+                Session Narrative
+                <textarea rows={4} value={noteNarrative} onChange={e => setNoteNarrative(e.target.value)} placeholder="Session narrative..." className="cl-modal__input cl-modal__textarea" />
+              </label>
+              <label className="cl-modal__checkbox-row">
+                <input type="checkbox" checked={noteRestricted} onChange={e => setNoteRestricted(e.target.checked)} />
+                Mark as restricted
+              </label>
+              {noteError && <p className="cl-modal__error">{noteError}</p>}
+              <div className="cl-modal__actions">
+                <button type="submit" className="cl-modal__save" disabled={noteSaving}>{noteSaving ? 'Saving…' : 'Save Note'}</button>
+                <button type="button" className="cl-modal__cancel" onClick={() => setShowNoteModal(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   )
 }

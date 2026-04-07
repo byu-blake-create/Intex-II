@@ -3,10 +3,12 @@ import AdminLayout from '../../components/AdminLayout'
 import { fetchSupporters } from '../../lib/supportersApi'
 import { fetchDonations } from '../../lib/donationsApi'
 import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
+import { apiPost } from '../../lib/api'
 import type { Supporter, Donation } from '../../types/domain'
 import './DonorsPage.css'
 
 const PAGE_SIZE = 50
+const MONTHLY_GOAL = 10000
 
 function statusBadge(status: string | null | undefined) {
   if (!status) return <span className="badge badge--gray">Unknown</span>
@@ -31,6 +33,15 @@ export default function DonorsPage() {
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
   const [watchlistCard, setWatchlistCard] = useState<AdminDashboardCard | null>(null)
+
+  // Contact modal state
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [contactDate, setContactDate] = useState('')
+  const [contactType, setContactType] = useState('Phone call')
+  const [contactNotes, setContactNotes] = useState('')
+  const [contactSaving, setContactSaving] = useState(false)
+  const [contactSuccess, setContactSuccess] = useState(false)
+  const [contactError, setContactError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchAdminDashboard().then(d => {
@@ -63,6 +74,68 @@ export default function DonorsPage() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   const donationTotal = donations.reduce((sum, d) => sum + (d.amount ?? 0), 0)
+
+  // Lapsed donor logic
+  const isLapsed = (() => {
+    if (donations.length === 0) return false
+    const mostRecent = donations
+      .map(d => d.donationDate)
+      .filter(Boolean)
+      .sort()
+      .reverse()[0]
+    if (!mostRecent) return false
+    const cutoff = new Date()
+    cutoff.setDate(cutoff.getDate() - 180)
+    return mostRecent < cutoff.toISOString().slice(0, 10)
+  })()
+
+  // 30-day goal computation
+  const thirtyDaysAgo = (() => {
+    const d = new Date()
+    d.setDate(d.getDate() - 30)
+    return d.toISOString().slice(0, 10)
+  })()
+  const last30Donations = donations.filter(d => d.donationDate != null && d.donationDate >= thirtyDaysAgo)
+  const donorLast30 = last30Donations.reduce((sum, d) => sum + (d.amount ?? 0), 0)
+  const goalPct = Math.min(100, Math.round((donorLast30 / MONTHLY_GOAL) * 100))
+
+  function openContactModal() {
+    const today = new Date().toISOString().slice(0, 10)
+    setContactDate(today)
+    setContactType('Phone call')
+    setContactNotes('')
+    setContactSaving(false)
+    setContactSuccess(false)
+    setContactError(null)
+    setShowContactModal(true)
+  }
+
+  function closeContactModal() {
+    setShowContactModal(false)
+  }
+
+  async function handleContactSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selected) return
+    setContactSaving(true)
+    setContactError(null)
+    try {
+      await apiPost(`/api/supporters/${selected.supporterId}/contacts`, {
+        contactDate,
+        contactType,
+        notes: contactNotes,
+      })
+      setContactSuccess(true)
+      setTimeout(() => {
+        setShowContactModal(false)
+        setContactSuccess(false)
+      }, 3000)
+    } catch {
+      setContactError('Failed to save contact. Please try again.')
+    } finally {
+      setContactSaving(false)
+    }
+  }
 
   return (
     <AdminLayout>
@@ -140,12 +213,23 @@ export default function DonorsPage() {
           {selected && (
             <>
               <div className="dn-header">
-                <h2>{selected.displayName}</h2>
-                {selected.organizationName && <span className="dn-header__org">{selected.organizationName}</span>}
-                {selected.email && <span className="dn-header__email">{selected.email}</span>}
+                <div className="dn-header__top">
+                  <div className="dn-header__info">
+                    <h2>{selected.displayName}</h2>
+                    {selected.organizationName && <span className="dn-header__org">{selected.organizationName}</span>}
+                    {selected.email && <span className="dn-header__email">{selected.email}</span>}
+                  </div>
+                  <button className="dn-log-contact-btn" onClick={openContactModal}>Log Contact</button>
+                </div>
                 <div className="dn-header__badges">
                   {typeBadge(selected.supporterType)}
                   {statusBadge(selected.status)}
+                  {!donLoading && donations.length === 0 && (
+                    <span className="badge badge--gray">No donations on record</span>
+                  )}
+                  {!donLoading && isLapsed && (
+                    <span className="badge badge--amber">Lapsed &#8211; Last gift 180d+ ago</span>
+                  )}
                 </div>
               </div>
 
@@ -153,6 +237,19 @@ export default function DonorsPage() {
                 <div className="dn-ml-box">
                   <p className="dn-ml-box__label">Donor Signal</p>
                   <p>{watchlistCard.plainLanguage} {watchlistCard.detail}</p>
+                </div>
+              )}
+
+              {selected && !donLoading && donations.length > 0 && (
+                <div className="dn-goal">
+                  <p className="section-title" style={{ margin: 0 }}>Donation Goal</p>
+                  <p className="dn-goal__label">30-Day Goal Progress</p>
+                  <div className="dn-goal__bar-wrap">
+                    <div className="dn-goal__bar" style={{ width: `${goalPct}%` }} />
+                  </div>
+                  <p className="dn-goal__text">
+                    ${donorLast30.toLocaleString()} of ${MONTHLY_GOAL.toLocaleString()} goal this month ({last30Donations.length} donation{last30Donations.length !== 1 ? 's' : ''})
+                  </p>
                 </div>
               )}
 
@@ -192,6 +289,64 @@ export default function DonorsPage() {
           )}
         </div>
       </div>
+
+      {showContactModal && selected && (
+        <div className="dn-modal-overlay" onClick={closeContactModal}>
+          <div className="dn-modal" onClick={e => e.stopPropagation()}>
+            <p className="dn-modal__title">Log Contact</p>
+            <p className="dn-modal__sub">{selected.displayName}</p>
+            {contactSuccess ? (
+              <p className="dn-modal__success">Contact logged</p>
+            ) : (
+              <form onSubmit={handleContactSubmit} className="dn-modal__form">
+                <label className="dn-modal__label">
+                  Date
+                  <input
+                    type="date"
+                    className="dn-modal__input"
+                    value={contactDate}
+                    onChange={e => setContactDate(e.target.value)}
+                    required
+                  />
+                </label>
+                <label className="dn-modal__label">
+                  Contact Type
+                  <select
+                    className="dn-modal__input"
+                    value={contactType}
+                    onChange={e => setContactType(e.target.value)}
+                  >
+                    <option>Phone call</option>
+                    <option>Email</option>
+                    <option>Meeting</option>
+                    <option>Letter</option>
+                    <option>Other</option>
+                  </select>
+                </label>
+                <label className="dn-modal__label">
+                  Notes
+                  <textarea
+                    className="dn-modal__textarea"
+                    placeholder="Brief summary of the contact..."
+                    value={contactNotes}
+                    onChange={e => setContactNotes(e.target.value)}
+                    rows={4}
+                  />
+                </label>
+                {contactError && <p className="dn-modal__error">{contactError}</p>}
+                <div className="dn-modal__actions">
+                  <button type="submit" className="dn-modal__save" disabled={contactSaving}>
+                    {contactSaving ? 'Saving...' : 'Save Contact'}
+                  </button>
+                  <button type="button" className="dn-modal__cancel" onClick={closeContactModal} disabled={contactSaving}>
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </AdminLayout>
   )
 }
