@@ -8,6 +8,7 @@ backend/**/*.user
 # User Secrets / env
 backend/**/.env
 backend/**/.env.local
+backend/NorthStarShelter.API/.env
 appsettings.Development.json
 
 # Frontend
