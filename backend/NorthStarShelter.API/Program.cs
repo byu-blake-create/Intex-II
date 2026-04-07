@@ -14,7 +14,11 @@ DotEnvLoader.LoadIfPresent(
 var builder = WebApplication.CreateBuilder(args);
 
 const string FrontendCorsPolicy = "FrontendClient";
-var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:3000";
+var configuredFrontendOrigins = builder.Configuration["FrontendUrls"] ?? builder.Configuration["FrontendUrl"];
+var allowedFrontendOrigins = ParseAllowedOrigins(
+    configuredFrontendOrigins,
+    "http://localhost:3000",
+    "https://intex-ii-iota.vercel.app");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddControllers();
@@ -90,7 +94,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(FrontendCorsPolicy, policy =>
     {
-        policy.WithOrigins(frontendUrl)
+        policy.WithOrigins(allowedFrontendOrigins)
               .AllowCredentials()
               .AllowAnyMethod()
               .AllowAnyHeader();
@@ -131,7 +135,7 @@ app.Use(async (ctx, next) =>
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: https:; " +
         "font-src 'self'; " +
-        "connect-src 'self' " + frontendUrl.TrimEnd('/') + "; " +
+        "connect-src 'self' " + string.Join(' ', allowedFrontendOrigins.Select(origin => origin.TrimEnd('/'))) + "; " +
         "frame-ancestors 'none'; " +
         "base-uri 'self'; " +
         "form-action 'self'");
@@ -150,3 +154,16 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static string[] ParseAllowedOrigins(string? configuredOrigins, params string[] defaults)
+{
+    var origins = (configuredOrigins ?? string.Empty)
+        .Split([';', ',', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Concat(defaults)
+        .Where(origin => !string.IsNullOrWhiteSpace(origin))
+        .Select(origin => origin.Trim().TrimEnd('/'))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+
+    return origins.Length > 0 ? origins : defaults;
+}

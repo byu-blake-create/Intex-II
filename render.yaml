@@ -11,5 +11,5 @@ services:
         sync: false
       - key: Seed__AdminPassword
         sync: false
-      - key: FrontendUrl
+      - key: FrontendUrls
         sync: false
