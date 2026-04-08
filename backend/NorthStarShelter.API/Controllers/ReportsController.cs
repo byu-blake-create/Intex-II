@@ -536,9 +536,8 @@ public class ReportsController : ControllerBase
         var lanes = new List<CommandCenterLaneDto>
         {
             new("Donors", "Live supporter and donation records from the production database.", "/admin/donors"),
-            new("Caseload", "Resident records, incidents, and protected case details from the production database.", "/admin/caseload"),
-            new("Visitations", "Home visitation history and recent outcomes from the production database.", "/admin/visitations"),
-            new("Reports", "Operational summaries and donation trends computed from the production database.", "/admin/reports"),
+            new("Residents", "Resident records, incidents, and protected case details from the production database.", "/admin/caseload"),
+            new("Safehouses", "Safehouse assignments, capacity, and resident placement from the production database.", "/admin/safehouses"),
         };
 
         var heroChips = new List<string>

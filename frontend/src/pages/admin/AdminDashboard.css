@@ -394,6 +394,17 @@
   .dash__title {
     font-size: 1.5rem;
   }
+
+  .dash__header-actions {
+    flex-shrink: 1;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .dash__btn {
+    flex: 1;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 560px) {

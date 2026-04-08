@@ -167,7 +167,7 @@ export default function SafehousesPage() {
 
   return (
     <AdminLayout>
-      <div className="sh-layout">
+      <div className="sh-layout" data-detail-open={selected !== null ? 'true' : undefined}>
         {/* Sidebar */}
         <div className="sh-sidebar">
           <div className="sh-sidebar__header">
@@ -213,6 +213,13 @@ export default function SafehousesPage() {
           {!selected && <div className="sh-detail__empty">Select a safehouse to view residents</div>}
           {selected && (
             <>
+              <button
+                type="button"
+                className="sh-back-btn"
+                onClick={() => setSelected(null)}
+              >
+                &larr; Back
+              </button>
               <div className="sh-header">
                 <h2>{selected.name}</h2>
                 <span className="badge badge--blue sh-header__code">{selected.safehouseCode}</span>

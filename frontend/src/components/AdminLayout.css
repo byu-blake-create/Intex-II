@@ -460,6 +460,7 @@
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
+  overflow-x: hidden;
 }
 
 /* ─── Admin utility classes ───────────────────────────────── */
@@ -510,6 +511,7 @@
 
 .admin-table-wrap {
   overflow: auto;
+  max-width: 100%;
   border-radius: 8px;
   border: 1px solid var(--adm-border);
 }
@@ -608,6 +610,38 @@
 /* Inline loading */
 .inline-loading { padding:2rem; text-align:center; color:var(--adm-muted); font-size:0.9rem; }
 
+/* Hamburger button – hidden on desktop */
+.admin-layout__hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: 1px solid var(--adm-border);
+  border-radius: 10px;
+  padding: 0.5rem 0.65rem;
+  cursor: pointer;
+}
+.admin-layout__hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--adm-ink);
+  border-radius: 2px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+/* Animate to X when open */
+.admin-layout__header[data-menu-open="true"] .admin-layout__hamburger span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.admin-layout__header[data-menu-open="true"] .admin-layout__hamburger span:nth-child(2) {
+  opacity: 0;
+}
+.admin-layout__header[data-menu-open="true"] .admin-layout__hamburger span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ─── Tablet breakpoints (>768px) ─────────────────────────── */
 @media (max-width: 1120px) {
   .admin-layout__header {
     grid-template-columns: minmax(0, 1fr);
@@ -625,7 +659,7 @@
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 860px) and (min-width: 769px) {
   .admin-layout__header {
     width: calc(100% - 24px);
     padding: 1rem 1.1rem;
@@ -648,31 +682,66 @@
   }
 }
 
-@media (max-width: 640px) {
+/* ─── Mobile hamburger menu (<=768px) ─────────────────────── */
+@media (max-width: 768px) {
+  .admin-layout__header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 20px;
+    padding: 0.85rem 1rem;
+    width: calc(100% - 24px);
+  }
+
+  .admin-layout__nav,
+  .admin-layout__actions {
+    display: none;
+  }
+
+  .admin-layout__hamburger {
+    display: flex;
+  }
+
+  /* Open state: stack everything vertically */
+  .admin-layout__header[data-menu-open="true"] {
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 20px;
+  }
+
+  .admin-layout__header[data-menu-open="true"] .admin-layout__nav,
+  .admin-layout__header[data-menu-open="true"] .admin-layout__actions {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .admin-layout__header[data-menu-open="true"] .admin-layout__nav {
+    gap: 0.25rem;
+  }
+
+  .admin-layout__header[data-menu-open="true"] .admin-layout__nav a {
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 10px;
+  }
+
+  .admin-layout__header[data-menu-open="true"] .admin-layout__actions {
+    gap: 0.75rem;
+  }
+
+  .admin-layout__header[data-menu-open="true"] .admin-layout__user {
+    flex-wrap: wrap;
+  }
+
   .admin-layout__body {
     padding: 1rem;
   }
+}
 
-  .admin-layout__brand {
-    width: 100%;
-  }
-
-  .admin-layout__context {
-    flex-wrap: wrap;
-    border-radius: 24px;
-    padding: 0.65rem 0.75rem;
-  }
-
-  .admin-layout__theme-toggle,
-  .admin-layout__user {
-    width: 100%;
-  }
-
-  .admin-layout__user {
-    flex-wrap: wrap;
-  }
-
-  .admin-layout__email {
-    max-width: none;
+@media (max-width: 640px) {
+  .admin-layout__body {
+    padding: 1rem;
   }
 }

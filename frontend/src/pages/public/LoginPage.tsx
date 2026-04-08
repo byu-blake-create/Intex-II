@@ -89,14 +89,7 @@ export default function LoginPage() {
           padding: '4.5rem 1.25rem 5rem',
         }}
       >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1.05fr) minmax(320px, 0.95fr)',
-            gap: '1.5rem',
-            alignItems: 'start',
-          }}
-        >
+        <div className="login-page__grid">
           <section className="login-page__feature-card">
             <p
               style={{
