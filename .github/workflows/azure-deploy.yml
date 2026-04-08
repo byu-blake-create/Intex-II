@@ -33,7 +33,6 @@ jobs:
           rm -rf ./publish/runtimes/osx-arm64
           rm -rf ./publish/runtimes/unix
           rm -rf ./publish/runtimes/win-arm64
-          rm -rf ./publish/runtimes/win-x86
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
