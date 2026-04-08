@@ -20,7 +20,7 @@ export default function SafehousesPage() {
   const [safehouses, setSafehouses] = useState<Safehouse[]>([])
   const [activeCounts, setActiveCounts] = useState<Map<number, number>>(new Map())
   const [listLoading, setListLoading] = useState(true)
-  const [countsLoading, setCountsLoading] = useState(false)
+  const [countsLoading, setCountsLoading] = useState(true)
   const [selected, setSelected] = useState<Safehouse | null>(null)
 
   // Detail panel state
@@ -36,9 +36,8 @@ export default function SafehousesPage() {
   const [reassignSaving, setReassignSaving] = useState(false)
   const [reassignError, setReassignError] = useState<string | null>(null)
 
-  // Load all safehouses on mount
+  // Reuse the same reload token after reassignment so counts and detail panes stay in sync.
   useEffect(() => {
-    setListLoading(true)
     fetchSafehouses(1, 100)
       .then(r => {
         setSafehouses(r.items)
@@ -46,7 +45,6 @@ export default function SafehousesPage() {
         setListLoading(false)
         // Load active resident counts for all safehouses
         if (r.items.length > 0) {
-          setCountsLoading(true)
           Promise.all(
             r.items.map(sh =>
               fetchResidents({ safehouseId: sh.safehouseId, caseStatus: 'Active', pageSize: 1, pageNum: 1 })
@@ -70,10 +68,9 @@ export default function SafehousesPage() {
       })
   }, [reloadToken])
 
-  // Load active residents for selected safehouse (paginated)
+  // Detail loading is toggled by selection/pagination handlers to avoid effect-lint churn.
   useEffect(() => {
     if (!selected) return
-    setDetailLoading(true)
     fetchResidents({ safehouseId: selected.safehouseId, caseStatus: 'Active', pageSize: RESIDENT_PAGE_SIZE, pageNum })
       .then(r => { setResidents(r.items); setTotalCount(r.totalCount) })
       .catch(() => { setResidents([]); setTotalCount(0) })
@@ -83,7 +80,6 @@ export default function SafehousesPage() {
   // Load all-residents count for selected safehouse
   useEffect(() => {
     if (!selected) return
-    setAllCountLoading(true)
     fetchResidents({ safehouseId: selected.safehouseId, pageSize: 1, pageNum: 1 })
       .then(r => setAllCount(r.totalCount))
       .catch(() => setAllCount(0))
@@ -125,6 +121,7 @@ export default function SafehousesPage() {
 
       await apiPut(`/api/residents/${reassignResident.residentId}`, updatedResident)
       setPageNum(1)
+      setListLoading(true)
       setDetailLoading(true)
       setAllCountLoading(true)
       setCountsLoading(true)
@@ -159,6 +156,8 @@ export default function SafehousesPage() {
                   onClick={() => {
                     setSelected(sh)
                     setPageNum(1)
+                    setDetailLoading(true)
+                    setAllCountLoading(true)
                     setResidents([])
                   }}
                 >

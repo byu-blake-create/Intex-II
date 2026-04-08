@@ -1,95 +1,115 @@
-# Handoff — Admin Portal Session 2
+# Handoff
 
-## Project
-North Star Sanctuary — a shelter management app for at-risk youth (girls). The admin portal is used by staff to track residents, manage donors, and log casework. Frontend: React + TypeScript + Vite at `frontend/`. Backend: .NET at `backend/`. Deployed on Vercel. Database: SQL Server via Entity Framework Core.
+## Current State
+- Branch: `admin-dashboard`
+- Scope since the last merged PR: resident intake, safehouse reassignment, resident actions/show-more, workbench restructuring, case conference wiring
+- Main status: donor contact logging works; several resident-related write flows are currently blocked by backend model validation
 
-## Branch & PR
-Branch: `admin-dashboard` — PR #31 open against `main` (byu-blake-create/Intex-II#31).
-All changes are committed and pushed. Working tree is clean.
+## What Needs To Be Done Next
+1. Fix backend model binding/validation so write endpoints accept the payloads the frontend is actually sending.
+   - `POST /api/residents` currently rejects frontend payloads because `Resident.Safehouse` is required.
+   - `PUT /api/residents/{id}` has the same problem, which likely breaks close/reopen, inline edits, and safehouse reassignment.
+   - `POST /api/processrecordings` currently rejects frontend payloads because `ProcessRecording.Resident` is required.
+   - `POST /api/homevisitations` currently rejects frontend payloads because `HomeVisitation.Resident` is required.
+2. Fix the resident creation modal UX.
+   - The modal is too tall and does not scroll correctly.
+   - Scrolling currently moves the page behind the modal instead of the modal content.
+3. Clean up frontend build/lint blockers.
+   - Remove unused imports in [App.tsx](/Users/noahblake/Desktop/Intex/frontend/src/App.tsx#L19) and [App.tsx](/Users/noahblake/Desktop/Intex/frontend/src/App.tsx#L20).
+   - Address `react-hooks/set-state-in-effect` lint errors in [SafehousesPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/SafehousesPage.tsx#L41), [SafehousesPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/SafehousesPage.tsx#L76), and [SafehousesPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/SafehousesPage.tsx#L86).
+4. After fixes, rerun resident workflow testing end-to-end.
+   - New resident
+   - Close case / reopen case
+   - Edit social worker
+   - Edit case conference date
+   - Log visit
+   - Add session note
+   - Reassign safehouse
 
----
+## Tests Run
 
-## What Was Built This Session
+### Automated Checks
+- `dotnet build /Users/noahblake/Desktop/Intex/NorthStarShelter.slnx`
+  - Result: passed
+- `npm run build` in `frontend/`
+  - Result: failed
+  - Cause: unused imports in [App.tsx](/Users/noahblake/Desktop/Intex/frontend/src/App.tsx#L19) and [App.tsx](/Users/noahblake/Desktop/Intex/frontend/src/App.tsx#L20)
+- `npm run lint` in `frontend/`
+  - Result: failed
+  - Causes:
+    - unused imports in [App.tsx](/Users/noahblake/Desktop/Intex/frontend/src/App.tsx#L19) and [App.tsx](/Users/noahblake/Desktop/Intex/frontend/src/App.tsx#L20)
+    - `react-hooks/set-state-in-effect` in [SafehousesPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/SafehousesPage.tsx#L41), [SafehousesPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/SafehousesPage.tsx#L76), [SafehousesPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/SafehousesPage.tsx#L86)
 
-### Nav (AdminLayout.tsx + AdminLayout.css)
-Two-level navigation:
-- **Top nav**: Dashboard · Workbenches · Social Suite · Database
-- **Workbench subnav tab bar** (appears on workbench routes): Donors · Residents · Safehouses
-- `/admin/process-recording` and `/admin/visitations` redirect to `/admin/caseload` (no longer in nav)
+### API Smoke Tests I Ran
+- Logged in to a disposable local admin instance
+  - Result: passed
+- Created supporter contact via `/api/supporters/{id}/contacts`
+  - Result: passed
+- Listed supporter contacts
+  - Result: passed
+- Created resident using the same scalar-only shape the frontend sends in [CaseloadPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/CaseloadPage.tsx#L340)
+  - Result: failed with `Safehouse field is required`
+- Updated resident using the same shape the frontend sends in [CaseloadPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/CaseloadPage.tsx#L205) and [SafehousesPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/SafehousesPage.tsx#L126)
+  - Result: failed with `Safehouse field is required`
+- Created process recording using the same shape the frontend sends in [CaseloadPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/CaseloadPage.tsx#L237)
+  - Result: failed with `Resident field is required`
+- Created home visitation using the same shape the frontend sends in [CaseloadPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/CaseloadPage.tsx#L286)
+  - Result: failed with `Resident field is required`
 
-### Donors Workbench (`DonorsPage.tsx` / `DonorsPage.css`)
-- **30-day goal bar**: Computed per-donor — last month's total × 1.1, floor at $10
-- **History toggle**: "Donation History" | "Contact History" tabs under the donor signal
-- **Contact History**: Fetches from `GET /api/supporters/{id}/contacts` (backend added this session)
-- **Log Contact modal**: POSTs to `POST /api/supporters/{id}/contacts`
-- **Lapsed donor flag**: Amber badge if last donation > 180 days ago
+### Browser Smoke Tests I Ran
+- Local frontend dev server boot
+  - Result: passed
+- Cookie consent flow
+  - Result: works
+- Donor contact logging through the UI
+  - Result: passed
+- New resident flow through the UI
+  - Result: reproduces backend `Safehouse` validation error
 
-### Residents Workbench (`CaseloadPage.tsx` / `CaseloadPage.css`)
-Route: `/admin/caseload`, label: "Residents"
-- **Detail panel tabs**: Visit History | Session Notes (no more scrolling)
-- **Visit History tab**: sorted most-recent-first, capped at 10 with Show more/less
-- **Session Notes tab**: same sorting and cap
-- **Log Visit modal**: POST to `/api/homevisitations` (fields: date, type, socialWorker, observations, outcome)
-- **Add Session Note modal**: POST to `/api/processrecordings`
-- **Close Case / Reopen Case**: button in resident header, PUTs full resident object to `PUT /api/residents/{id}`
-- **Inline edit**: Social Worker and Case Conference Date fields have pencil-edit with save/cancel (same PUT)
-- **Safety features**: Overdue visit warning (30d), Concern visit callout + red border, case conference countdown banner
-- **Per-resident conference banner**: Red if past, amber if within 7 days
+## My Findings
+- Resident create is broken because frontend payloads omit nested `safehouse`, while backend validation currently requires `Resident.Safehouse` in [Resident.cs](/Users/noahblake/Desktop/Intex/backend/NorthStarShelter.API/Models/Resident.cs#L59).
+- Resident update is likely broken for the same reason, affecting:
+  - close/reopen in [CaseloadPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/CaseloadPage.tsx#L216)
+  - inline field saves in [CaseloadPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/CaseloadPage.tsx#L200)
+  - safehouse reassignment in [SafehousesPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/SafehousesPage.tsx#L120)
+- Process recording create is broken because backend validation currently requires `ProcessRecording.Resident` in [ProcessRecording.cs](/Users/noahblake/Desktop/Intex/backend/NorthStarShelter.API/Models/ProcessRecording.cs#L21).
+- Home visitation create is broken because backend validation currently requires `HomeVisitation.Resident` in [HomeVisitation.cs](/Users/noahblake/Desktop/Intex/backend/NorthStarShelter.API/Models/HomeVisitation.cs#L20).
+- Donor contact logging is working and persisted correctly in both API and browser smoke tests.
 
-### Safehouses Workbench (`SafehousesPage.tsx` / `SafehousesPage.css`)
-Route: `/admin/safehouses`
-- Lists all safehouses with live active-resident count badges (loaded via Promise.all)
-- Detail panel: safehouse metadata + paginated active residents list
+## Your Findings
+- `{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"Safehouse":["The Safehouse field is required."]},"traceId":"00-a37551b57a211ca453645e0032c7f68d-b84b0273bfb0ef1c-00"}`
+  - Comes when trying to make new resident
+- Close case / reopen case do nothing
+- New resident creation popout is too big and does not scroll properly
+  - Scrolling scrolls behind it
+- `{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"Resident":["The Resident field is required."]},"traceId":"00-061538902669d821ffa3e886c5b3be7b-93762ae2d4868efa-00"}`
+  - Comes when trying to log a new visit
+- `{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"Resident":["The Resident field is required."]},"traceId":"00-af43ced9f71d5fa4a34b0719964284f2-b2b99ba871681422-00"}`
+  - Comes when trying to log a new session note
+- `{"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"Safehouse":["The Safehouse field is required."]},"traceId":"00-d82712c53c37965e325e900a2d215418-2d86fab699716cf8-00"}`
+  - Comes when trying to reassign a new safehouse
+- Donor contact logging works and persists
+- Safehouse workbench appears to be real data
+- Resident portal search works, banner comes up
+- Cookie works
 
-### Dashboard (`AdminDashboard.tsx` / `AdminDashboard.css`)
-- Safety Alerts strip (caseload/visitations alert-tone ML cards only)
-- Needs Attention inbox (donor/outreach alert cards + case conference count)
-- Donation velocity trend arrow on Amount (30d) stat card
+## Likely Fix Area
+- Frontend payloads:
+  - [CaseloadPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/CaseloadPage.tsx#L340)
+  - [CaseloadPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/CaseloadPage.tsx#L205)
+  - [CaseloadPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/CaseloadPage.tsx#L237)
+  - [CaseloadPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/CaseloadPage.tsx#L286)
+  - [SafehousesPage.tsx](/Users/noahblake/Desktop/Intex/frontend/src/pages/admin/SafehousesPage.tsx#L120)
+- Backend model binding requirements:
+  - [Resident.cs](/Users/noahblake/Desktop/Intex/backend/NorthStarShelter.API/Models/Resident.cs#L59)
+  - [ProcessRecording.cs](/Users/noahblake/Desktop/Intex/backend/NorthStarShelter.API/Models/ProcessRecording.cs#L21)
+  - [HomeVisitation.cs](/Users/noahblake/Desktop/Intex/backend/NorthStarShelter.API/Models/HomeVisitation.cs#L20)
 
----
-
-## Key Files
-| File | Purpose |
-|------|---------|
-| `frontend/src/components/AdminLayout.tsx` | Shell, nav, workbench subnav |
-| `frontend/src/components/AdminLayout.css` | All admin theme tokens + shared utility classes |
-| `frontend/src/pages/admin/AdminDashboard.tsx` | Command center |
-| `frontend/src/pages/admin/DonorsPage.tsx` | Donor management |
-| `frontend/src/pages/admin/CaseloadPage.tsx` | Resident management (main workbench) |
-| `frontend/src/pages/admin/SafehousesPage.tsx` | Safehouse locations workbench |
-| `frontend/src/lib/api.ts` | `apiGet`, `apiPost`, `apiPut`, `apiDelete` — all use `credentials: include` |
-| `frontend/src/lib/supporterContactsApi.ts` | `fetchSupporterContacts(id)` → GET /api/supporters/{id}/contacts |
-| `frontend/src/lib/residentsApi.ts` | `fetchResidents(params)` |
-| `frontend/src/lib/visitationsApi.ts` | `fetchVisitations(residentId)` |
-| `frontend/src/lib/processRecordingsApi.ts` | `fetchProcessRecordings(residentId)` |
-| `frontend/src/types/domain.ts` | All shared TypeScript types |
-| `frontend/src/App.tsx` | Route definitions |
-| `backend/.../Controllers/SupportersController.cs` | Includes GET + POST /api/supporters/{id}/contacts |
-| `backend/.../Controllers/ResidentsController.cs` | Includes PUT /api/residents/{id} |
-| `backend/.../Models/SupporterContact.cs` | SupporterContact model |
-| `backend/.../Data/DatabaseInitializer.cs` | Auto-creates SupporterContacts table + CaseConferenceDate column on startup |
-
-## CSS Token Reference (used everywhere)
-`--adm-accent`, `--adm-accent-dim`, `--adm-card`, `--adm-border`, `--adm-ink`, `--adm-muted`, `--adm-bg`, `--adm-surface`, `--adm-shadow-soft`, `--adm-danger-bg`, `--adm-danger-border`, `--adm-danger-ink`
-
-Shared utility classes (defined in `AdminLayout.css`, available globally):
-`.badge`, `.badge--red/amber/green/blue/purple/gray`, `.stat-card`, `.section-title`, `.empty-state`, `.inline-loading`, `.page-header`, `.admin-table`, `.admin-table-wrap`
-
----
-
-## Known Gaps / Potential Next Steps
-1. **No way to add a new resident** — there's a `POST /api/residents` endpoint but no UI for it. Could add a "+ New Resident" button on the Residents workbench.
-2. **Safehouses workbench is read-only** — can view residents per safehouse but can't edit safehouse info or reassign a resident to a different safehouse.
-3. **Donor contact history has no "outcome" field** — the `SupporterContact` model has `ContactDate`, `ContactType`, `Notes` but no success/outcome indicator. Could add a `Outcome` field (e.g. "Pledged", "Not interested", "Follow up") to the model, migration, and UI.
-4. **No toast/notification system** — errors and successes are shown inline. A global toast would be cleaner.
-5. **Social Suite workbench** (`/admin/social`) hasn't been touched — still the original page.
-6. **Reports page** (`/admin/reports`) exists but isn't in the top nav — only reachable via URL or the case conference link on Caseload.
-
-## How to Run
-```bash
-cd frontend && npm run dev    # frontend on localhost:5173
-# backend runs separately — see backend/ for .NET setup
-```
-
-## Agent Instructions
-You have full read/write access to the codebase. Start by reading this file and any specific page you're working on. The TypeScript check is `npx tsc --noEmit` from `frontend/`. Always run it before committing. Commit messages should follow the existing style (imperative, concise summary line + bullet details).
+## Recommended Retest Order After Fixes
+1. New resident creation
+2. Close case / reopen case
+3. Safehouse reassignment
+4. Add session note
+5. Log visit
+6. Resident modal scrolling
+7. Full frontend build and lint

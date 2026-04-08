@@ -17,5 +17,6 @@ public class HomeVisitation
     public string? FollowUpNotes { get; set; }
     public string? VisitOutcome { get; set; }
 
-    public Resident Resident { get; set; } = null!;
+    // Keep this nullable so UI create flows only need `residentId`.
+    public Resident? Resident { get; set; }
 }

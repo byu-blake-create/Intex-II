@@ -18,5 +18,6 @@ public class ProcessRecording
     public string? ReferralMade { get; set; }
     public string? NotesRestricted { get; set; }
 
-    public Resident Resident { get; set; } = null!;
+    // Keep this nullable so UI create flows only need `residentId`.
+    public Resident? Resident { get; set; }
 }
