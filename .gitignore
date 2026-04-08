@@ -20,6 +20,12 @@ frontend/.env.local
 # Misc
 .DS_Store
 *.log
+publish-*/
+publish-*.zip
+azure-hotfix-publish*/
+azure-hotfix-publish*.zip
+northstar-logs*/
+northstar-logs*.zip
 
 # Local agent/tooling state
 .claude/

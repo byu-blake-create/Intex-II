@@ -24,6 +24,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient();
 
 // Local/dev fallback keeps public endpoints and auth-backed pages bootable even when
 // a SQL connection string has not been configured yet.
@@ -128,17 +129,11 @@ app.UseCors(FrontendCorsPolicy);
 
 app.Use(async (ctx, next) =>
 {
-    ctx.Response.Headers.Append(
-        "Content-Security-Policy",
-        "default-src 'self'; " +
-        "script-src 'self'; " +
-        "style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' data: https:; " +
-        "font-src 'self'; " +
-        "connect-src 'self' " + string.Join(' ', allowedFrontendOrigins.Select(origin => origin.TrimEnd('/'))) + "; " +
-        "frame-ancestors 'none'; " +
-        "base-uri 'self'; " +
-        "form-action 'self'");
+    var cspHeader = BuildCspHeader(allowedFrontendOrigins);
+    ctx.Response.Headers["Content-Security-Policy"] = cspHeader;
+    ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    ctx.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    ctx.Response.Headers["X-Frame-Options"] = "DENY";
     await next();
 });
 
@@ -166,4 +161,22 @@ static string[] ParseAllowedOrigins(string? configuredOrigins, params string[] d
         .ToArray();
 
     return origins.Length > 0 ? origins : defaults;
+}
+
+static string BuildCspHeader(IEnumerable<string> allowedFrontendOrigins)
+{
+    var connectSources = string.Join(' ', allowedFrontendOrigins
+        .Where(origin => !string.IsNullOrWhiteSpace(origin))
+        .Select(origin => origin.Trim().TrimEnd('/')));
+
+    return "default-src 'self'; " +
+           "script-src 'self'; " +
+           "style-src 'self' 'unsafe-inline'; " +
+           "img-src 'self' data: https:; " +
+           "font-src 'self'; " +
+           $"connect-src 'self' {connectSources}; " +
+           "frame-ancestors 'none'; " +
+           "base-uri 'self'; " +
+           "form-action 'self'; " +
+           "object-src 'none'";
 }

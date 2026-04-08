@@ -8,6 +8,8 @@ export interface SocialMediaPostsQuery {
   platform?: string
 }
 
+const SOCIAL_POSTS_PAGE_SIZE = 100
+
 export function fetchSocialMediaPosts(query: SocialMediaPostsQuery = {}): Promise<PaginatedList<SocialMediaPost>> {
   const params = new URLSearchParams()
   if (query.pageNum) params.set('pageNum', String(query.pageNum))
@@ -16,6 +18,32 @@ export function fetchSocialMediaPosts(query: SocialMediaPostsQuery = {}): Promis
 
   const suffix = params.size > 0 ? `?${params.toString()}` : ''
   return apiGet<PaginatedList<SocialMediaPost>>(`/api/socialmediaposts${suffix}`)
+}
+
+export async function fetchAllSocialMediaPosts(
+  query: Omit<SocialMediaPostsQuery, 'pageNum' | 'pageSize'> = {}
+): Promise<PaginatedList<SocialMediaPost>> {
+  const firstPage = await fetchSocialMediaPosts({ ...query, pageNum: 1, pageSize: SOCIAL_POSTS_PAGE_SIZE })
+  const totalPages = Math.ceil(firstPage.totalCount / SOCIAL_POSTS_PAGE_SIZE)
+
+  if (totalPages <= 1) {
+    return firstPage
+  }
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) =>
+      fetchSocialMediaPosts({
+        ...query,
+        pageNum: index + 2,
+        pageSize: SOCIAL_POSTS_PAGE_SIZE,
+      })
+    )
+  )
+
+  return {
+    items: [firstPage, ...remainingPages].flatMap(page => page.items),
+    totalCount: firstPage.totalCount,
+  }
 }
 
 export interface SocialPlatformInsight {
@@ -32,6 +60,7 @@ export interface SocialContentGap {
   platform: string
   topic: string
   avgEngagement: number
+  avgClicks?: number
   postFrequency: string
   opportunity: string
   priority: 'critical' | 'high' | 'medium'
@@ -42,6 +71,7 @@ export interface SocialTopPost {
   platform: string
   caption: string
   engagementRate: number
+  clickThroughs?: number
   postType: string
   tone: string
   mediaType: string
@@ -54,6 +84,28 @@ export interface SocialMediaInsights {
   topPosts: SocialTopPost[]
 }
 
-export function fetchSocialMediaInsights(): Promise<SocialMediaInsights> {
-  return apiGet<SocialMediaInsights>('/api/socialmediaposts/insights')
+export function fetchSocialMediaInsights(platform?: string): Promise<SocialMediaInsights> {
+  const suffix = platform ? `?platform=${encodeURIComponent(platform)}` : ''
+  return apiGet<SocialMediaInsights>(`/api/socialmediaposts/insights${suffix}`)
+}
+
+export interface SocialRecommendation {
+  platform: string
+  topic: string
+  suggestedHour: string
+  suggestedDay: string
+  expectedClicks: number
+  platformBaselineClicks: number
+  bestPostType: string
+  bestTone: string
+  reasoning: string
+  priority: 'high' | 'medium'
+  category: string  // 'untapped' | 'double_down'
+}
+
+export function fetchRecommendations(platform?: string): Promise<SocialRecommendation[]> {
+  const url = platform
+    ? `/api/socialmediaposts/recommendations?platform=${encodeURIComponent(platform)}`
+    : '/api/socialmediaposts/recommendations'
+  return apiGet<SocialRecommendation[]>(url)
 }
