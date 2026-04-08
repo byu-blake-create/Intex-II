@@ -1,9 +1,14 @@
 import PublicSiteHeader from '../../components/PublicSiteHeader'
+import { resetConsentDecision } from '../../lib/cookieConsent'
 import { usePublicTheme } from '../../lib/usePublicTheme'
 import './PrivacyPolicyPage.css'
 
 export default function PrivacyPolicyPage() {
   const { theme, setTheme } = usePublicTheme()
+
+  function handleManageCookies() {
+    resetConsentDecision()
+  }
 
   return (
     <div className="public-site privacy-site" data-theme={theme}>
@@ -42,6 +47,12 @@ export default function PrivacyPolicyPage() {
 
         <section>
           <h2>Cookies we use</h2>
+          <p>
+            You can update your cookie preferences at any time during this session.
+          </p>
+          <button type="button" onClick={handleManageCookies}>
+            Manage Cookies
+          </button>
           <ul>
             <li>
               <strong>northstar.auth:</strong> an essential HttpOnly cookie set after staff sign-in to keep authenticated
@@ -74,7 +85,8 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               <strong>Consent</strong> for non-essential cookies and optional analytics on public pages. You may withdraw
-              consent by clearing cookies or adjusting your browser.
+              consent at any time by selecting <strong>Manage Cookies</strong> in the site footer to reopen the cookie
+              preference banner.
             </li>
           </ul>
         </section>
@@ -109,16 +121,25 @@ export default function PrivacyPolicyPage() {
           <h2>Your rights</h2>
           <p>
             Depending on your location, you may have rights to access, rectify, erase, restrict processing, object, or
-            port your data, and to lodge a complaint with a supervisory authority. To exercise rights, contact us using the
-            official channels published on this site. We may need to verify your identity before responding.
+            port your data, and to lodge a complaint with a supervisory authority. To exercise rights, contact us at
+            <a href="mailto:privacy@northstarshelter.org">privacy@northstarshelter.org</a>. We may need to verify your
+            identity before responding.
+          </p>
+        </section>
+
+        <section>
+          <h2>Data breach notification</h2>
+          <p>
+            In the event of a data breach that poses a risk to your rights and freedoms, we will notify you and the
+            relevant authorities within 72 hours.
           </p>
         </section>
 
         <section>
           <h2>Contact</h2>
           <p>
-            For privacy questions or requests, contact North Star Shelter using the organization contact details provided
-            to enrolled partners and donors.
+            For privacy questions or requests, contact our privacy team at
+            <a href="mailto:privacy@northstarshelter.org">privacy@northstarshelter.org</a>.
           </p>
         </section>
       </main>
