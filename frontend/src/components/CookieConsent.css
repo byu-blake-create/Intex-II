@@ -1,22 +1,23 @@
 .cookie-consent {
   position: fixed;
-  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: rgba(17, 24, 39, 0.42);
-  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  padding: 0.85rem 0.75rem;
+  pointer-events: none;
 }
 
 .cookie-consent__inner {
-  width: min(680px, calc(100vw - 2rem));
-  max-width: 640px;
+  width: min(980px, calc(100vw - 1.5rem));
   padding: 1rem 1.25rem;
   border-radius: 12px;
   border: 1px solid var(--base-line);
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 12px 40px rgba(34, 24, 19, 0.12);
+  pointer-events: auto;
 }
 
 .cookie-consent__inner h2 {
