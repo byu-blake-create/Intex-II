@@ -58,11 +58,12 @@ export default function CaseloadSidebar({
         <input
           className="cl-search"
           placeholder="Search residents..."
+          aria-label="Search residents"
           value={search}
           onChange={event => onSearchChange(event.target.value)}
         />
         <div className="cl-filters">
-          <select value={safehouseFilter} onChange={event => onSafehouseFilterChange(event.target.value)}>
+          <select aria-label="Filter residents by safehouse" value={safehouseFilter} onChange={event => onSafehouseFilterChange(event.target.value)}>
             <option value="">All safehouses</option>
             {safehouses.map(safehouse => (
               <option key={safehouse.safehouseId} value={safehouse.safehouseId}>
@@ -71,12 +72,12 @@ export default function CaseloadSidebar({
             ))}
           </select>
           <div className="cl-filters__row">
-            <select value={statusFilter} onChange={event => onStatusFilterChange(event.target.value)}>
+            <select aria-label="Filter residents by case status" value={statusFilter} onChange={event => onStatusFilterChange(event.target.value)}>
               <option value="">All statuses</option>
               <option value="Active">Active</option>
               <option value="Closed">Closed</option>
             </select>
-            <select value={signalFilter} onChange={event => onSignalFilterChange(event.target.value)}>
+            <select aria-label="Filter residents by predictive signal" value={signalFilter} onChange={event => onSignalFilterChange(event.target.value)}>
               <option value="">All signals</option>
               <optgroup label="Support Need">
                 <option value="risk-high">High support need</option>

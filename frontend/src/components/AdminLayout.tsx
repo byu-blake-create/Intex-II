@@ -69,8 +69,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="admin-layout" data-theme={theme}>
       <header className="admin-layout__header" ref={headerRef} data-menu-open={isMenuOpen}>
-        <Link to="/" className="admin-layout__brand">
+        <Link to="/" className="admin-layout__brand" aria-label="North Star Shelter home">
           <img src="/logo.png" alt="" className="admin-layout__brand-mark" aria-hidden="true" />
+          <span className="admin-layout__sr-only">North Star Shelter home</span>
         </Link>
 
         <button
