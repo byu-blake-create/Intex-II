@@ -1,12 +1,17 @@
 /** Base for API calls; empty uses same-origin `/api` (Vite dev proxy). */
 export function apiUrl(path: string): string {
   const configuredBase = (import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/+$/, '')
+  const productionFallbackBase =
+    typeof window !== 'undefined' && window.location.hostname.endsWith('.vercel.app')
+      ? 'https://northstar-shelter-api.azurewebsites.net'
+      : ''
   const isLocalPage =
     typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  const resolvedBase = configuredBase || productionFallbackBase
   const isLocalApi =
-    configuredBase.includes('localhost') || configuredBase.includes('127.0.0.1')
-  const base = isLocalPage && isLocalApi ? '' : configuredBase
+    resolvedBase.includes('localhost') || resolvedBase.includes('127.0.0.1')
+  const base = isLocalPage && isLocalApi ? '' : resolvedBase
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
   return `${base}${normalizedPath}`
 }
