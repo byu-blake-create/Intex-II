@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/auth'
 import './AdminLayout.css'
@@ -30,6 +30,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     window.localStorage.setItem(ADMIN_THEME_STORAGE_KEY, theme)
   }, [theme])
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const headerRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    setIsMenuOpen(false)
+  }, [pathname])
+
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+      setIsMenuOpen(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen, handleClickOutside])
+
   const isOnWorkbench = WORKBENCH_PATHS.some(p => pathname.startsWith(p))
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   const primaryLinks = [
@@ -48,10 +68,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="admin-layout" data-theme={theme}>
-      <header className="admin-layout__header">
+      <header className="admin-layout__header" ref={headerRef} data-menu-open={isMenuOpen}>
         <Link to="/" className="admin-layout__brand" aria-label="Back to North Star Shelter home">
           <img src="/logo.png" alt="" className="admin-layout__brand-mark" aria-hidden="true" />
         </Link>
+
+        <button
+          type="button"
+          className="admin-layout__hamburger"
+          onClick={() => setIsMenuOpen(v => !v)}
+          aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isMenuOpen}
+        >
+          <span /><span /><span />
+        </button>
 
         <nav className="admin-layout__nav" aria-label="Staff workspace">
           {primaryLinks.map(link => (

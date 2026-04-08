@@ -20,6 +20,8 @@
   display: flex;
   gap: 0;
   border-bottom: 1px solid var(--adm-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ss-tab {
@@ -1637,4 +1639,143 @@
 .ss-plan-summary__sub {
   font-size: 0.78rem;
   color: var(--adm-muted);
+}
+
+/* ─── Mobile fixes ─────────────────────────────────────────── */
+
+/* Predict form: 2-col → 1-col */
+@media (max-width: 640px) {
+  .ss-predict-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Predict dual result panels: 2-col → 1-col */
+@media (max-width: 540px) {
+  .ss-predict-dual {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Plan summary boxes: 2-col → 1-col on very small screens */
+@media (max-width: 480px) {
+  .ss-plan-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Content calendar: compact to fit on mobile without page scroll */
+@media (max-width: 640px) {
+  .ss-calendar-grid {
+    grid-template-columns: 46px repeat(7, minmax(0, 1fr));
+    min-width: 0;
+  }
+
+  .ss-calendar-header-cell {
+    padding: 0.25rem 0.1rem;
+    font-size: 0.58rem;
+    letter-spacing: 0;
+    text-align: center;
+  }
+
+  .ss-calendar-platform-label {
+    padding: 0.4rem 0.2rem;
+    font-size: 0.65rem;
+  }
+
+  .ss-calendar-day-cell {
+    min-height: 44px;
+    padding: 0.18rem;
+    gap: 0.2rem;
+  }
+
+  .ss-cal-card {
+    font-size: 0.6rem;
+    padding: 0.18rem 0.22rem;
+    gap: 0.1rem;
+    border-left-width: 2px;
+  }
+
+  .ss-cal-card__topic {
+    font-size: 0.6rem;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Hide secondary content in calendar cards on mobile */
+  .ss-cal-card__chips,
+  .ss-cal-card__reasoning,
+  .ss-cal-card__time,
+  .ss-cal-card__clicks,
+  .ss-cal-card__draft {
+    display: none;
+  }
+}
+
+/* Learn tab — opportunity rows wrap on mobile */
+@media (max-width: 640px) {
+  .ss-opp-row {
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+  }
+
+  .ss-opp-row__avg {
+    white-space: normal;
+    font-size: 0.72rem;
+  }
+
+  .ss-opp-row .ss-draft-btn {
+    display: none;
+  }
+}
+
+/* Learn tab — top-post rows wrap on mobile */
+@media (max-width: 640px) {
+  .ss-top-post-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.3rem 0.5rem;
+  }
+
+  .ss-top-post-caption {
+    width: 100%;
+    flex: none;
+  }
+
+  .ss-top-post-rank {
+    min-width: auto;
+  }
+
+  /* Hide tone chip to prevent first-line overflow on small phones */
+  .ss-top-post-row .ss-chip {
+    display: none;
+  }
+}
+
+/* Filter bar: stack on very small screens */
+@media (max-width: 480px) {
+  .ss-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ss-platform-select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .ss-platform-select-wrap {
+    width: 100%;
+  }
+}
+
+/* Tabs: prevent page overflow, allow internal scroll */
+.ss-tabs {
+  scrollbar-width: none;
+}
+.ss-tabs::-webkit-scrollbar {
+  display: none;
 }

@@ -482,7 +482,7 @@ export default function CaseloadPage() {
 
   return (
     <AdminLayout>
-      <div className="cl-layout">
+      <div className="cl-layout" data-detail-open={selected !== null ? 'true' : undefined}>
         <CaseloadSidebar
           residents={filteredResidents}
           safehouses={safehouses}
@@ -528,6 +528,16 @@ export default function CaseloadPage() {
             setListError(null)
           }}
         />
+
+        {selected && (
+          <button
+            type="button"
+            className="cl-back-btn"
+            onClick={() => prepareResidentView(null)}
+          >
+            &larr; Back
+          </button>
+        )}
 
         <ResidentDetailPanel
           selected={selected}
