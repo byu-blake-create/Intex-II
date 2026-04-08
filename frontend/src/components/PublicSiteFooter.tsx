@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { resetConsentDecision } from '../lib/cookieConsent'
+import { openConsentPreferences } from '../lib/cookieConsent'
 import './PublicSiteFooter.css'
 
 const socials = [
@@ -77,7 +77,7 @@ export default function PublicSiteFooter() {
 }
 
 function handleManageCookies() {
-  resetConsentDecision()
+  openConsentPreferences()
 }
 
 function InstagramIcon() {
