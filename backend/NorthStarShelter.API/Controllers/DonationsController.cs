@@ -121,6 +121,81 @@ public class DonationsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = donation.DonationId }, donation);
     }
 
+    public record PublicDonateRequest(decimal Amount, string? Email, string? FirstName, string? LastName, string? Notes);
+    public record PublicDonateResponse(int DonationId, bool HasExistingAccount);
+
+    [HttpPost("public-donate")]
+    [AllowAnonymous]
+    public async Task<ActionResult<PublicDonateResponse>> PublicDonate(
+        [FromBody] PublicDonateRequest req,
+        CancellationToken cancellationToken)
+    {
+        if (req.Amount <= 0)
+            return BadRequest(new { message = "Donation amount must be greater than zero." });
+
+        var email = req.Email?.Trim();
+        var firstName = req.FirstName?.Trim();
+        var lastName = req.LastName?.Trim();
+        var displayName = $"{firstName} {lastName}".Trim();
+
+        Supporter? supporter = null;
+        var hasExistingAccount = false;
+
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            if (string.IsNullOrWhiteSpace(displayName)) displayName = email;
+
+            supporter = await _db.Supporters
+                .OrderBy(s => s.SupporterId)
+                .FirstOrDefaultAsync(s => s.Email == email, cancellationToken);
+
+            if (supporter is not null)
+            {
+                hasExistingAccount = await _db.Users.AnyAsync(
+                    u => u.SupporterId == supporter.SupporterId, cancellationToken);
+            }
+        }
+
+        if (supporter is null)
+        {
+            supporter = new Supporter
+            {
+                SupporterType = string.IsNullOrWhiteSpace(email) ? "Anonymous" : "Individual",
+                DisplayName = string.IsNullOrWhiteSpace(displayName) ? "Anonymous Donor" : displayName,
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                Status = "Active",
+                CreatedAt = DateTime.UtcNow,
+                AcquisitionChannel = "Website Donation",
+                RelationshipType = string.IsNullOrWhiteSpace(email) ? "Anonymous" : "Donor",
+            };
+            _db.Supporters.Add(supporter);
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        var donation = new Donation
+        {
+            SupporterId = supporter.SupporterId,
+            DonationType = "Monetary",
+            DonationDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            Amount = req.Amount,
+            CurrencyCode = "USD",
+            ChannelSource = "Website",
+            CampaignName = "Public Donation",
+            Notes = req.Notes,
+            IsRecurring = false,
+        };
+
+        if (supporter.FirstDonationDate is null)
+            supporter.FirstDonationDate = donation.DonationDate;
+
+        _db.Donations.Add(donation);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Ok(new PublicDonateResponse(donation.DonationId, hasExistingAccount));
+    }
+
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> Update(int id, [FromBody] Donation input, CancellationToken cancellationToken)

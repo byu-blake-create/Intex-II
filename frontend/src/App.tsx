@@ -10,6 +10,7 @@ import HomePage from './pages/public/HomePage'
 import LoginPage from './pages/public/LoginPage'
 
 // Lazy-loaded pages — split into separate chunks
+const DonatePage = lazy(() => import('./pages/public/DonatePage'))
 const ImpactPage = lazy(() => import('./pages/public/ImpactPage'))
 const DonationsPage = lazy(() => import('./pages/public/DonationsPage'))
 const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage'))
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/impactDashboard" element={<Navigate to={{ pathname: '/', hash: '#impact-dashboard' }} replace />} />
         <Route path="/impact-dashboard" element={<Navigate to={{ pathname: '/', hash: '#impact-dashboard' }} replace />} />
         <Route path="/impact" element={<ImpactPage />} />
+        <Route path="/donate" element={<DonatePage />} />
         <Route path="/donations" element={<ProtectedRoute requiredRole="Donor"><DonationsPage /></ProtectedRoute>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
