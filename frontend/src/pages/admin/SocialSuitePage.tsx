@@ -279,34 +279,60 @@ function PlanTab({ onDraftThis }: { onDraftThis: (platform: string, topic: strin
     )
   }
 
-  return (
-    <div className="ss-tab-content">
-      <p className="section-title">Recommended Posts</p>
-      <div style={{ display: 'grid', gap: '0.85rem' }}>
-        {recs.map((rec, i) => (
-          <div key={i} className="ss-live-card">
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <span className="badge badge--blue">{rec.platform}</span>
-              <span className={rec.priority === 'high' ? 'ss-priority-badge ss-priority-badge--high' : 'ss-priority-badge ss-priority-badge--medium'}>
-                {rec.priority}
-              </span>
-              <strong style={{ fontSize: '0.9rem', color: 'var(--adm-ink)' }}>{toLabel(rec.topic)}</strong>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <span className="ss-chip">{rec.suggestedHour}</span>
-              <span style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>
-                {(rec.expectedEngagement * 100).toFixed(1)}% expected vs {(rec.platformBaseline * 100).toFixed(1)}% baseline
-              </span>
-            </div>
-            <p style={{ margin: 0, fontSize: '0.83rem', color: 'var(--adm-ink)', lineHeight: 1.5 }}>{rec.reasoning}</p>
-            <div>
-              <button type="button" className="ss-draft-btn" onClick={() => onDraftThis(rec.platform, rec.topic)}>
-                → Draft this
-              </button>
-            </div>
-          </div>
-        ))}
+  const untapped = recs.filter(r => r.category === 'untapped')
+  const doubleDown = recs.filter(r => r.category === 'double_down')
+
+  function RecCard({ rec, i }: { rec: SocialRecommendation; i: number }) {
+    return (
+      <div key={i} className="ss-live-card">
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span className="badge badge--blue">{rec.platform}</span>
+          <span className={rec.priority === 'high' ? 'ss-priority-badge ss-priority-badge--high' : 'ss-priority-badge ss-priority-badge--medium'}>
+            {rec.priority}
+          </span>
+          <strong style={{ fontSize: '0.9rem', color: 'var(--adm-ink)' }}>{toLabel(rec.topic)}</strong>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span className="ss-chip">{rec.suggestedDay}</span>
+          <span className="ss-chip">{rec.suggestedHour}</span>
+          <span style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>
+            {rec.expectedClicks.toFixed(0)} avg clicks vs {rec.platformBaselineClicks.toFixed(0)} baseline
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span className="ss-chip">{toLabel(rec.bestPostType)}</span>
+          <span className="ss-chip">{toLabel(rec.bestTone)}</span>
+        </div>
+        <p style={{ margin: 0, fontSize: '0.83rem', color: 'var(--adm-ink)', lineHeight: 1.5 }}>{rec.reasoning}</p>
+        <div>
+          <button type="button" className="ss-draft-btn" onClick={() => onDraftThis(rec.platform, rec.topic)}>
+            → Draft this
+          </button>
+        </div>
       </div>
+    )
+  }
+
+  return (
+    <div className="ss-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {untapped.length > 0 && (
+        <div className="ss-plan-section">
+          <div className="ss-plan-section-header">
+            <h3 className="ss-plan-section-title">💡 Untapped Topics</h3>
+          </div>
+          <p className="ss-plan-section-desc">High potential topics you're barely posting</p>
+          {untapped.map((rec, i) => <RecCard key={i} rec={rec} i={i} />)}
+        </div>
+      )}
+      {doubleDown.length > 0 && (
+        <div className="ss-plan-section">
+          <div className="ss-plan-section-header">
+            <h3 className="ss-plan-section-title">🔥 Double Down</h3>
+          </div>
+          <p className="ss-plan-section-desc">Already working — post more of these</p>
+          {doubleDown.map((rec, i) => <RecCard key={i} rec={rec} i={i} />)}
+        </div>
+      )}
     </div>
   )
 }

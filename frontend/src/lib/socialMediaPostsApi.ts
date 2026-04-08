@@ -65,10 +65,14 @@ export interface SocialRecommendation {
   platform: string
   topic: string
   suggestedHour: string
-  expectedEngagement: number
-  platformBaseline: number
+  suggestedDay: string
+  expectedClicks: number
+  platformBaselineClicks: number
+  bestPostType: string
+  bestTone: string
   reasoning: string
   priority: 'high' | 'medium'
+  category: string  // 'untapped' | 'double_down'
 }
 
 export function fetchRecommendations(): Promise<SocialRecommendation[]> {

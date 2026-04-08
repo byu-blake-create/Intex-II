@@ -231,7 +231,7 @@ public class SocialMediaPostsController : ControllerBase
     public async Task<ActionResult<List<SocialRecommendationDto>>> GetRecommendations(CancellationToken cancellationToken)
     {
         var posts = await _db.SocialMediaPosts.AsNoTracking()
-            .Where(p => p.Platform != null && p.EngagementRate != null)
+            .Where(p => p.Platform != null && p.ClickThroughs != null)
             .OrderByDescending(p => p.CreatedAt)
             .Take(500)
             .Select(p => new
@@ -239,54 +239,111 @@ public class SocialMediaPostsController : ControllerBase
                 Platform = p.Platform!,
                 Topic = p.ContentTopic ?? "General",
                 p.PostHour,
-                EngagementRate = p.EngagementRate!.Value,
+                DayOfWeek = p.DayOfWeek ?? "Unknown",
+                PostType = p.PostType ?? "Unknown",
+                SentimentTone = p.SentimentTone ?? "Unknown",
+                EngagementRate = p.EngagementRate ?? 0m,
+                Clicks = (decimal)p.ClickThroughs!.Value,
             })
             .ToListAsync(cancellationToken);
 
         if (posts.Count == 0)
             return Ok(new List<SocialRecommendationDto>());
 
-        // Avg engagement per platform (baseline)
+        // Avg clicks per platform (baseline)
         var platformBaselines = posts
             .GroupBy(p => p.Platform)
-            .ToDictionary(g => g.Key, g => g.Average(x => x.EngagementRate));
+            .ToDictionary(g => g.Key, g => g.Average(x => x.Clicks));
 
-        // Best posting hour per platform
+        // Best posting hour per platform (by avg clicks)
         var bestHourByPlatform = posts
             .Where(p => p.PostHour.HasValue)
             .GroupBy(p => p.Platform)
             .ToDictionary(
                 g => g.Key,
                 g => g.GroupBy(x => x.PostHour!.Value)
-                      .OrderByDescending(h => h.Average(y => y.EngagementRate))
+                      .OrderByDescending(h => h.Average(y => y.Clicks))
                       .ThenBy(h => h.Key)
                       .Select(h => h.Key)
                       .FirstOrDefault(-1));
 
-        // High-opportunity combos: <4 posts but avg engagement > 0.08
+        // Best day-of-week per platform (by avg clicks)
+        var bestDayByPlatform = posts
+            .Where(p => !string.IsNullOrWhiteSpace(p.DayOfWeek) && p.DayOfWeek != "Unknown")
+            .GroupBy(p => p.Platform)
+            .ToDictionary(
+                g => g.Key,
+                g => g.GroupBy(x => x.DayOfWeek)
+                      .OrderByDescending(d => d.Average(y => y.Clicks))
+                      .Select(d => d.Key)
+                      .FirstOrDefault("Unknown"));
+
+        // Best post type per platform+topic (by avg clicks)
+        var bestPostTypeByCombo = posts
+            .Where(p => p.PostType != "Unknown")
+            .GroupBy(p => new { p.Platform, p.Topic })
+            .ToDictionary(
+                g => g.Key,
+                g => g.GroupBy(x => x.PostType)
+                      .OrderByDescending(t => t.Average(y => y.Clicks))
+                      .Select(t => t.Key)
+                      .FirstOrDefault("Unknown"));
+
+        // Best tone per platform+topic (by avg clicks)
+        var bestToneByCombo = posts
+            .Where(p => p.SentimentTone != "Unknown")
+            .GroupBy(p => new { p.Platform, p.Topic })
+            .ToDictionary(
+                g => g.Key,
+                g => g.GroupBy(x => x.SentimentTone)
+                      .OrderByDescending(t => t.Average(y => y.Clicks))
+                      .Select(t => t.Key)
+                      .FirstOrDefault("Unknown"));
+
         var recommendations = posts
             .GroupBy(p => new { p.Platform, p.Topic })
-            .Where(g => g.Count() < 4 && g.Average(x => x.EngagementRate) > 0.08m)
             .Select(g =>
             {
-                var avg = g.Average(x => x.EngagementRate);
+                var count = g.Count();
+                var avgClicks = g.Average(x => x.Clicks);
                 var baseline = platformBaselines.TryGetValue(g.Key.Platform, out var b) ? b : 0m;
                 var bestHour = bestHourByPlatform.TryGetValue(g.Key.Platform, out var h) && h >= 0
-                    ? FormatHour(h)
-                    : "No timing data";
-                var priority = avg >= 0.12m ? "high" : "medium";
-                return new SocialRecommendationDto(
+                    ? FormatHour(h) : "No timing data";
+                var bestDay = bestDayByPlatform.TryGetValue(g.Key.Platform, out var d) ? d : "Unknown";
+                var comboKey = new { g.Key.Platform, g.Key.Topic };
+                var bestPostType = bestPostTypeByCombo.TryGetValue(comboKey, out var pt) ? pt : "Unknown";
+                var bestTone = bestToneByCombo.TryGetValue(comboKey, out var tone) ? tone : "Unknown";
+
+                string? category = null;
+                if (count < 4 && avgClicks > baseline)
+                    category = "untapped";
+                else if (count >= 4 && avgClicks > baseline * 1.3m)
+                    category = "double_down";
+
+                if (category == null) return null;
+
+                var aboveBaseline = avgClicks - baseline;
+                var priority = category == "untapped" || avgClicks > baseline * 1.5m ? "high" : "medium";
+                var reasoning = $"'{g.Key.Topic}' on {g.Key.Platform} has only {count} post(s) but averages {avgClicks:F0} clicks — {aboveBaseline:F0} above the platform baseline of {baseline:F0}. Try posting on {bestDay} at {bestHour} as a {bestPostType} with a {bestTone} tone.";
+
+                return (SocialRecommendationDto?)new SocialRecommendationDto(
                     g.Key.Platform,
                     g.Key.Topic,
                     bestHour,
-                    avg,
+                    bestDay,
+                    avgClicks,
                     baseline,
-                    $"'{g.Key.Topic}' on {g.Key.Platform} has only {g.Count()} post(s) but averages {avg:P1} engagement — {(avg - baseline):P1} above the platform baseline of {baseline:P1}. Posting more of this topic at {bestHour} is a high-leverage opportunity.",
-                    priority);
+                    bestPostType,
+                    bestTone,
+                    reasoning,
+                    priority,
+                    category);
             })
-            .OrderByDescending(r => r.ExpectedEngagement)
-            .ThenBy(r => r.Platform)
-            .Take(5)
+            .Where(r => r != null)
+            .Select(r => r!)
+            .OrderBy(r => r.Priority == "high" ? 0 : 1)
+            .ThenByDescending(r => r.ExpectedClicks)
+            .Take(6)
             .ToList();
 
         return Ok(recommendations);

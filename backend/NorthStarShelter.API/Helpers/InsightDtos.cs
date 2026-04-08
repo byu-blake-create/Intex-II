@@ -78,10 +78,14 @@ public sealed record SocialRecommendationDto(
     string Platform,
     string Topic,
     string SuggestedHour,
-    decimal ExpectedEngagement,
-    decimal PlatformBaseline,
+    string SuggestedDay,
+    decimal ExpectedClicks,
+    decimal PlatformBaselineClicks,
+    string BestPostType,
+    string BestTone,
     string Reasoning,
-    string Priority);
+    string Priority,
+    string Category);
 
 public sealed record CaptionGenerateRequest(
     string Platform,

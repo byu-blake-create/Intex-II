@@ -1400,3 +1400,9 @@
 @keyframes ss-spin {
   to { transform: rotate(360deg); }
 }
+
+/* ─── Plan sections ────────────────────────────────────────── */
+.ss-plan-section { display: flex; flex-direction: column; gap: 0.75rem; }
+.ss-plan-section-header { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.1rem; }
+.ss-plan-section-title { font-size: 1rem; font-weight: 700; color: var(--adm-ink); margin: 0; }
+.ss-plan-section-desc { font-size: 0.8rem; color: var(--adm-muted); margin: 0 0 0.5rem 0; }
