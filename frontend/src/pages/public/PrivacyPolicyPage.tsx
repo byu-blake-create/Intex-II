@@ -1,3 +1,4 @@
+import PublicSiteFooter from '../../components/PublicSiteFooter'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
 import { resetConsentDecision } from '../../lib/cookieConsent'
 import { usePublicTheme } from '../../lib/usePublicTheme'
@@ -143,6 +144,7 @@ export default function PrivacyPolicyPage() {
           </p>
         </section>
       </main>
+      <PublicSiteFooter />
     </div>
   )
 }

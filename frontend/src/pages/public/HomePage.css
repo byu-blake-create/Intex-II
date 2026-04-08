@@ -1,8 +1,15 @@
 .public-site {
+  display: flex;
+  flex-direction: column;
   color: var(--page-ink);
   min-height: 100svh;
   background: var(--page-bg);
   padding-top: 12px;
+}
+
+.public-site > main {
+  width: 100%;
+  flex: 1 0 auto;
 }
 
 .public-site[data-theme="light"] {
