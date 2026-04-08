@@ -8,6 +8,8 @@ export interface SocialMediaPostsQuery {
   platform?: string
 }
 
+const SOCIAL_POSTS_PAGE_SIZE = 100
+
 export function fetchSocialMediaPosts(query: SocialMediaPostsQuery = {}): Promise<PaginatedList<SocialMediaPost>> {
   const params = new URLSearchParams()
   if (query.pageNum) params.set('pageNum', String(query.pageNum))
@@ -16,6 +18,32 @@ export function fetchSocialMediaPosts(query: SocialMediaPostsQuery = {}): Promis
 
   const suffix = params.size > 0 ? `?${params.toString()}` : ''
   return apiGet<PaginatedList<SocialMediaPost>>(`/api/socialmediaposts${suffix}`)
+}
+
+export async function fetchAllSocialMediaPosts(
+  query: Omit<SocialMediaPostsQuery, 'pageNum' | 'pageSize'> = {}
+): Promise<PaginatedList<SocialMediaPost>> {
+  const firstPage = await fetchSocialMediaPosts({ ...query, pageNum: 1, pageSize: SOCIAL_POSTS_PAGE_SIZE })
+  const totalPages = Math.ceil(firstPage.totalCount / SOCIAL_POSTS_PAGE_SIZE)
+
+  if (totalPages <= 1) {
+    return firstPage
+  }
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) =>
+      fetchSocialMediaPosts({
+        ...query,
+        pageNum: index + 2,
+        pageSize: SOCIAL_POSTS_PAGE_SIZE,
+      })
+    )
+  )
+
+  return {
+    items: [firstPage, ...remainingPages].flatMap(page => page.items),
+    totalCount: firstPage.totalCount,
+  }
 }
 
 export interface SocialPlatformInsight {
@@ -75,6 +103,9 @@ export interface SocialRecommendation {
   category: string  // 'untapped' | 'double_down'
 }
 
-export function fetchRecommendations(): Promise<SocialRecommendation[]> {
-  return apiGet<SocialRecommendation[]>('/api/socialmediaposts/recommendations')
+export function fetchRecommendations(platform?: string): Promise<SocialRecommendation[]> {
+  const url = platform
+    ? `/api/socialmediaposts/recommendations?platform=${encodeURIComponent(platform)}`
+    : '/api/socialmediaposts/recommendations'
+  return apiGet<SocialRecommendation[]>(url)
 }

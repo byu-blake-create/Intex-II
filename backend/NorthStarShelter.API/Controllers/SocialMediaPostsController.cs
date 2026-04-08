@@ -55,7 +55,6 @@ public class SocialMediaPostsController : ControllerBase
 
         var posts = await query
             .OrderByDescending(p => p.CreatedAt)
-            .Take(500)
             .Select(p => new
             {
                 p.PostId,
@@ -228,12 +227,18 @@ public class SocialMediaPostsController : ControllerBase
     }
 
     [HttpGet("recommendations")]
-    public async Task<ActionResult<List<SocialRecommendationDto>>> GetRecommendations(CancellationToken cancellationToken)
+    public async Task<ActionResult<List<SocialRecommendationDto>>> GetRecommendations(
+        [FromQuery] string? platform = null,
+        CancellationToken cancellationToken = default)
     {
-        var posts = await _db.SocialMediaPosts.AsNoTracking()
-            .Where(p => p.Platform != null && p.ClickThroughs != null)
+        var dbQuery = _db.SocialMediaPosts.AsNoTracking()
+            .Where(p => p.Platform != null && p.ClickThroughs != null);
+
+        if (!string.IsNullOrWhiteSpace(platform))
+            dbQuery = dbQuery.Where(p => p.Platform == platform);
+
+        var posts = await dbQuery
             .OrderByDescending(p => p.CreatedAt)
-            .Take(500)
             .Select(p => new
             {
                 Platform = p.Platform!,
@@ -300,7 +305,7 @@ public class SocialMediaPostsController : ControllerBase
                       .Select(t => t.Key)
                       .FirstOrDefault("Unknown"));
 
-        var recommendations = posts
+        var allRecs = posts
             .GroupBy(p => new { p.Platform, p.Topic })
             .Select(g =>
             {
@@ -343,8 +348,23 @@ public class SocialMediaPostsController : ControllerBase
             .Select(r => r!)
             .OrderBy(r => r.Priority == "high" ? 0 : 1)
             .ThenByDescending(r => r.ExpectedClicks)
-            .Take(6)
             .ToList();
+
+        List<SocialRecommendationDto> recommendations;
+        if (!string.IsNullOrWhiteSpace(platform))
+        {
+            // Single platform: return up to 8
+            recommendations = allRecs.Take(8).ToList();
+        }
+        else
+        {
+            // All platforms: up to 4 per platform, overall cap of 20
+            recommendations = allRecs
+                .GroupBy(r => r.Platform)
+                .SelectMany(g => g.Take(4))
+                .Take(20)
+                .ToList();
+        }
 
         return Ok(recommendations);
     }

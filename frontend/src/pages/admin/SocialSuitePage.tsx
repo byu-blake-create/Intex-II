@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
 import {
+  fetchAllSocialMediaPosts,
   fetchSocialMediaInsights,
-  fetchSocialMediaPosts,
   fetchRecommendations,
   type SocialMediaInsights,
   type SocialRecommendation,
@@ -252,19 +252,47 @@ function LearnTab({
 
 // ─── Tab: Plan ────────────────────────────────────────────────────────────────
 
-function PlanTab({ onDraftThis }: { onDraftThis: (platform: string, topic: string) => void }) {
+function PlanCard({ rec, onDraft }: { rec: SocialRecommendation; onDraft: (p: string, t: string) => void }) {
+  return (
+    <div className="ss-live-card ss-live-card--compact">
+      <div className="ss-card-meta-row">
+        <span className={rec.priority === 'high' ? 'ss-priority-badge ss-priority-badge--high' : 'ss-priority-badge ss-priority-badge--medium'}>{rec.priority}</span>
+        <strong style={{fontSize:'0.88rem'}}>{toLabel(rec.topic)}</strong>
+        <span className={rec.category === 'untapped' ? 'ss-category-tag ss-category-tag--untapped' : 'ss-category-tag ss-category-tag--double-down'}>
+          {rec.category === 'untapped' ? 'Untapped' : 'Double Down'}
+        </span>
+      </div>
+      <div className="ss-card-meta-row">
+        <span className="ss-chip">{rec.suggestedDay}</span>
+        <span className="ss-chip">{rec.suggestedHour}</span>
+        <span style={{color:'var(--adm-muted)'}}>·</span>
+        <span className="ss-chip">{toLabel(rec.bestPostType)}</span>
+        <span className="ss-chip">{toLabel(rec.bestTone)}</span>
+      </div>
+      <div className="ss-card-meta-row" style={{justifyContent:'space-between'}}>
+        <span style={{fontSize:'0.8rem', color:'var(--adm-muted)'}}>
+          <strong style={{color:'var(--adm-ink)'}}>{rec.expectedClicks.toFixed(0)}</strong> avg clicks vs {rec.platformBaselineClicks.toFixed(0)} baseline
+        </span>
+        <button type="button" className="ss-draft-btn" onClick={() => onDraft(rec.platform, rec.topic)}>→ Draft</button>
+      </div>
+    </div>
+  )
+}
+
+function PlanTab({ onDraftThis, selectedPlatform }: { onDraftThis: (platform: string, topic: string) => void; selectedPlatform: string }) {
   const [recs, setRecs] = useState<SocialRecommendation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
-    fetchRecommendations()
+    setLoading(true)
+    fetchRecommendations(selectedPlatform || undefined)
       .then(data => { if (mounted) setRecs(data) })
       .catch(() => { if (mounted) setError(null) }) // graceful empty
       .finally(() => { if (mounted) setLoading(false) })
     return () => { mounted = false }
-  }, [])
+  }, [selectedPlatform])
 
   if (loading) return <div className="ss-tab-content"><div className="inline-loading">Loading recommendations...</div></div>
   if (error) return <div className="ss-tab-content"><p className="admin-error">{error}</p></div>
@@ -279,60 +307,52 @@ function PlanTab({ onDraftThis }: { onDraftThis: (platform: string, topic: strin
     )
   }
 
-  const untapped = recs.filter(r => r.category === 'untapped')
-  const doubleDown = recs.filter(r => r.category === 'double_down')
-
-  function RecCard({ rec, i }: { rec: SocialRecommendation; i: number }) {
+  if (selectedPlatform) {
+    const untapped = recs.filter(r => r.category === 'untapped')
+    const doubleDown = recs.filter(r => r.category === 'double_down')
     return (
-      <div key={i} className="ss-live-card">
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span className="badge badge--blue">{rec.platform}</span>
-          <span className={rec.priority === 'high' ? 'ss-priority-badge ss-priority-badge--high' : 'ss-priority-badge ss-priority-badge--medium'}>
-            {rec.priority}
-          </span>
-          <strong style={{ fontSize: '0.9rem', color: 'var(--adm-ink)' }}>{toLabel(rec.topic)}</strong>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span className="ss-chip">{rec.suggestedDay}</span>
-          <span className="ss-chip">{rec.suggestedHour}</span>
-          <span style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>
-            {rec.expectedClicks.toFixed(0)} avg clicks vs {rec.platformBaselineClicks.toFixed(0)} baseline
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span className="ss-chip">{toLabel(rec.bestPostType)}</span>
-          <span className="ss-chip">{toLabel(rec.bestTone)}</span>
-        </div>
-        <p style={{ margin: 0, fontSize: '0.83rem', color: 'var(--adm-ink)', lineHeight: 1.5 }}>{rec.reasoning}</p>
-        <div>
-          <button type="button" className="ss-draft-btn" onClick={() => onDraftThis(rec.platform, rec.topic)}>
-            → Draft this
-          </button>
+      <div className="ss-tab-content">
+        <p className="section-title">Content Plan — {selectedPlatform}</p>
+        <div className="ss-plan-grid">
+          <div className="ss-plan-section">
+            {untapped.length > 0 && <>
+              <p className="ss-plan-section-title">💡 Untapped Topics</p>
+              <p className="ss-plan-section-desc">High potential topics you're barely posting</p>
+              {untapped.map((rec, i) => <PlanCard key={i} rec={rec} onDraft={onDraftThis} />)}
+            </>}
+          </div>
+          <div className="ss-plan-section">
+            {doubleDown.length > 0 && <>
+              <p className="ss-plan-section-title">🔥 Double Down</p>
+              <p className="ss-plan-section-desc">Already working — post more of these</p>
+              {doubleDown.map((rec, i) => <PlanCard key={i} rec={rec} onDraft={onDraftThis} />)}
+            </>}
+          </div>
         </div>
       </div>
     )
   }
 
+  // All platforms: group by platform
+  const byPlatform = recs.reduce<Record<string, SocialRecommendation[]>>((acc, rec) => {
+    if (!acc[rec.platform]) acc[rec.platform] = []
+    acc[rec.platform].push(rec)
+    return acc
+  }, {})
+
   return (
-    <div className="ss-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {untapped.length > 0 && (
-        <div className="ss-plan-section">
-          <div className="ss-plan-section-header">
-            <h3 className="ss-plan-section-title">💡 Untapped Topics</h3>
+    <div className="ss-tab-content" style={{display:'flex', flexDirection:'column', gap:'1.5rem'}}>
+      {Object.entries(byPlatform).map(([plt, platformRecs]) => (
+        <div key={plt}>
+          <div className="ss-plan-platform-header">
+            <span className="badge badge--blue">{plt}</span>
+            <span style={{color:'var(--adm-muted)', fontSize:'0.8rem'}}>{platformRecs.length} recommendations</span>
           </div>
-          <p className="ss-plan-section-desc">High potential topics you're barely posting</p>
-          {untapped.map((rec, i) => <RecCard key={i} rec={rec} i={i} />)}
-        </div>
-      )}
-      {doubleDown.length > 0 && (
-        <div className="ss-plan-section">
-          <div className="ss-plan-section-header">
-            <h3 className="ss-plan-section-title">🔥 Double Down</h3>
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem'}}>
+            {platformRecs.map((rec, i) => <PlanCard key={i} rec={rec} onDraft={onDraftThis} />)}
           </div>
-          <p className="ss-plan-section-desc">Already working — post more of these</p>
-          {doubleDown.map((rec, i) => <RecCard key={i} rec={rec} i={i} />)}
         </div>
-      )}
+      ))}
     </div>
   )
 }
@@ -798,11 +818,36 @@ function DraftTab({ prefill }: { prefill: { platform?: string; topic?: string } 
 
 type SortKey = 'platform' | 'engagementRate' | 'clickThroughs' | 'donationReferrals' | 'createdAt'
 type SortDir = 'asc' | 'desc'
+const POSTS_TAB_PAGE_SIZE = 11
+
+function SortHeader({
+  label,
+  col,
+  active,
+  sortDir,
+  onSort,
+}: {
+  label: string
+  col: SortKey
+  active: boolean
+  sortDir: SortDir
+  onSort: (key: SortKey) => void
+}) {
+  return (
+    <th
+      style={{ cursor: 'pointer', userSelect: 'none', color: active ? 'var(--adm-accent)' : undefined }}
+      onClick={() => onSort(col)}
+    >
+      {label} {active ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+    </th>
+  )
+}
 
 function PostsTab({ posts }: { posts: SocialMediaPost[] }) {
   const [search, setSearch] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('createdAt')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const [currentPage, setCurrentPage] = useState(1)
   const [selectedPost, setSelectedPost] = useState<SocialMediaPost | null>(null)
 
   function handleSort(key: SortKey) {
@@ -839,17 +884,13 @@ function PostsTab({ posts }: { posts: SocialMediaPost[] }) {
     })
   }, [filtered, sortKey, sortDir])
 
-  function SortHeader({ label, col }: { label: string; col: SortKey }) {
-    const active = sortKey === col
-    return (
-      <th
-        style={{ cursor: 'pointer', userSelect: 'none', color: active ? 'var(--adm-accent)' : undefined }}
-        onClick={() => handleSort(col)}
-      >
-        {label} {active ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-      </th>
-    )
-  }
+  const totalPages = Math.max(1, Math.ceil(sorted.length / POSTS_TAB_PAGE_SIZE))
+  const currentPageSafe = Math.min(currentPage, totalPages)
+
+  const pagedPosts = useMemo(() => {
+    const start = (currentPageSafe - 1) * POSTS_TAB_PAGE_SIZE
+    return sorted.slice(start, start + POSTS_TAB_PAGE_SIZE)
+  }, [currentPageSafe, sorted])
 
   return (
     <div className="ss-tab-content">
@@ -858,7 +899,10 @@ function PostsTab({ posts }: { posts: SocialMediaPost[] }) {
           type="search"
           placeholder="Search caption or campaign..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => {
+            setSearch(e.target.value)
+            setCurrentPage(1)
+          }}
           style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', border: '1px solid var(--adm-border)', background: 'var(--adm-card)', color: 'var(--adm-ink)', fontSize: '0.88rem', width: '100%', maxWidth: '320px' }}
         />
       </div>
@@ -866,38 +910,59 @@ function PostsTab({ posts }: { posts: SocialMediaPost[] }) {
       {sorted.length === 0 ? (
         <div className="empty-state">No posts match the current filter.</div>
       ) : (
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Created</th>
-                <SortHeader label="Platform" col="platform" />
-                <th>Post Type</th>
-                <th>Campaign</th>
-                <SortHeader label="Engagement" col="engagementRate" />
-                <SortHeader label="Clicks" col="clickThroughs" />
-                <SortHeader label="Referrals" col="donationReferrals" />
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map(post => (
-                <tr
-                  key={post.postId}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedPost(post)}
-                >
-                  <td>{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '\u2014'}</td>
-                  <td>{post.platform ?? '\u2014'}</td>
-                  <td>{post.postType ?? '\u2014'}</td>
-                  <td>{post.campaignName ?? '\u2014'}</td>
-                  <td>{pct(post.engagementRate)}</td>
-                  <td>{post.clickThroughs?.toLocaleString() ?? '\u2014'}</td>
-                  <td>{post.donationReferrals?.toLocaleString() ?? '\u2014'}</td>
+        <>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Created</th>
+                  <SortHeader label="Platform" col="platform" active={sortKey === 'platform'} sortDir={sortDir} onSort={handleSort} />
+                  <th>Post Type</th>
+                  <th>Campaign</th>
+                  <SortHeader label="Engagement" col="engagementRate" active={sortKey === 'engagementRate'} sortDir={sortDir} onSort={handleSort} />
+                  <SortHeader label="Clicks" col="clickThroughs" active={sortKey === 'clickThroughs'} sortDir={sortDir} onSort={handleSort} />
+                  <SortHeader label="Referrals" col="donationReferrals" active={sortKey === 'donationReferrals'} sortDir={sortDir} onSort={handleSort} />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {pagedPosts.map(post => (
+                  <tr
+                    key={post.postId}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => setSelectedPost(post)}
+                  >
+                    <td>{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '\u2014'}</td>
+                    <td>{post.platform ?? '\u2014'}</td>
+                    <td>{post.postType ?? '\u2014'}</td>
+                    <td>{post.campaignName ?? '\u2014'}</td>
+                    <td>{pct(post.engagementRate)}</td>
+                    <td>{post.clickThroughs?.toLocaleString() ?? '\u2014'}</td>
+                    <td>{post.donationReferrals?.toLocaleString() ?? '\u2014'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="pager">
+            <span className="pager__info">Page {currentPageSafe} of {totalPages}, {sorted.length} posts</span>
+            <button
+              type="button"
+              className="pager__btn"
+              disabled={currentPageSafe <= 1}
+              onClick={() => setCurrentPage(page => page - 1)}
+            >
+              Prev
+            </button>
+            <button
+              type="button"
+              className="pager__btn"
+              disabled={currentPageSafe >= totalPages}
+              onClick={() => setCurrentPage(page => page + 1)}
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
 
       {selectedPost && (
@@ -964,7 +1029,7 @@ export default function SocialSuitePage() {
 
   // Fetch full platform list once on mount, independent of filtered posts
   useEffect(() => {
-    fetchSocialMediaPosts({ pageSize: 200 }).then(result => {
+    fetchAllSocialMediaPosts().then(result => {
       const uniquePlatforms = Array.from(
         new Set(result.items.map(p => p.platform).filter((v): v is string => Boolean(v)))
       ).sort()
@@ -974,16 +1039,16 @@ export default function SocialSuitePage() {
 
   useEffect(() => {
     let mounted = true
-    setLoading(true)
-    setError(null)
 
     Promise.all([
-      fetchSocialMediaPosts({ pageSize: 100, platform: platform || undefined }),
+      fetchAllSocialMediaPosts({ platform: platform || undefined }),
       fetchSocialMediaInsights(platform || undefined),
     ])
       .then(([result, nextInsights]) => {
-        if (mounted) setPosts(result.items)
-        if (mounted) setInsights(nextInsights)
+        if (mounted) {
+          setPosts(result.items)
+          setInsights(nextInsights)
+        }
       })
       .catch(() => {
         if (mounted) setError('Could not load social media posts.')
@@ -1036,7 +1101,6 @@ export default function SocialSuitePage() {
               </select>
             </div>
           </label>
-          <span className="ss-post-count">{posts.length} posts loaded</span>
         </div>
 
         <div className="ss-tabs">
@@ -1062,7 +1126,7 @@ export default function SocialSuitePage() {
             onDraftThis={handleDraftThis}
           />
         )}
-        {activeTab === 'plan' && <PlanTab onDraftThis={handleDraftThis} />}
+        {activeTab === 'plan' && <PlanTab onDraftThis={handleDraftThis} selectedPlatform={platform} />}
         {activeTab === 'predict' && <PredictTab onDraftFromPredict={handleDraftThis} />}
         {activeTab === 'draft' && <DraftTab prefill={draftPrefill} />}
         {activeTab === 'posts' && <PostsTab posts={posts} />}
