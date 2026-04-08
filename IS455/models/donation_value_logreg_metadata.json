@@ -1,6 +1,6 @@
 {
   "name": "donation_value_logreg",
-  "trained_at": "2026-04-08T19:10:38+00:00",
+  "trained_at": "2026-04-08T22:35:10+00:00",
   "label_definition": "1 if next 90-day monetary total is at least 1000 PHP",
   "feature_names": [
     "donation_count",

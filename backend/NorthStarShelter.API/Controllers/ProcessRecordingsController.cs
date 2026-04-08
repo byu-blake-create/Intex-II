@@ -51,7 +51,7 @@ public class ProcessRecordingsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ProcessRecording>> Create([FromBody] ProcessRecordingUpsertRequest input, CancellationToken cancellationToken)
     {
         var validationResult = await ValidateUpsertAsync(input, cancellationToken);
@@ -65,7 +65,7 @@ public class ProcessRecordingsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] ProcessRecordingUpsertRequest input, CancellationToken cancellationToken)
     {
         var validationResult = await ValidateUpsertAsync(input, cancellationToken);

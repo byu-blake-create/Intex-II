@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/auth'
 import './AdminLayout.css'
@@ -19,6 +19,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { pathname } = useLocation()
   const { user, logout } = useAuth()
   const isAdmin = user?.roles.includes('Admin') ?? false
+  const accountLabel = user
+    ? formatAccountLabel(user.firstName, user.lastName, user.displayName, user.email)
+    : null
   const [theme, setTheme] = useState<AdminTheme>(() => {
     if (typeof window === 'undefined') return 'dark'
 
@@ -29,6 +32,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     window.localStorage.setItem(ADMIN_THEME_STORAGE_KEY, theme)
   }, [theme])
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const headerRef = useRef<HTMLElement>(null)
+  const closeMenu = useCallback(() => setIsMenuOpen(false), [])
+
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+      closeMenu()
+    }
+  }, [closeMenu])
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen, handleClickOutside])
 
   const isOnWorkbench = WORKBENCH_PATHS.some(p => pathname.startsWith(p))
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
@@ -48,17 +68,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="admin-layout" data-theme={theme}>
-      <header className="admin-layout__header">
-        <Link to="/" className="admin-layout__brand" aria-label="Back to North Star Shelter home">
+      <header className="admin-layout__header" ref={headerRef} data-menu-open={isMenuOpen}>
+        <Link to="/" className="admin-layout__brand" aria-label="Back to North Star Shelter home" onClick={closeMenu}>
           <img src="/logo.png" alt="" className="admin-layout__brand-mark" aria-hidden="true" />
+          <span className="admin-layout__sr-only">North Star Shelter home</span>
         </Link>
 
-        <nav className="admin-layout__nav" aria-label="Staff workspace">
+        <button
+          type="button"
+          className="admin-layout__hamburger"
+          onClick={() => setIsMenuOpen(v => !v)}
+          aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isMenuOpen}
+        >
+          <span /><span /><span />
+        </button>
+
+        <nav className="admin-layout__nav" aria-label="Admin workspace">
           {primaryLinks.map(link => (
             <NavLink
               key={link.to}
               to={link.to}
               end={link.end}
+              onClick={closeMenu}
               className={() => (isPrimaryLinkActive(link) ? 'is-active' : undefined)}
             >
               {link.label}
@@ -92,7 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
 
           <div className="admin-layout__user">
-            <span className="admin-layout__email">{user?.email}</span>
+            <span className="admin-layout__email">{accountLabel}</span>
             <button type="button" className="admin-layout__logout" onClick={() => void logout()}>
               Sign out
             </button>
@@ -106,6 +138,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NavLink
               key={link.to}
               to={link.to}
+              onClick={closeMenu}
               className={({ isActive }) => (isActive ? 'is-active' : undefined)}
             >
               {link.label}
@@ -117,4 +150,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="admin-layout__body">{children}</div>
     </div>
   )
+}
+
+function formatAccountLabel(firstName: string, lastName: string, displayName: string, email: string) {
+  const trimmedFirstName = firstName.trim()
+  const trimmedLastName = lastName.trim()
+
+  if (trimmedFirstName || trimmedLastName) {
+    return `${trimmedFirstName} ${trimmedLastName}`.trim()
+  }
+
+  return displayName.trim() || email
 }

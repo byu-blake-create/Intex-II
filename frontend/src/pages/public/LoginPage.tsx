@@ -17,6 +17,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [awaitingMfa, setAwaitingMfa] = useState(false)
@@ -24,7 +26,7 @@ export default function LoginPage() {
   const [mfaCode, setMfaCode] = useState('')
 
   function destinationFor(user: AuthUser) {
-    if (user.roles.includes('Staff') || user.roles.includes('Admin')) return '/admin'
+    if (user.roles.includes('Admin')) return '/admin'
     if (user.roles.includes('Donor')) return '/donations'
     return '/'
   }
@@ -109,65 +111,8 @@ export default function LoginPage() {
         Back to home
       </Link>
 
-      <main
-        style={{
-          maxWidth: 1040,
-          margin: '0 auto',
-          padding: '4.5rem 1.25rem 5rem',
-        }}
-      >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1.05fr) minmax(320px, 0.95fr)',
-            gap: '1.5rem',
-            alignItems: 'start',
-          }}
-        >
-          <section className="login-page__feature-card">
-            <p
-              style={{
-                margin: 0,
-                textTransform: 'uppercase',
-                letterSpacing: '0.14em',
-                fontSize: '0.78rem',
-                color: 'var(--page-accent-deep)',
-                fontWeight: 800,
-              }}
-            >
-              Account access
-            </p>
-            <h1 style={{ margin: 0 }}>
-              {mode === 'register'
-                ? 'Create your North Star Shelter donor account'
-                : 'Sign in with your North Star Shelter account'}
-            </h1>
-            <p style={{ margin: 0, lineHeight: 1.8 }}>
-              {mode === 'register'
-                ? 'New accounts are created in the live database and automatically receive the donor role.'
-                : 'This sign-in now uses the production database account store. Staff and admin users unlock the staff workspace after authentication.'}
-            </p>
-
-            <div
-              style={{
-                padding: '1rem 1.1rem',
-                borderRadius: '18px',
-                border: '1px solid var(--page-chip-border)',
-                background: 'var(--page-card-bg)',
-                display: 'grid',
-                gap: '0.5rem',
-              }}
-            >
-              <p style={{ margin: 0, fontWeight: 700, color: 'var(--page-ink)' }}>
-                What changed
-              </p>
-              <p style={{ margin: 0, lineHeight: 1.7 }}>
-                Accounts now live in the real SQL-backed identity store. Donor accounts are linked
-                to supporter records so their personal donation history can load after sign-in.
-              </p>
-            </div>
-          </section>
-
+      <main className="login-page__main">
+        <div className="login-page__center">
           <section className="login-page__main-card">
             <div
               style={{
@@ -368,28 +313,50 @@ export default function LoginPage() {
               {!awaitingMfa && (
                 <label className="login-page__field">
                   <span>Password</span>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                    autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                    className="login-page__input"
-                  />
+                  <div className="login-page__password-wrap">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      required
+                      autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                      className="login-page__input login-page__input--password"
+                    />
+                    <button
+                      type="button"
+                      className="login-page__password-toggle"
+                      onClick={() => setShowPassword(v => !v)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-pressed={showPassword}
+                    >
+                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </div>
                 </label>
               )}
 
               {mode === 'register' && !awaitingMfa && (
                 <label className="login-page__field">
                   <span>Confirm password</span>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    required
-                    autoComplete="new-password"
-                    className="login-page__input"
-                  />
+                  <div className="login-page__password-wrap">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      required
+                      autoComplete="new-password"
+                      className="login-page__input login-page__input--password"
+                    />
+                    <button
+                      type="button"
+                      className="login-page__password-toggle"
+                      onClick={() => setShowConfirmPassword(v => !v)}
+                      aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                      aria-pressed={showConfirmPassword}
+                    >
+                      {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </div>
                 </label>
               )}
 
@@ -431,5 +398,23 @@ export default function LoginPage() {
       </main>
       <PublicSiteFooter />
     </div>
+  )
+}
+
+function EyeIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function EyeOffIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
   )
 }

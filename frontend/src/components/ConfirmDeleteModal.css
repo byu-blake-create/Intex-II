@@ -61,5 +61,5 @@
 }
 
 .confirm-delete-ok--accent {
-  background: var(--adm-accent, #245ea6);
+  background: var(--adm-accent-solid, #245ea6);
 }

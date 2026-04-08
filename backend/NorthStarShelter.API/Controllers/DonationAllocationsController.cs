@@ -29,7 +29,7 @@ public class DonationAllocationsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<DonationAllocation>> Create([FromBody] DonationAllocation allocation, CancellationToken cancellationToken)
     {
         _db.DonationAllocations.Add(allocation);

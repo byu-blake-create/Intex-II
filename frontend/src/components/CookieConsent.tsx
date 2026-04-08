@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CONSENT_EVENT, getConsentDecision, setConsentDecision, syncOptionalAnalytics } from '../lib/cookieConsent'
+import {
+  CONSENT_EVENT,
+  getConsentDecision,
+  setConsentDecision,
+  syncOptionalAnalytics,
+  type ConsentEventDetail,
+} from '../lib/cookieConsent'
 import './CookieConsent.css'
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(() => getConsentDecision() === null)
 
   useEffect(() => {
-    const sync = () => {
-      setVisible(getConsentDecision() === null)
+    const sync = (event?: Event) => {
+      const detail = event instanceof CustomEvent ? (event.detail as ConsentEventDetail | undefined) : undefined
+      setVisible(detail?.forceOpen ? true : getConsentDecision() === null)
       syncOptionalAnalytics()
     }
 
@@ -21,10 +28,12 @@ export default function CookieConsent() {
 
   const accept = useCallback(() => {
     setConsentDecision('accepted')
+    setVisible(false)
   }, [])
 
   const decline = useCallback(() => {
     setConsentDecision('declined')
+    setVisible(false)
   }, [])
 
   if (!visible) return null

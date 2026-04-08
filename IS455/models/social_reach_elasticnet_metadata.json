@@ -1,6 +1,6 @@
 {
   "name": "social_reach_elasticnet",
-  "trained_at": "2026-04-08T19:12:04+00:00",
+  "trained_at": "2026-04-08T22:36:22+00:00",
   "label_definition": "reach for a social media post",
   "feature_names": [
     "post_hour",

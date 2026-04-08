@@ -45,7 +45,7 @@ public class DonationsController : ControllerBase
     }
 
     [HttpGet("mine")]
-    [Authorize(Roles = "Donor,Admin,Staff")]
+    [Authorize(Roles = "Donor,Admin")]
     public async Task<ActionResult<DonorDonationsResponse>> GetMine(
         [FromQuery] int pageNum = 1,
         [FromQuery] int pageSize = 20,
@@ -113,7 +113,7 @@ public class DonationsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Donation>> Create([FromBody] Donation donation, CancellationToken cancellationToken)
     {
         _db.Donations.Add(donation);
@@ -197,7 +197,7 @@ public class DonationsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] Donation input, CancellationToken cancellationToken)
     {
         if (id != input.DonationId) return BadRequest();
@@ -209,7 +209,7 @@ public class DonationsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id, [FromQuery] bool confirm = false, CancellationToken cancellationToken = default)
     {
         if (!confirm) return BadRequest(new { error = "Set confirm=true to delete." });

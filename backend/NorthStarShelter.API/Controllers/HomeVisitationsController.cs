@@ -48,7 +48,7 @@ public class HomeVisitationsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<HomeVisitation>> Create([FromBody] HomeVisitationUpsertRequest input, CancellationToken cancellationToken)
     {
         var validationResult = await ValidateUpsertAsync(input, cancellationToken);
@@ -62,7 +62,7 @@ public class HomeVisitationsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] HomeVisitationUpsertRequest input, CancellationToken cancellationToken)
     {
         var validationResult = await ValidateUpsertAsync(input, cancellationToken);

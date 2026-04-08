@@ -1,7 +1,54 @@
-.donate-page__main {
+.donate-page > .donate-page__main {
   width: min(620px, 100%);
   margin: 0 auto;
   padding: 32px 24px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.donate-dashboard-banner {
+  display: grid;
+  gap: 6px;
+  padding: 20px 22px;
+  border-radius: 20px;
+  border: 2px solid var(--page-accent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--page-accent) 14%, var(--page-panel)) 0%,
+    var(--page-panel) 100%
+  );
+  box-shadow: 0 10px 32px rgba(187, 95, 60, 0.12);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.donate-dashboard-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(187, 95, 60, 0.18);
+}
+
+.donate-dashboard-banner__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--page-accent-deep);
+}
+
+.donate-dashboard-banner__title {
+  font-family: var(--font-display, 'Instrument Serif', serif);
+  font-size: clamp(1.25rem, 3.5vw, 1.55rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--page-ink);
+}
+
+.donate-dashboard-banner__arrow {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--page-accent);
 }
 
 .donate-card {
@@ -81,7 +128,7 @@
 
 .donate-amount-btn--active {
   border-color: var(--page-accent);
-  background: var(--page-accent);
+  background: var(--page-accent-solid);
   color: #fff;
 }
 

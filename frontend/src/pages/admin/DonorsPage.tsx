@@ -198,12 +198,13 @@ export default function DonorsPage() {
 
   return (
     <AdminLayout>
-      <div className="dn-layout">
+      <div className="dn-layout" data-detail-open={selected !== null ? 'true' : undefined}>
         <div className="dn-sidebar">
           <div className="dn-sidebar__header">
             <input
               className="dn-search"
               placeholder="Search donors..."
+              aria-label="Search donors"
               value={search}
               onChange={e => {
                 setSearch(e.target.value)
@@ -212,6 +213,7 @@ export default function DonorsPage() {
             />
             <div className="dn-filters">
               <select
+                aria-label="Filter donors by supporter type"
                 value={typeFilter}
                 onChange={e => {
                   setTypeFilter(e.target.value)
@@ -223,6 +225,7 @@ export default function DonorsPage() {
                 <option value="Organization">Organization</option>
               </select>
               <select
+                aria-label="Filter donors by insight signal"
                 value={signalFilter}
                 onChange={e => setSignalFilter(e.target.value)}
               >
@@ -289,6 +292,13 @@ export default function DonorsPage() {
           {!selected && <div className="dn-detail__empty">Select a supporter to view details</div>}
           {selected && (
             <>
+              <button
+                type="button"
+                className="dn-back-btn"
+                onClick={() => setSelected(null)}
+              >
+                &larr; Back
+              </button>
               <div className="dn-header">
                 <div className="dn-header__top">
                   <div className="dn-header__info">

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using NorthStarShelter.API.Data;
@@ -121,6 +122,7 @@ builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.TwoFac
 });
 
 builder.Services.AddAuthorization();
+builder.Services.AddTransient<IClaimsTransformation, LegacyAdminRoleClaimsTransformation>();
 
 builder.Services.AddResponseCompression(options =>
 {

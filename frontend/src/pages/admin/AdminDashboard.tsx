@@ -25,12 +25,10 @@ function MLCard({ card }: { card: AdminDashboardCard }) {
       <div className="dash-card__inner">
         <div className="dash-card__top-row">
           <span className="dash-card__pill">{TONE_LABELS[card.tone] ?? card.tone}</span>
-          <span className="dash-card__model-name">{card.model.name}</span>
         </div>
         <h2 className="dash-card__title">{card.title}</h2>
         <div className="dash-card__value">{card.value}</div>
         <p className="dash-card__plain">{card.plainLanguage}</p>
-        <p className="dash-card__detail">{card.detail}</p>
         <Link to={card.route} className="dash-card__link">
           {card.routeLabel} &rarr;
         </Link>
@@ -81,7 +79,6 @@ export default function AdminDashboard() {
 
   const allAlertCards = dashData?.cards.filter(c => c.tone === 'alert') ?? []
   const safetyAlertCards = allAlertCards.filter(c => c.route.includes('caseload') || c.route.includes('visitations'))
-  const attentionCards = allAlertCards.filter(c => !c.route.includes('caseload') && !c.route.includes('visitations'))
 
   return (
     <AdminLayout>
@@ -143,38 +140,6 @@ export default function AdminDashboard() {
               </div>
             ))}
           </div>
-        )}
-
-        {/* Disclaimer */}
-        {dashData && (
-          <p className="dash__disclaimer">{dashData.disclaimer}</p>
-        )}
-
-        {/* Action Items / Needs Attention */}
-        {!loading && !error && summary && (
-          <section className="dash__action-items">
-            <span className="dash__action-label">Needs Attention</span>
-            {(summary.upcomingCaseConferences > 0 || attentionCards.length > 0) ? (
-              <div className="dash__action-list">
-                {summary.upcomingCaseConferences > 0 && (
-                  <div className="dash__action-row">
-                    <span className="dash__action-row__text">
-                      {summary.upcomingCaseConferences} upcoming case conference{summary.upcomingCaseConferences !== 1 ? 's' : ''}
-                    </span>
-                    <Link to="/admin/caseload" className="dash__action-row__link">View caseload &rarr;</Link>
-                  </div>
-                )}
-                {attentionCards.map(card => (
-                  <div key={card.id} className="dash__action-row">
-                    <span className="dash__action-row__text">{card.title}</span>
-                    <Link to={card.route} className="dash__action-row__link">{card.routeLabel} &rarr;</Link>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <span className="dash__action-clear">&#10003; All clear</span>
-            )}
-          </section>
         )}
 
         {/* Signals */}

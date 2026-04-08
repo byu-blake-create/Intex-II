@@ -216,7 +216,7 @@ export default function HomePage() {
 
                       <div
                         className="impact-trend-card__meter"
-                        aria-label={`Education progress for ${point.label}`}
+                        aria-hidden="true"
                       >
                         <span style={{ width: `${Math.max(0, Math.min(point.educationProgress, 100))}%` }} />
                       </div>

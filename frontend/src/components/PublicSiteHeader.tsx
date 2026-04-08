@@ -11,31 +11,19 @@ export default function PublicSiteHeader({
 }) {
   const { user, logout } = useAuth()
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
-  const hasAdminAccess = Boolean(user && (user.roles.includes('Staff') || user.roles.includes('Admin')))
-  const roleLink = hasAdminAccess
-    ? { label: 'Admin', to: '/admin' }
-    : user?.roles.includes('Donor')
-      ? { label: 'Donations', to: '/donations' }
-      : null
+  const accountLabel = user ? formatAccountLabel(user.firstName, user.lastName, user.displayName, user.email) : null
+  const showDonations = Boolean(user?.roles.includes('Donor'))
+  const showAdmin = Boolean(user?.roles.includes('Admin'))
 
   return (
     <header className="home-nav">
-      <Link className="home-brand" to="/" aria-label="North Star Shelter home">
+      <Link className="home-brand" to="/">
         <img src="/logo.png" alt="" className="home-brand__mark" aria-hidden="true" />
         <span>
           <strong>North Star Shelter</strong>
           <small>Safety-led care and measurable impact</small>
         </span>
       </Link>
-
-      <nav className="home-nav__links" aria-label="Primary">
-        <Link to={{ pathname: '/', hash: '#impact-dashboard' }}>Impact</Link>
-        <Link to={{ pathname: '/', hash: '#services' }}>What We Do</Link>
-        {roleLink && (
-          <Link to={roleLink.to}>{roleLink.label}</Link>
-        )}
-        {user && <Link to="/account/security">Security</Link>}
-      </nav>
 
       <div className="home-nav__actions">
         <button
@@ -62,9 +50,33 @@ export default function PublicSiteHeader({
           </span>
         </button>
 
+        {showAdmin ? (
+          <Link className="home-nav__donate home-nav__admin" to="/admin">
+            Admin
+          </Link>
+        ) : (
+          !showDonations && (
+            <Link className="home-nav__donate" to="/donate">
+              Donate
+            </Link>
+          )
+        )}
+
+        {showDonations && !showAdmin && (
+          <Link className="home-nav__donate home-nav__admin" to="/donations">
+            Donations
+          </Link>
+        )}
+
+        {user && (
+          <Link className="home-nav__donate" to="/account/security">
+            Security
+          </Link>
+        )}
+
         {user ? (
           <div className="home-nav__account">
-            <span className="home-nav__account-email">{user.email}</span>
+            <span className="home-nav__account-email">{accountLabel}</span>
             <button type="button" className="home-nav__logout" onClick={() => void logout()}>
               Sign Out
             </button>
@@ -77,4 +89,15 @@ export default function PublicSiteHeader({
       </div>
     </header>
   )
+}
+
+function formatAccountLabel(firstName: string, lastName: string, displayName: string, email: string) {
+  const trimmedFirstName = firstName.trim()
+  const trimmedLastName = lastName.trim()
+
+  if (trimmedFirstName || trimmedLastName) {
+    return `${trimmedFirstName} ${trimmedLastName}`.trim()
+  }
+
+  return displayName.trim() || email
 }

@@ -35,7 +35,7 @@ public class IncidentReportsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<IncidentReport>> Create([FromBody] IncidentReport report, CancellationToken cancellationToken)
     {
         _db.IncidentReports.Add(report);
@@ -44,7 +44,7 @@ public class IncidentReportsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] IncidentReport input, CancellationToken cancellationToken)
     {
         if (id != input.IncidentId) return BadRequest();

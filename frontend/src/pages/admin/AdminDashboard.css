@@ -61,7 +61,7 @@
 .dash__btn:hover { opacity: 0.82; }
 
 .dash__btn--primary {
-  background: var(--adm-accent);
+  background: var(--adm-accent-solid);
   color: #fff;
 }
 
@@ -208,12 +208,12 @@
   white-space: nowrap;
 }
 
-.dash-card[data-tone="alert"]       .dash-card__pill { background: rgba(224, 92, 58, 0.15);  color: #e05c3a; }
-.dash-card[data-tone="opportunity"] .dash-card__pill { background: rgba(212, 150, 10, 0.15); color: #d4960a; }
-.dash-card[data-tone="care"]        .dash-card__pill { background: rgba(201, 88, 88, 0.15);  color: #c95858; }
-.dash-card[data-tone="progress"]    .dash-card__pill { background: rgba(42, 184, 126, 0.15); color: #2ab87e; }
-.dash-card[data-tone="forecast"]    .dash-card__pill { background: rgba(78, 159, 220, 0.15); color: #4e9fdc; }
-.dash-card[data-tone="outreach"]    .dash-card__pill { background: rgba(155, 110, 207, 0.15);color: #9b6ecf; }
+.dash-card[data-tone="alert"]       .dash-card__pill { background: #8f472f; color: #fff8f1; }
+.dash-card[data-tone="opportunity"] .dash-card__pill { background: #87640e; color: #fff8f1; }
+.dash-card[data-tone="care"]        .dash-card__pill { background: #8a4949; color: #fff8f1; }
+.dash-card[data-tone="progress"]    .dash-card__pill { background: #216f53; color: #fff8f1; }
+.dash-card[data-tone="forecast"]    .dash-card__pill { background: #355f8a; color: #fff8f1; }
+.dash-card[data-tone="outreach"]    .dash-card__pill { background: #6c5190; color: #fff8f1; }
 
 .dash-card__model-name {
   font-size: 0.72rem;
@@ -281,7 +281,7 @@
 /* ─── Workbench lane nav cards ────────────────────────────── */
 .dash__lanes {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
   gap: 1rem;
 }
 
@@ -347,7 +347,7 @@
 .dash__stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
 .stat-card__trend { margin:0; font-size:0.78rem; font-weight:700; }
 .stat-card__trend--up { color:#2ab87e; }
-.stat-card__trend--down { color:#e05c3a; }
+.stat-card__trend--down { color:#ef8164; }
 .stat-card__trend--flat { color:var(--adm-muted); }
 
 /* ─── Action Items (Needs Attention) ─────────────────────── */
@@ -393,6 +393,17 @@
 
   .dash__title {
     font-size: 1.5rem;
+  }
+
+  .dash__header-actions {
+    flex-shrink: 1;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .dash__btn {
+    flex: 1;
+    justify-content: center;
   }
 }
 

@@ -60,6 +60,16 @@ public class AuthController : ControllerBase
     [HttpGet("google/login")]
     public IActionResult GoogleLogin([FromQuery] string? returnUrl = "/")
     {
+        // Google is only registered in Program.cs when ClientId + ClientSecret exist (see Azure / user-secrets / .env).
+        if (!IsGoogleAuthConfigured())
+        {
+            return BadRequest(new
+            {
+                message =
+                    "Google sign-in is not configured on this environment. Add Authentication:Google:ClientId and Authentication:Google:ClientSecret (user secrets, .env, or appsettings).",
+            });
+        }
+
         var callbackUrl = Url.Action(
             nameof(GoogleCallback),
             values: new { returnUrl = NormalizeReturnUrl(returnUrl) });
@@ -470,7 +480,11 @@ public class AuthController : ControllerBase
 
     private async Task<AuthUserResponse> BuildAuthResponseAsync(AppUser user)
     {
-        var roles = (await _userManager.GetRolesAsync(user)).ToArray();
+        var roles = (await _userManager.GetRolesAsync(user))
+            .Select(role => string.Equals(role, "Staff", StringComparison.OrdinalIgnoreCase) ? "Admin" : role)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(role => role, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         var twoFa = await _userManager.GetTwoFactorEnabledAsync(user);
         return new AuthUserResponse(
             user.Email ?? string.Empty,
@@ -503,6 +517,13 @@ public class AuthController : ControllerBase
         var issuer = UrlEncoder.Default.Encode("North Star Shelter");
         var account = UrlEncoder.Default.Encode(email);
         return $"otpauth://totp/{issuer}:{account}?secret={unformattedKey}&issuer={issuer}&digits=6";
+    }
+
+    private bool IsGoogleAuthConfigured()
+    {
+        var id = _configuration["Authentication:Google:ClientId"];
+        var secret = _configuration["Authentication:Google:ClientSecret"];
+        return !string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(secret);
     }
 
     private static string NormalizeReturnUrl(string? returnUrl)
