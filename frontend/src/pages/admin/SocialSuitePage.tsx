@@ -94,7 +94,7 @@ function LearnTab({
   onDraftThis: (platform: string, topic: string) => void
 }) {
   const avgEngagement = useMemo(() => average(posts.map(post => post.engagementRate)), [posts])
-  const totalReferrals = useMemo(() => posts.reduce((sum, post) => sum + (post.donationReferrals ?? 0), 0), [posts])
+
   const avgClicks = useMemo(() => {
     const present = posts.filter(p => p.clickThroughs != null)
     return present.length === 0 ? null : present.reduce((sum, p) => sum + (p.clickThroughs ?? 0), 0) / present.length
@@ -126,7 +126,7 @@ function LearnTab({
     return present.length === 0 ? null : present.reduce((sum, p) => sum + (p.impressions ?? 0), 0) / present.length
   }, [posts])
 
-  const [expandedPost, setExpandedPost] = useState<string | null>(null)
+  const [expandedPost, setExpandedPost] = useState<number | null>(null)
 
   return (
     <div className="ss-tab-content">
