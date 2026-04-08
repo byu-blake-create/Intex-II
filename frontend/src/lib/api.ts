@@ -11,9 +11,22 @@ export function apiUrl(path: string): string {
   return `${base}${normalizedPath}`
 }
 
+async function readApiError(response: Response): Promise<string> {
+  const text = await response.text()
+  try {
+    const data = JSON.parse(text) as { message?: unknown }
+    if (data && typeof data.message === 'string') {
+      return data.message
+    }
+  } catch {
+    // fall through to raw text
+  }
+  return text || `${response.status} ${response.statusText}`
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
   const response = await fetch(apiUrl(path), { credentials: 'include' })
-  if (!response.ok) throw new Error(await response.text())
+  if (!response.ok) throw new Error(await readApiError(response))
   return response.json() as Promise<T>
 }
 
@@ -25,7 +38,7 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   })
 
-  if (!response.ok) throw new Error(await response.text())
+  if (!response.ok) throw new Error(await readApiError(response))
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
 }
@@ -38,7 +51,7 @@ export async function apiPut(path: string, body: unknown): Promise<void> {
     body: JSON.stringify(body),
   })
 
-  if (!response.ok) throw new Error(await response.text())
+  if (!response.ok) throw new Error(await readApiError(response))
 }
 
 export async function apiDelete(path: string, query?: Record<string, string | boolean | number>): Promise<void> {
@@ -50,5 +63,5 @@ export async function apiDelete(path: string, query?: Record<string, string | bo
     credentials: 'include',
   })
 
-  if (!response.ok) throw new Error(await response.text())
+  if (!response.ok) throw new Error(await readApiError(response))
 }
