@@ -61,14 +61,18 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services
-    .AddAuthentication()
-    .AddGoogle(options =>
+var authentication = builder.Services.AddAuthentication();
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    authentication.AddGoogle(options =>
     {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
+        options.ClientId = googleClientId;
+        options.ClientSecret = googleClientSecret;
         options.SignInScheme = IdentityConstants.ExternalScheme;
     });
+}
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
