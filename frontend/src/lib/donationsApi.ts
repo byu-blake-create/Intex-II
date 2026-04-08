@@ -1,6 +1,23 @@
-import { apiGet } from './api'
+import { apiGet, apiPost } from './api'
 import type { PaginatedList } from '../types/api'
 import type { Donation } from '../types/domain'
+
+export interface PublicDonateRequest {
+  amount: number
+  email?: string
+  firstName?: string
+  lastName?: string
+  notes?: string
+}
+
+export interface PublicDonateResponse {
+  donationId: number
+  hasExistingAccount: boolean
+}
+
+export function submitPublicDonation(req: PublicDonateRequest) {
+  return apiPost<PublicDonateResponse>('/api/donations/public-donate', req)
+}
 
 export function donationsUrl(params: { pageNum?: number; pageSize?: number; supporterId?: number }) {
   const q = new URLSearchParams()
