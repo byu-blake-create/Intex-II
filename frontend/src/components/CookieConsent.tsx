@@ -28,10 +28,12 @@ export default function CookieConsent() {
 
   const accept = useCallback(() => {
     setConsentDecision('accepted')
+    setVisible(false)
   }, [])
 
   const decline = useCallback(() => {
     setConsentDecision('declined')
+    setVisible(false)
   }, [])
 
   if (!visible) return null

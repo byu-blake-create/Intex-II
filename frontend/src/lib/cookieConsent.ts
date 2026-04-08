@@ -61,7 +61,9 @@ function clearAnalyticsGlobals() {
 }
 
 function notifyConsentChanged(detail: ConsentEventDetail) {
-  window.dispatchEvent(new CustomEvent<ConsentEventDetail>(CONSENT_EVENT, { detail }))
+  window.dispatchEvent(
+    new CustomEvent<ConsentEventDetail>(CONSENT_EVENT, { detail, bubbles: true }),
+  )
 }
 
 export function getConsentDecision(): ConsentDecision | null {
