@@ -21,3 +21,24 @@ Attack Mitigations
     Enable the Content-Security-Policy (CSP) HTTP HEADER. Specify the sources you need for your site to function and no more (e.g., you might choose to define default-src, style-src, img-src, script-src, etc., but only choose what you need). It is possible to embed CSP information in a <meta> tag in the HTML, but that is not what is being evaluated here. Graders will be evaluating whether the CSP header is present in the developer tools inspector. 
 Availability 
 Your site should be publicly accessible. This likely means that it is deployed to a cloud provider of your selection. 
+Additional Security Features 
+    Some points will be allocated to adding additional security/privacy features beyond what is explicitly listed here. 
+    
+    This allows for creativity in approach. Whatever you add, you must make clear to the TAs in your video 
+    documentation. Please briefly describe what you added and why it was added. The following list is not exhaustive but may give an idea of what types of features to consider. Some could be worth full points; most will be worth partial points depending on complexity and time required to implement and so you may choose to implement multiple additional security features. 
+    
+    Enable at least one type of third-party authentication. The third-party provider(s) are up to you. 
+    
+    Enable at least one form of two-factor or multi-factor authentication. You have flexibility in the choice and implementation. Note: You must have at least one admin and one non-admin user account without 2FA or MFA for grading purposes so we can access your site without having your phones/faces/etc. 
+    
+    Enable HTTP Secure Transport Security (HSTS) on your site. This can be tricky or trivial depending on your chosen cloud architecture. A single line of code is sufficient in some cases, but NOT in others. Don’t underestimate the time required here in case your deployment is “tricky”. 
+    
+    Enable a browser accessible cookie (i.e., NOT an httponly cookie) that saves a user setting that is used by React to change the page. Examples might include light/dark mode preferences, color theme preferences, language preferences, etc.  
+    
+    Enable data sanitization (for incoming data) or data encoding (for data rendered by the frontend) to help prevent injection attacks 
+    
+    Deploy both operational and identity databases to “real” DBMS (i.e., not SQLite). 
+    
+    Deploy using Docker containers instead of simply deploying to a VM 
+    
+    Or many, many other potential options 

@@ -118,6 +118,14 @@ builder.Services.AddCors(options =>
     });
 });
 
+// HSTS: tells browsers to use HTTPS for this host for MaxAge (production only via UseHsts below).
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = false;
+    options.Preload = false;
+});
+
 var app = builder.Build();
 
 if (!string.IsNullOrWhiteSpace(connectionString))
@@ -153,12 +161,12 @@ app.Use(async (ctx, next) =>
     await next();
 });
 
-app.UseHttpsRedirection();
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
 }
+
+app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
