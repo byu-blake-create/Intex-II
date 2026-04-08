@@ -4,11 +4,22 @@ import { fetchSupporters } from '../../lib/supportersApi'
 import { fetchDonations } from '../../lib/donationsApi'
 import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
 import { apiPost } from '../../lib/api'
+import { fetchSupporterContacts, type SupporterContact } from '../../lib/supporterContactsApi'
 import type { Supporter, Donation } from '../../types/domain'
 import './DonorsPage.css'
 
 const PAGE_SIZE = 50
-const MONTHLY_GOAL = 10000
+
+function getLastMonthRange(): { start: string; end: string } {
+  const now = new Date()
+  const firstOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const lastOfLastMonth = new Date(firstOfThisMonth.getTime() - 1)
+  const firstOfLastMonth = new Date(lastOfLastMonth.getFullYear(), lastOfLastMonth.getMonth(), 1)
+  return {
+    start: firstOfLastMonth.toISOString().slice(0, 10),
+    end: lastOfLastMonth.toISOString().slice(0, 10),
+  }
+}
 
 function statusBadge(status: string | null | undefined) {
   if (!status) return <span className="badge badge--gray">Unknown</span>
@@ -38,10 +49,16 @@ export default function DonorsPage() {
   const [showContactModal, setShowContactModal] = useState(false)
   const [contactDate, setContactDate] = useState('')
   const [contactType, setContactType] = useState('Phone call')
+  const [contactOutcome, setContactOutcome] = useState('Follow up needed')
   const [contactNotes, setContactNotes] = useState('')
   const [contactSaving, setContactSaving] = useState(false)
   const [contactSuccess, setContactSuccess] = useState(false)
   const [contactError, setContactError] = useState<string | null>(null)
+
+  // History tab state
+  const [historyTab, setHistoryTab] = useState<'donations' | 'contacts'>('donations')
+  const [contacts, setContacts] = useState<SupporterContact[]>([])
+  const [contactsLoading, setContactsLoading] = useState(false)
 
   useEffect(() => {
     fetchAdminDashboard().then(d => {
@@ -97,12 +114,18 @@ export default function DonorsPage() {
   })()
   const last30Donations = donations.filter(d => d.donationDate != null && d.donationDate >= thirtyDaysAgo)
   const donorLast30 = last30Donations.reduce((sum, d) => sum + (d.amount ?? 0), 0)
-  const goalPct = Math.min(100, Math.round((donorLast30 / MONTHLY_GOAL) * 100))
+  const { start, end } = getLastMonthRange()
+  const lastMonthTotal = donations
+    .filter(d => d.donationDate && d.donationDate >= start && d.donationDate <= end)
+    .reduce((sum, d) => sum + (d.amount ?? 0), 0)
+  const dynamicGoal = Math.max(10, Math.round(lastMonthTotal * 1.1))
+  const goalPct = Math.min(100, Math.round((donorLast30 / dynamicGoal) * 100))
 
   function openContactModal() {
     const today = new Date().toISOString().slice(0, 10)
     setContactDate(today)
     setContactType('Phone call')
+    setContactOutcome('Follow up needed')
     setContactNotes('')
     setContactSaving(false)
     setContactSuccess(false)
@@ -123,9 +146,14 @@ export default function DonorsPage() {
       await apiPost(`/api/supporters/${selected.supporterId}/contacts`, {
         contactDate,
         contactType,
+        outcome: contactOutcome.trim() || null,
         notes: contactNotes,
       })
       setContactSuccess(true)
+      // Reload contacts so the history tab reflects the new entry
+      fetchSupporterContacts(selected.supporterId)
+        .then(r => setContacts(r))
+        .catch(() => {})
       setTimeout(() => {
         setShowContactModal(false)
         setContactSuccess(false)
@@ -177,6 +205,8 @@ export default function DonorsPage() {
                   setSelected(s)
                   setDonations([])
                   setDonLoading(true)
+                  setHistoryTab('donations')
+                  setContacts([])
                 }}
               >
                 <span className="dn-row__name">{s.displayName}</span>
@@ -248,41 +278,95 @@ export default function DonorsPage() {
                     <div className="dn-goal__bar" style={{ width: `${goalPct}%` }} />
                   </div>
                   <p className="dn-goal__text">
-                    ${donorLast30.toLocaleString()} of ${MONTHLY_GOAL.toLocaleString()} goal this month ({last30Donations.length} donation{last30Donations.length !== 1 ? 's' : ''})
+                    ${donorLast30.toLocaleString()} of ${dynamicGoal.toLocaleString()} goal (based on last month) ({last30Donations.length} donation{last30Donations.length !== 1 ? 's' : ''})
                   </p>
                 </div>
               )}
 
-              <p className="section-title">Donation History</p>
-              {donLoading && <div className="inline-loading">Loading donations...</div>}
-              {!donLoading && donations.length === 0 && <div className="empty-state">No donations recorded</div>}
-              {!donLoading && donations.length > 0 && (
+              <div className="dn-history-toggle">
+                <button
+                  className={`dn-history-tab${historyTab === 'donations' ? ' is-active' : ''}`}
+                  onClick={() => setHistoryTab('donations')}
+                >Donation History</button>
+                <button
+                  className={`dn-history-tab${historyTab === 'contacts' ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setHistoryTab('contacts')
+                    if (contacts.length === 0 && !contactsLoading && selected) {
+                      setContactsLoading(true)
+                      fetchSupporterContacts(selected.supporterId)
+                        .then(r => setContacts(r))
+                        .catch(() => setContacts([]))
+                        .finally(() => setContactsLoading(false))
+                    }
+                  }}
+                >Contact History</button>
+              </div>
+
+              {historyTab === 'donations' && (
                 <>
-                  <div className="admin-table-wrap">
-                    <table className="admin-table">
-                      <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Type</th>
-                          <th>Amount</th>
-                          <th>Campaign</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {donations
-                          .sort((a, b) => (b.donationDate ?? '').localeCompare(a.donationDate ?? ''))
-                          .map(d => (
-                          <tr key={d.donationId}>
-                            <td>{d.donationDate ?? '\u2014'}</td>
-                            <td>{d.donationType}</td>
-                            <td>{d.amount != null ? `${d.currencyCode ?? '$'}${d.amount.toLocaleString()}` : '\u2014'}</td>
-                            <td>{d.campaignName ?? '\u2014'}</td>
+                  {donLoading && <div className="inline-loading">Loading donations...</div>}
+                  {!donLoading && donations.length === 0 && <div className="empty-state">No donations recorded</div>}
+                  {!donLoading && donations.length > 0 && (
+                    <>
+                      <div className="admin-table-wrap">
+                        <table className="admin-table">
+                          <thead>
+                            <tr>
+                              <th>Date</th>
+                              <th>Type</th>
+                              <th>Amount</th>
+                              <th>Campaign</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {donations
+                              .sort((a, b) => (b.donationDate ?? '').localeCompare(a.donationDate ?? ''))
+                              .map(d => (
+                              <tr key={d.donationId}>
+                                <td>{d.donationDate ?? '\u2014'}</td>
+                                <td>{d.donationType}</td>
+                                <td>{d.amount != null ? `${d.currencyCode ?? '$'}${d.amount.toLocaleString()}` : '\u2014'}</td>
+                                <td>{d.campaignName ?? '\u2014'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <p className="dn-summary">{donations.length} donations &middot; Total: ${donationTotal.toLocaleString()}</p>
+                    </>
+                  )}
+                </>
+              )}
+
+              {historyTab === 'contacts' && (
+                <>
+                  {contactsLoading && <div className="inline-loading">Loading contacts...</div>}
+                  {!contactsLoading && contacts.length === 0 && <div className="empty-state">No contacts logged yet</div>}
+                  {!contactsLoading && contacts.length > 0 && (
+                    <div className="admin-table-wrap">
+                      <table className="admin-table">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Outcome</th>
+                            <th>Notes</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="dn-summary">{donations.length} donations &middot; Total: ${donationTotal.toLocaleString()}</p>
+                        </thead>
+                        <tbody>
+                          {contacts.map(c => (
+                            <tr key={c.supporterContactId}>
+                              <td>{c.contactDate}</td>
+                              <td>{c.contactType}</td>
+                              <td>{c.outcome ?? '\u2014'}</td>
+                              <td>{c.notes ?? '\u2014'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </>
               )}
             </>
@@ -322,6 +406,16 @@ export default function DonorsPage() {
                     <option>Letter</option>
                     <option>Other</option>
                   </select>
+                </label>
+                <label className="dn-modal__label">
+                  Outcome / Result
+                  <input
+                    type="text"
+                    className="dn-modal__input"
+                    placeholder="Pledged, follow up, not interested..."
+                    value={contactOutcome}
+                    onChange={e => setContactOutcome(e.target.value)}
+                  />
                 </label>
                 <label className="dn-modal__label">
                   Notes

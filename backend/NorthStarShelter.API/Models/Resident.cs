@@ -56,7 +56,8 @@ public class Resident
     public DateTime? CreatedAt { get; set; }
     public string? NotesRestricted { get; set; }
 
-    public Safehouse Safehouse { get; set; } = null!;
+    // Admin workflows post scalar IDs rather than nested navigation objects.
+    public Safehouse? Safehouse { get; set; }
     public ICollection<ProcessRecording> ProcessRecordings { get; set; } = new List<ProcessRecording>();
     public ICollection<HomeVisitation> HomeVisitations { get; set; } = new List<HomeVisitation>();
     public ICollection<InterventionPlan> InterventionPlans { get; set; } = new List<InterventionPlan>();

@@ -5,9 +5,8 @@ import './AdminLayout.css'
 
 const WORKBENCH_ROUTES = [
   { to: '/admin/donors', label: 'Donors' },
-  { to: '/admin/caseload', label: 'Caseload' },
-  { to: '/admin/process-recording', label: 'Process Recording' },
-  { to: '/admin/visitations', label: 'Visitations' },
+  { to: '/admin/caseload', label: 'Residents' },
+  { to: '/admin/safehouses', label: 'Safehouses' },
 ]
 
 const WORKBENCH_PATHS = WORKBENCH_ROUTES.map(r => r.to)
@@ -35,10 +34,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   const primaryLinks = [
     { to: '/admin', label: 'Dashboard', end: true },
-    { to: '/admin/donors', label: 'Workbenches', end: false, matchPrefix: '/admin/donors,/admin/caseload,/admin/process-recording,/admin/visitations' },
+    { to: '/admin/donors', label: 'Workbenches', end: false, matchPrefix: '/admin/donors,/admin/caseload,/admin/process-recording,/admin/visitations,/admin/safehouses' },
     { to: '/admin/social', label: 'Social Suite', end: false },
+    { to: '/admin/reports', label: 'Reports', end: false },
     ...(isAdmin ? [{ to: '/admin/database', label: 'Database', end: false }] : []),
   ]
+
+  function isPrimaryLinkActive(link: { to: string; end?: boolean; matchPrefix?: string }) {
+    if (link.matchPrefix) return isOnWorkbench
+    if (link.end) return pathname === link.to
+    return pathname === link.to || pathname.startsWith(`${link.to}/`)
+  }
 
   return (
     <div className="admin-layout" data-theme={theme}>
@@ -53,12 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               key={link.to}
               to={link.to}
               end={link.end}
-              className={() => {
-                if (link.matchPrefix) {
-                  return isOnWorkbench ? 'is-active' : undefined
-                }
-                return undefined
-              }}
+              className={() => (isPrimaryLinkActive(link) ? 'is-active' : undefined)}
             >
               {link.label}
             </NavLink>

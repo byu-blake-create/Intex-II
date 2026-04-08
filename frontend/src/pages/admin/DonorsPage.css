@@ -54,4 +54,8 @@
 .dn-modal__cancel:disabled { opacity:0.5; cursor:default; }
 .dn-modal__error { margin:0; font-size:0.83rem; color:var(--adm-danger-ink); background:var(--adm-danger-bg); border:1px solid var(--adm-danger-border); border-radius:6px; padding:0.4rem 0.7rem; }
 .dn-modal__success { margin:0; font-size:0.95rem; font-weight:700; color:var(--adm-accent); text-align:center; padding:1.5rem 0; }
+.dn-history-toggle { display:flex; gap:0; border:1px solid var(--adm-border); border-radius:8px; overflow:hidden; width:fit-content; margin-bottom:0.25rem; }
+.dn-history-tab { background:none; border:none; padding:0.45rem 1.1rem; font-size:0.85rem; font-weight:700; color:var(--adm-muted); cursor:pointer; transition:background 0.12s, color 0.12s; }
+.dn-history-tab.is-active { background:var(--adm-accent); color:#fff; }
+.dn-history-tab:not(.is-active):hover { background:var(--adm-accent-dim); color:var(--adm-ink); }
 @media (max-width:900px) { .dn-layout { grid-template-columns:1fr; } .dn-sidebar { border-right:none; border-bottom:1px solid var(--adm-border); max-height:40svh; } }
