@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/auth'
 import { usePublicTheme } from '../../lib/usePublicTheme'
+import { apiUrl } from '../../lib/api'
 import type { AuthUser } from '../../contexts/auth'
 import './HomePage.css'
 
@@ -46,6 +47,11 @@ export default function LoginPage() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function handleGoogleSignIn() {
+    const returnUrl = mode === 'register' ? '/donations' : '/donations'
+    window.location.href = apiUrl(`/api/auth/google/login?returnUrl=${encodeURIComponent(returnUrl)}`)
   }
 
   return (
@@ -208,6 +214,29 @@ export default function LoginPage() {
               onSubmit={handleSubmit}
               className="login-page__form"
             >
+              {mode === 'login' && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    style={{
+                      padding: '0.95rem 1.2rem',
+                      borderRadius: '999px',
+                      border: '1px solid var(--page-auth-border)',
+                      background: 'var(--page-card-bg)',
+                      color: 'var(--page-ink)',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Continue with Google
+                  </button>
+                  <p style={{ margin: '0.1rem 0', color: 'var(--page-muted)', fontSize: '0.82rem' }}>
+                    or sign in with email and password
+                  </p>
+                </>
+              )}
+
               {mode === 'register' && (
                 <div className="login-page__name-grid">
                   <label className="login-page__field">
