@@ -281,7 +281,7 @@
 /* ─── Workbench lane nav cards ────────────────────────────── */
 .dash__lanes {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
   gap: 1rem;
 }
 
