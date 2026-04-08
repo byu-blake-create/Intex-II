@@ -19,4 +19,27 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\IS455\models\social_post_performance_gb.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>models\social_post_performance_gb.onnx</TargetPath>
+    </Content>
+    <Content Include="..\..\IS455\models\social_click_throughs_gb.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>models\social_click_throughs_gb.onnx</TargetPath>
+    </Content>
+    <Content Include="..\..\IS455\models\social_reach_gb.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>models\social_reach_gb.onnx</TargetPath>
+    </Content>
+    <Content Include="..\..\IS455\models\social_impressions_gb.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>models\social_impressions_gb.onnx</TargetPath>
+    </Content>
+  </ItemGroup>
+
 </Project>

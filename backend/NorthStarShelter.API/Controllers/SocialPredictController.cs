@@ -64,19 +64,15 @@ public class SocialPredictController : ControllerBase
     public SocialPredictController(IConfiguration config, IWebHostEnvironment env)
     {
         string contentRoot = env.ContentRootPath;
-        string engRel = config["MlModels:EngagementModelPath"]
-            ?? "../../IS455/models/social_post_performance_gb.onnx";
-        string clkRel = config["MlModels:ClicksModelPath"]
-            ?? "../../IS455/models/social_click_throughs_gb.onnx";
-        string reachRel = config["MlModels:ReachModelPath"]
-            ?? "../../IS455/models/social_reach_gb.onnx";
-        string imprRel = config["MlModels:ImpressionsModelPath"]
-            ?? "../../IS455/models/social_impressions_gb.onnx";
+        string engRel = config["MlModels:EngagementModelPath"] ?? "models/social_post_performance_gb.onnx";
+        string clkRel = config["MlModels:ClicksModelPath"] ?? "models/social_click_throughs_gb.onnx";
+        string reachRel = config["MlModels:ReachModelPath"] ?? "models/social_reach_gb.onnx";
+        string imprRel = config["MlModels:ImpressionsModelPath"] ?? "models/social_impressions_gb.onnx";
 
-        _engagementModelPath = Path.GetFullPath(Path.Combine(contentRoot, engRel));
-        _clicksModelPath = Path.GetFullPath(Path.Combine(contentRoot, clkRel));
-        _reachModelPath = Path.GetFullPath(Path.Combine(contentRoot, reachRel));
-        _impressionsModelPath = Path.GetFullPath(Path.Combine(contentRoot, imprRel));
+        _engagementModelPath = ResolveModelPath(contentRoot, engRel);
+        _clicksModelPath = ResolveModelPath(contentRoot, clkRel);
+        _reachModelPath = ResolveModelPath(contentRoot, reachRel);
+        _impressionsModelPath = ResolveModelPath(contentRoot, imprRel);
     }
 
     [HttpPost]
@@ -214,5 +210,18 @@ public class SocialPredictController : ControllerBase
     {
         var t = new DenseTensor<string>(new[] { value }, new[] { 1, 1 });
         return NamedOnnxValue.CreateFromTensor(name, t);
+    }
+
+    private static string ResolveModelPath(string contentRoot, string configuredPath)
+    {
+        var candidates = new[]
+        {
+            Path.GetFullPath(Path.Combine(contentRoot, configuredPath)),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, configuredPath)),
+            Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "IS455", "models", Path.GetFileName(configuredPath))),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "IS455", "models", Path.GetFileName(configuredPath))),
+        };
+
+        return candidates.FirstOrDefault(System.IO.File.Exists) ?? candidates[0];
     }
 }
