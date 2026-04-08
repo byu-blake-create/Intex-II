@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchMyDonations, type MyDonationsResponse } from '../../lib/donationsApi'
+import PublicSiteFooter from '../../components/PublicSiteFooter'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
 import { usePublicTheme } from '../../lib/usePublicTheme'
 import './HomePage.css'
@@ -161,6 +162,7 @@ export default function DonationsPage() {
           )}
         </section>
       </main>
+      <PublicSiteFooter />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
+import PublicSiteFooter from '../../components/PublicSiteFooter'
 import {
   buildImpactDashboardModel,
   formatImpactMonth,
@@ -296,6 +297,7 @@ export default function HomePage() {
           </div>
         </section>
       </main>
+      <PublicSiteFooter />
     </div>
   )
 }

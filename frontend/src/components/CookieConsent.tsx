@@ -36,7 +36,7 @@ export default function CookieConsent() {
         <p>
           We use essential cookies for sign-in. With your consent we may load privacy-friendly analytics to understand how
           our public pages are used. If you do not choose an option, default cookie settings remain in effect while you
-          continue using the site. You can update your preference anytime from the Privacy Policy page. See our{' '}
+          continue using the site. You can update your preference anytime from the site footer or Privacy Policy page. See our{' '}
           <a href="/privacy">Privacy Policy</a> for details (GDPR).
         </p>
         <div className="cookie-consent__actions">

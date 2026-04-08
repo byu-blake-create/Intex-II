@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import PublicSiteFooter from '../../components/PublicSiteFooter'
 import { useAuth } from '../../contexts/auth'
 import { usePublicTheme } from '../../lib/usePublicTheme'
 import { apiUrl } from '../../lib/api'
@@ -331,6 +332,7 @@ export default function LoginPage() {
           </section>
         </div>
       </main>
+      <PublicSiteFooter />
     </div>
   )
 }

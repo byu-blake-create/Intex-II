@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import PublicSiteFooter from '../../components/PublicSiteFooter'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
 import { fetchPublishedSnapshots } from '../../lib/snapshotsApi'
 import { usePublicTheme } from '../../lib/usePublicTheme'
@@ -40,6 +41,7 @@ export default function ImpactPage() {
           ))}
         </div>
       </main>
+      <PublicSiteFooter />
     </div>
   )
 }
