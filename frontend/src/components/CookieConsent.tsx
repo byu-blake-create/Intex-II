@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CONSENT_EVENT, getConsentDecision, setConsentDecision, syncOptionalAnalytics } from '../lib/cookieConsent'
+import {
+  CONSENT_EVENT,
+  getConsentDecision,
+  setConsentDecision,
+  syncOptionalAnalytics,
+  type ConsentEventDetail,
+} from '../lib/cookieConsent'
 import './CookieConsent.css'
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(() => getConsentDecision() === null)
 
   useEffect(() => {
-    const sync = () => {
-      setVisible(getConsentDecision() === null)
+    const sync = (event?: Event) => {
+      const detail = event instanceof CustomEvent ? (event.detail as ConsentEventDetail | undefined) : undefined
+      setVisible(detail?.forceOpen ? true : getConsentDecision() === null)
       syncOptionalAnalytics()
     }
 
@@ -21,10 +28,12 @@ export default function CookieConsent() {
 
   const accept = useCallback(() => {
     setConsentDecision('accepted')
+    setVisible(false)
   }, [])
 
   const decline = useCallback(() => {
     setConsentDecision('declined')
+    setVisible(false)
   }, [])
 
   if (!visible) return null
@@ -36,7 +45,7 @@ export default function CookieConsent() {
         <p>
           We use essential cookies for sign-in. With your consent we may load privacy-friendly analytics to understand how
           our public pages are used. If you do not choose an option, default cookie settings remain in effect while you
-          continue using the site. You can update your preference anytime from the Privacy Policy page. See our{' '}
+          continue using the site. You can update your preference anytime from the site footer or Privacy Policy page. See our{' '}
           <a href="/privacy">Privacy Policy</a> for details (GDPR).
         </p>
         <div className="cookie-consent__actions">

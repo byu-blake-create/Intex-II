@@ -282,9 +282,28 @@ internal sealed class AdminDatabaseTable<TEntity> : IAdminDatabaseTable
         string? search,
         CancellationToken cancellationToken)
     {
-        var query = ApplyDefaultSort(ApplySearch(db.Set<TEntity>().AsNoTracking(), search));
-        var (items, total) = await query.ToPageAsync(pageNum, pageSize, cancellationToken);
-        return new AdminDatabasePageDto(items.Select(item => SerializeEntity(item, _listColumns)).ToArray(), total);
+        var query = ApplyDefaultSort(db.Set<TEntity>().AsNoTracking());
+
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            var (items, total) = await query.ToPageAsync(pageNum, pageSize, cancellationToken);
+            return new AdminDatabasePageDto(items.Select(item => SerializeEntity(item, _listColumns)).ToArray(), total);
+        }
+
+        var term = search.Trim();
+        var (normalizedPageNum, normalizedPageSize) = Pagination.Normalize(pageNum, pageSize);
+        var lookupLabels = await BuildListColumnLookupLabelsAsync(db, cancellationToken);
+        var matchingRows = (await query.ToListAsync(cancellationToken))
+            .Select(entity => SerializeEntity(entity, _listColumns))
+            .Where(row => AdminDatabaseSearch.RowMatchesSearch(row, term, lookupLabels))
+            .ToArray();
+
+        return new AdminDatabasePageDto(
+            matchingRows
+                .Skip((normalizedPageNum - 1) * normalizedPageSize)
+                .Take(normalizedPageSize)
+                .ToArray(),
+            matchingRows.Length);
     }
 
     public async Task<Dictionary<string, object?>?> GetByIdAsync(AppDbContext db, string id, CancellationToken cancellationToken)
@@ -522,6 +541,32 @@ internal sealed class AdminDatabaseTable<TEntity> : IAdminDatabaseTable
         }
 
         return values;
+    }
+
+    private async Task<Dictionary<string, IReadOnlyDictionary<string, string>>> BuildListColumnLookupLabelsAsync(
+        AppDbContext db,
+        CancellationToken cancellationToken)
+    {
+        var entityType = GetEntityType(db);
+        var labelsByColumn = new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var column in _listColumns.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            var foreignKey = entityType.GetForeignKeys()
+                .FirstOrDefault(candidate =>
+                    candidate.Properties.Count == 1
+                    && candidate.Properties[0].Name.Equals(column, StringComparison.OrdinalIgnoreCase));
+
+            if (foreignKey is null || !AdminDatabaseRegistry.TryGet(foreignKey.PrincipalEntityType.ClrType, out var principalTable))
+            {
+                continue;
+            }
+
+            var options = await principalTable.GetLookupOptionsAsync(db, cancellationToken);
+            labelsByColumn[column] = options.ToDictionary(option => option.Value, option => option.Label, StringComparer.OrdinalIgnoreCase);
+        }
+
+        return labelsByColumn;
     }
 
     private IReadOnlyList<string> GetAllScalarFieldNames(AppDbContext db) =>
@@ -870,26 +915,29 @@ internal sealed class AppUsersAdminDatabaseTable : IAdminDatabaseTable
 
     public async Task<AdminDatabasePageDto> GetPageAsync(AppDbContext db, int pageNum, int pageSize, string? search, CancellationToken cancellationToken)
     {
-        var query = db.Users.AsNoTracking();
+        var query = db.Users.AsNoTracking().OrderByDescending(user => user.Id);
 
-        if (!string.IsNullOrWhiteSpace(search))
+        if (string.IsNullOrWhiteSpace(search))
         {
-            var term = search.Trim();
-            query = query.Where(user =>
-                user.Id == term
-                || (user.Email != null && user.Email.Contains(term))
-                || (user.UserName != null && user.UserName.Contains(term))
-                || (user.DisplayName != null && user.DisplayName.Contains(term))
-                || (user.FirstName != null && user.FirstName.Contains(term))
-                || (user.LastName != null && user.LastName.Contains(term))
-                || db.UserRoles.Any(userRole =>
-                    userRole.UserId == user.Id
-                    && db.Roles.Any(role => role.Id == userRole.RoleId && role.Name != null && role.Name.Contains(term))));
+            var (users, total) = await query.ToPageAsync(pageNum, pageSize, cancellationToken);
+            var rows = await HydrateUserRowsAsync(db, users, cancellationToken);
+            return new AdminDatabasePageDto(rows.Select(SerializeUser).ToArray(), total);
         }
 
-        var (users, total) = await query.OrderByDescending(user => user.Id).ToPageAsync(pageNum, pageSize, cancellationToken);
-        var rows = await HydrateUserRowsAsync(db, users, cancellationToken);
-        return new AdminDatabasePageDto(rows.Select(SerializeUser).ToArray(), total);
+        var term = search.Trim();
+        var (normalizedPageNum, normalizedPageSize) = Pagination.Normalize(pageNum, pageSize);
+        var hydratedRows = await HydrateUserRowsAsync(db, await query.ToListAsync(cancellationToken), cancellationToken);
+        var matchingRows = hydratedRows
+            .Where(row => AdminDatabaseSearch.RowMatchesSearch(BuildUserListRow(row), term))
+            .ToArray();
+
+        return new AdminDatabasePageDto(
+            matchingRows
+                .Skip((normalizedPageNum - 1) * normalizedPageSize)
+                .Take(normalizedPageSize)
+                .Select(SerializeUser)
+                .ToArray(),
+            matchingRows.Length);
     }
 
     public async Task<Dictionary<string, object?>?> GetByIdAsync(AppDbContext db, string id, CancellationToken cancellationToken)
@@ -1001,6 +1049,16 @@ internal sealed class AppUsersAdminDatabaseTable : IAdminDatabaseTable
         [nameof(AppUser.AccessFailedCount)] = row.User.AccessFailedCount,
     };
 
+    private static Dictionary<string, object?> BuildUserListRow(AppUserRow row) => new(StringComparer.OrdinalIgnoreCase)
+    {
+        [nameof(AppUser.Email)] = row.User.Email,
+        [nameof(AppUser.UserName)] = row.User.UserName,
+        [nameof(AppUser.DisplayName)] = row.User.DisplayName,
+        [nameof(AppUser.FirstName)] = row.User.FirstName,
+        [nameof(AppUser.LastName)] = row.User.LastName,
+        ["RoleName"] = row.RoleName,
+    };
+
     private static string BuildUserLabel(AppUser user)
     {
         var pieces = new[]
@@ -1078,6 +1136,62 @@ internal sealed class AppUsersAdminDatabaseTable : IAdminDatabaseTable
     }
 
     private sealed record AppUserRow(AppUser User, string? RoleId, string? RoleName);
+}
+
+internal static class AdminDatabaseSearch
+{
+    public static bool RowMatchesSearch(
+        IReadOnlyDictionary<string, object?> row,
+        string term,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? lookupLabels = null)
+    {
+        if (string.IsNullOrWhiteSpace(term))
+        {
+            return true;
+        }
+
+        foreach (var entry in row)
+        {
+            if (entry.Key.Equals("__rowId", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (ContainsTerm(FormatValue(entry.Value), term))
+            {
+                return true;
+            }
+
+            if (lookupLabels is null || !lookupLabels.TryGetValue(entry.Key, out var labels))
+            {
+                continue;
+            }
+
+            var rawValue = Convert.ToString(entry.Value, CultureInfo.InvariantCulture);
+            if (!string.IsNullOrWhiteSpace(rawValue)
+                && labels.TryGetValue(rawValue, out var label)
+                && ContainsTerm(label, term))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ContainsTerm(string value, string term) =>
+        !string.IsNullOrWhiteSpace(value)
+        && value.Contains(term, StringComparison.OrdinalIgnoreCase);
+
+    private static string FormatValue(object? value) =>
+        value switch
+        {
+            null => string.Empty,
+            DateOnly dateOnly => dateOnly.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            DateTime dateTime => dateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
+            bool boolean => boolean ? "Yes" : "No",
+            _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty,
+        };
 }
 
 internal static class AdminDatabaseJson
