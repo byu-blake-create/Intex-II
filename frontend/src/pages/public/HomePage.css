@@ -188,9 +188,6 @@
   color: var(--page-muted);
 }
 
-.home-nav__links--dashboards {
-  flex-shrink: 0;
-}
 
 .home-nav__cta,
 .button {
@@ -230,6 +227,15 @@
 .home-nav__donate:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(187, 95, 60, 0.25);
+}
+
+.home-nav__admin {
+  background: var(--page-cta-bg);
+  color: var(--page-cta-ink);
+}
+
+.home-nav__admin:hover {
+  box-shadow: 0 6px 16px rgba(33, 24, 20, 0.18);
 }
 
 .home-nav__cta:hover,

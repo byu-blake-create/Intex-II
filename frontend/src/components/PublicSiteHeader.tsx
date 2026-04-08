@@ -12,8 +12,7 @@ export default function PublicSiteHeader({
   const { user, logout } = useAuth()
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   const accountLabel = user ? formatAccountLabel(user.firstName, user.lastName, user.displayName, user.email) : null
-  const showDonations = Boolean(user?.roles.includes('Donor'))
-  const showAdmin = Boolean(user?.roles.includes('Staff') || user?.roles.includes('Admin'))
+  const isWorkspaceUser = Boolean(user?.roles.includes('Staff') || user?.roles.includes('Admin'))
 
   return (
     <header className="home-nav">
@@ -24,17 +23,6 @@ export default function PublicSiteHeader({
           <small>Safety-led care and measurable impact</small>
         </span>
       </Link>
-
-      {user && (showDonations || showAdmin) && (
-        <nav className="home-nav__links home-nav__links--dashboards" aria-label="Your account">
-          {showDonations && (
-            <Link to="/donations">Donations</Link>
-          )}
-          {showAdmin && (
-            <Link to="/admin">Admin</Link>
-          )}
-        </nav>
-      )}
 
       <div className="home-nav__actions">
         <button
@@ -61,9 +49,15 @@ export default function PublicSiteHeader({
           </span>
         </button>
 
-        <Link className="home-nav__donate" to="/donate">
-          Donate
-        </Link>
+        {isWorkspaceUser ? (
+          <Link className="home-nav__donate home-nav__admin" to="/admin">
+            Admin
+          </Link>
+        ) : (
+          <Link className="home-nav__donate" to="/donate">
+            Donate
+          </Link>
+        )}
 
         {user ? (
           <div className="home-nav__account">
