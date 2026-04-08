@@ -20,4 +20,5 @@ public class Supporter
 
     public AppUser? User { get; set; }
     public ICollection<Donation> Donations { get; set; } = new List<Donation>();
+    public ICollection<SupporterContact> Contacts { get; set; } = new List<SupporterContact>();
 }

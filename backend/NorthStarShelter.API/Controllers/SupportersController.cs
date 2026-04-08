@@ -59,6 +59,34 @@ public class SupportersController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = supporter.SupporterId }, supporter);
     }
 
+    [HttpPost("{id:int}/contacts")]
+    [Authorize(Roles = "Admin,Staff")]
+    public async Task<ActionResult<SupporterContact>> CreateContact(
+        int id,
+        [FromBody] CreateSupporterContactRequest request,
+        CancellationToken cancellationToken)
+    {
+        var supporterExists = await _db.Supporters.AsNoTracking()
+            .AnyAsync(s => s.SupporterId == id, cancellationToken);
+        if (!supporterExists) return NotFound();
+
+        if (string.IsNullOrWhiteSpace(request.ContactType))
+            return BadRequest(new { error = "ContactType is required." });
+
+        var contact = new SupporterContact
+        {
+            SupporterId = id,
+            ContactDate = request.ContactDate,
+            ContactType = request.ContactType.Trim(),
+            Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        _db.SupporterContacts.Add(contact);
+        await _db.SaveChangesAsync(cancellationToken);
+        return Created($"/api/supporters/{id}/contacts/{contact.SupporterContactId}", contact);
+    }
+
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Admin,Staff")]
     public async Task<IActionResult> Update(int id, [FromBody] Supporter input, CancellationToken cancellationToken)
@@ -82,4 +110,9 @@ public class SupportersController : ControllerBase
         await _db.SaveChangesAsync(cancellationToken);
         return NoContent();
     }
+
+    public sealed record CreateSupporterContactRequest(
+        DateOnly ContactDate,
+        string ContactType,
+        string? Notes);
 }
