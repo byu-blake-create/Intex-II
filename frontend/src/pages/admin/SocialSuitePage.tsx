@@ -207,7 +207,6 @@ function LearnTab({
                       <span className="badge badge--blue">{post.platform}</span>
                       {post.tone && <span className="ss-chip">{post.tone}</span>}
                       <span className="ss-top-post-rate">{post.clickThroughs?.toLocaleString() ?? '—'} clicks</span>
-                      <span style={{ color: 'var(--adm-muted)', fontSize: '0.78rem' }}>{pct(post.engagementRate)}</span>
                       <span className="ss-top-post-caption">
                         {isExpanded ? post.caption : preview}
                       </span>
