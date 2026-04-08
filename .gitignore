@@ -26,6 +26,7 @@ azure-hotfix-publish*/
 azure-hotfix-publish*.zip
 northstar-logs*/
 northstar-logs*.zip
+test-results/
 
 # Local agent/tooling state
 .claude/

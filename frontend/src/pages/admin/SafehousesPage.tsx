@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
+import ConfirmDeleteModal from '../../components/ConfirmDeleteModal'
+import SavedToast from '../../components/SavedToast'
 import { fetchSafehouses } from '../../lib/safehousesApi'
 import { fetchResidents } from '../../lib/residentsApi'
 import { apiPut } from '../../lib/api'
@@ -47,8 +49,10 @@ export default function SafehousesPage() {
   const [reloadToken, setReloadToken] = useState(0)
   const [reassignResident, setReassignResident] = useState<Resident | null>(null)
   const [reassignSafehouseId, setReassignSafehouseId] = useState('')
+  const [confirmReassignOpen, setConfirmReassignOpen] = useState(false)
   const [reassignSaving, setReassignSaving] = useState(false)
   const [reassignError, setReassignError] = useState<string | null>(null)
+  const [savedMessage, setSavedMessage] = useState<string | null>(null)
 
   // Reuse the same reload token after reassignment so counts and detail panes stay in sync.
   useEffect(() => {
@@ -114,6 +118,7 @@ export default function SafehousesPage() {
     if (reassignSaving) return
     setReassignResident(null)
     setReassignSafehouseId('')
+    setConfirmReassignOpen(false)
     setReassignError(null)
   }
 
@@ -123,6 +128,12 @@ export default function SafehousesPage() {
       setReassignError('Choose a destination safehouse.')
       return
     }
+
+    setConfirmReassignOpen(true)
+  }
+
+  async function commitReassignResident() {
+    if (!reassignResident || !reassignSafehouseId) return
 
     setReassignSaving(true)
     setReassignError(null)
@@ -142,13 +153,17 @@ export default function SafehousesPage() {
       setReassignSaving(false)
       setReassignResident(null)
       setReassignSafehouseId('')
+      setConfirmReassignOpen(false)
       setReassignError(null)
+      setSavedMessage('Changes saved')
       setReloadToken(token => token + 1)
     } catch (err) {
       setReassignError(err instanceof Error ? err.message : 'Failed to reassign resident.')
       setReassignSaving(false)
     }
   }
+
+  const destinationSafehouse = safehouses.find(safehouse => String(safehouse.safehouseId) === reassignSafehouseId) ?? null
 
   return (
     <AdminLayout>
@@ -279,7 +294,7 @@ export default function SafehousesPage() {
         </div>
       </div>
 
-      {reassignResident && (
+      {reassignResident && !confirmReassignOpen && (
         <div className="sh-modal-overlay" onClick={closeReassignModal}>
           <div className="sh-modal" onClick={e => e.stopPropagation()}>
             <p className="sh-modal__title">Reassign Resident</p>
@@ -302,10 +317,13 @@ export default function SafehousesPage() {
                     ))}
                 </select>
               </label>
+              <p className="sh-modal__impact-note">
+                This move updates the resident record immediately and changes which safehouse roster they appear in.
+              </p>
               {reassignError && <p className="sh-modal__error">{reassignError}</p>}
               <div className="sh-modal__actions">
                 <button type="submit" className="sh-modal__save" disabled={reassignSaving}>
-                  {reassignSaving ? 'Saving…' : 'Move Resident'}
+                  {reassignSaving ? 'Saving…' : 'Continue'}
                 </button>
                 <button type="button" className="sh-modal__cancel" onClick={closeReassignModal} disabled={reassignSaving}>
                   Cancel
@@ -315,6 +333,23 @@ export default function SafehousesPage() {
           </div>
         </div>
       )}
+
+      {reassignResident && confirmReassignOpen && destinationSafehouse && (
+        <ConfirmDeleteModal
+          title="Confirm resident reassignment?"
+          description={`${reassignResident.caseControlNo} will move to ${destinationSafehouse.name} immediately. Confirm before updating the safehouse roster.`}
+          confirmLabel="Confirm Move"
+          confirmTone="accent"
+          busy={reassignSaving}
+          onCancel={() => {
+            if (reassignSaving) return
+            setConfirmReassignOpen(false)
+          }}
+          onConfirm={() => void commitReassignResident()}
+        />
+      )}
+
+      <SavedToast message={savedMessage} onDismiss={() => setSavedMessage(null)} />
     </AdminLayout>
   )
 }

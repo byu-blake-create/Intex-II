@@ -1,76 +1,58 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
+import ConfirmDeleteModal from '../../components/ConfirmDeleteModal'
+import SavedToast from '../../components/SavedToast'
+import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
+import { apiPost, apiPut } from '../../lib/api'
+import { fetchResidentWatchlist, type ResidentInsight, fetchReintegrationPredictions, type ReintegrationInsight } from '../../lib/mlApi'
+import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
+import { fetchSummary } from '../../lib/reportsApi'
 import { fetchResidents } from '../../lib/residentsApi'
 import { fetchSafehouses } from '../../lib/safehousesApi'
 import { fetchVisitations } from '../../lib/visitationsApi'
-import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
-import { fetchSummary } from '../../lib/reportsApi'
-import { apiPost, apiPut } from '../../lib/api'
-import { fetchResidentWatchlist, type ResidentInsight, fetchReintegrationPredictions, type ReintegrationInsight } from '../../lib/mlApi'
-import type { Resident, ResidentUpsertInput, Safehouse, HomeVisitation, ProcessRecording, DashboardSummary } from '../../types/domain'
+import type {
+  DashboardSummary,
+  HomeVisitation,
+  HomeVisitationUpsertInput,
+  ProcessRecording,
+  ProcessRecordingUpsertInput,
+  Resident,
+  Safehouse,
+} from '../../types/domain'
+import CaseloadSidebar from './caseload/CaseloadSidebar'
+import type { DetailTab, InsightLevel, ResidentEditField } from './caseload/caseloadTypes'
+import { daysSince, residentToUpsertInput, todayStr } from './caseload/caseloadUtils'
+import NewResidentModal from './caseload/NewResidentModal'
+import ResidentDetailPanel from './caseload/ResidentDetailPanel'
+import ResidentNoteModal from './caseload/ResidentNoteModal'
+import ResidentVisitModal from './caseload/ResidentVisitModal'
 import './CaseloadPage.css'
 
 const PAGE_SIZE = 30
 
-function statusBadge(status: string | null | undefined) {
-  if (!status) return <span className="badge badge--gray">Unknown</span>
-  const s = status.toLowerCase()
-  if (s === 'active') return <span className="badge badge--green">Active</span>
-  if (s === 'closed') return <span className="badge badge--gray">Closed</span>
-  return <span className="badge badge--blue">{status}</span>
-}
-
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value)
+
   useEffect(() => {
     const id = setTimeout(() => setDebounced(value), delay)
     return () => clearTimeout(id)
   }, [value, delay])
+
   return debounced
 }
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10)
-}
-
-function daysSince(dateStr: string): number {
-  const then = new Date(dateStr).getTime()
-  const now = Date.now()
-  return Math.floor((now - then) / (1000 * 60 * 60 * 24))
-}
-
-function daysUntil(dateStr: string): number {
-  const target = new Date(dateStr).getTime()
-  const now = Date.now()
-  return Math.ceil((target - now) / (1000 * 60 * 60 * 24))
-}
-
-function residentToUpsertInput(resident: Resident): ResidentUpsertInput {
-  return {
-    caseControlNo: resident.caseControlNo.trim(),
-    internalCode: resident.internalCode ?? null,
-    safehouseId: resident.safehouseId,
-    caseStatus: resident.caseStatus ?? null,
-    sex: resident.sex ?? null,
-    dateOfBirth: resident.dateOfBirth ?? null,
-    caseCategory: resident.caseCategory ?? null,
-    assignedSocialWorker: resident.assignedSocialWorker ?? null,
-    caseConferenceDate: resident.caseConferenceDate ?? null,
-  }
-}
-
-function getRiskLevel(level: string | null | undefined, probability: number) {
+function getRiskLevel(level: string | null | undefined, probability: number): InsightLevel {
   const normalized = level?.toLowerCase()
-  if (normalized === 'high' || probability >= 0.75) return { label: 'High', tone: 'high' as const }
-  if (normalized === 'medium' || probability >= 0.4) return { label: 'Medium', tone: 'medium' as const }
-  return { label: 'Low', tone: 'low' as const }
+  if (normalized === 'high' || probability >= 0.75) return { label: 'High', tone: 'high' }
+  if (normalized === 'medium' || probability >= 0.4) return { label: 'Medium', tone: 'medium' }
+  return { label: 'Low', tone: 'low' }
 }
 
-function getReadinessLevel(level: string | null | undefined, probability: number) {
+function getReadinessLevel(level: string | null | undefined, probability: number): InsightLevel {
   const normalized = level?.toLowerCase()
-  if (normalized === 'high' || probability >= 0.75) return { label: 'High', tone: 'high' as const }
-  if (normalized === 'medium' || probability >= 0.4) return { label: 'Medium', tone: 'medium' as const }
-  return { label: 'Low', tone: 'low' as const }
+  if (normalized === 'high' || probability >= 0.75) return { label: 'High', tone: 'high' }
+  if (normalized === 'medium' || probability >= 0.4) return { label: 'Medium', tone: 'medium' }
+  return { label: 'Low', tone: 'low' }
 }
 
 export default function CaseloadPage() {
@@ -89,29 +71,26 @@ export default function CaseloadPage() {
   const [sessionsLoading, setSessionsLoading] = useState(false)
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
+  const [triageCard, setTriageCard] = useState<AdminDashboardCard | null>(null)
   const [residentInsights, setResidentInsights] = useState<Record<number, ResidentInsight>>({})
   const [reintegrationInsights, setReintegrationInsights] = useState<Record<number, ReintegrationInsight>>({})
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [residentReloadToken, setResidentReloadToken] = useState(0)
+  const [savedMessage, setSavedMessage] = useState<string | null>(null)
 
-  // Detail tab state
-  const [detailTab, setDetailTab] = useState<'visits' | 'notes'>('visits')
-
-  // Show more state
+  const [detailTab, setDetailTab] = useState<DetailTab>('visits')
   const [visitsShowAll, setVisitsShowAll] = useState(false)
   const [sessionsShowAll, setSessionsShowAll] = useState(false)
 
-  // Inline edit state
-  const [editField, setEditField] = useState<'socialWorker' | 'conferenceDate' | null>(null)
+  const [editField, setEditField] = useState<ResidentEditField | null>(null)
   const [editValue, setEditValue] = useState('')
   const [editSaving, setEditSaving] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
 
-  // Status save state
+  const [pendingStatusChange, setPendingStatusChange] = useState<'Active' | 'Closed' | null>(null)
   const [statusSaving, setStatusSaving] = useState(false)
   const [statusError, setStatusError] = useState<string | null>(null)
 
-  // Session note modal state
   const [showNoteModal, setShowNoteModal] = useState(false)
   const [noteDate, setNoteDate] = useState(todayStr())
   const [noteType, setNoteType] = useState('Individual')
@@ -121,7 +100,6 @@ export default function CaseloadPage() {
   const [noteSaving, setNoteSaving] = useState(false)
   const [noteError, setNoteError] = useState<string | null>(null)
 
-  // Visit modal state
   const [showVisitModal, setShowVisitModal] = useState(false)
   const [visitDate, setVisitDate] = useState(todayStr())
   const [visitType, setVisitType] = useState('Home Visit')
@@ -131,7 +109,6 @@ export default function CaseloadPage() {
   const [visitSaving, setVisitSaving] = useState(false)
   const [visitError, setVisitError] = useState<string | null>(null)
 
-  // New resident modal state
   const [showNewResidentModal, setShowNewResidentModal] = useState(false)
   const [newResidentCaseControlNo, setNewResidentCaseControlNo] = useState('')
   const [newResidentInternalCode, setNewResidentInternalCode] = useState('')
@@ -145,22 +122,26 @@ export default function CaseloadPage() {
   const [newResidentSaving, setNewResidentSaving] = useState(false)
   const [newResidentError, setNewResidentError] = useState<string | null>(null)
 
-  // Debounce text input to avoid an API call per keystroke
   const debouncedSearch = useDebounce(search, 350)
 
   useEffect(() => {
-    fetchSafehouses().then(r => setSafehouses(r.items)).catch(() => {})
+    fetchSafehouses().then(response => setSafehouses(response.items)).catch(() => {})
+    fetchAdminDashboard().then(data => {
+      const card = data.cards.find(item => item.id === 'resident-triage') ?? null
+      setTriageCard(card)
+    }).catch(() => {})
     fetchResidentWatchlist()
       .then(items => setResidentInsights(Object.fromEntries(items.map(item => [item.residentId, item]))))
       .catch(() => {})
     fetchReintegrationPredictions()
       .then(items => setReintegrationInsights(Object.fromEntries(items.map(item => [item.residentId, item]))))
       .catch(() => {})
-    fetchSummary().then(s => setSummary(s)).catch(() => {})
+    fetchSummary().then(data => setSummary(data)).catch(() => {})
   }, [])
 
   useEffect(() => {
     let mounted = true
+
     fetchResidents({
       pageNum,
       pageSize: PAGE_SIZE,
@@ -168,147 +149,201 @@ export default function CaseloadPage() {
       caseStatus: statusFilter || undefined,
       search: debouncedSearch || undefined,
     })
-      .then(r => { if (mounted) { setResidents(r.items); setTotalCount(r.totalCount) } })
-      .catch(() => { if (mounted) setListError('Failed to load residents.') })
-      .finally(() => { if (mounted) setListLoading(false) })
-    return () => { mounted = false }
+      .then(response => {
+        if (!mounted) return
+        setResidents(response.items)
+        setTotalCount(response.totalCount)
+      })
+      .catch(() => {
+        if (mounted) setListError('Failed to load residents.')
+      })
+      .finally(() => {
+        if (mounted) setListLoading(false)
+      })
+
+    return () => {
+      mounted = false
+    }
   }, [pageNum, debouncedSearch, safehouseFilter, statusFilter, residentReloadToken])
 
   useEffect(() => {
     if (!selected) return
+
+    setVisitsLoading(true)
+    setSessionsLoading(true)
+
     fetchVisitations(selected.residentId)
-      .then(r => setVisits(r.items))
+      .then(response => setVisits(response.items))
       .catch(() => setVisits([]))
       .finally(() => setVisitsLoading(false))
+
     fetchProcessRecordings(selected.residentId)
-      .then(r => setSessions(r.items))
+      .then(response => setSessions(response.items))
       .catch(() => setSessions([]))
       .finally(() => setSessionsLoading(false))
   }, [selected])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
-  const filteredResidents = signalFilter
-    ? residents.filter(r => {
-        if (signalFilter.startsWith('risk-')) {
-          const level = signalFilter.slice(5)
-          const insight = residentInsights[r.residentId]
-          if (!insight) return false
-          return getRiskLevel(insight.riskLevel, insight.concernProbability).label.toLowerCase() === level
-        }
-        if (signalFilter.startsWith('reint-')) {
-          const level = signalFilter.slice(6)
-          const insight = reintegrationInsights[r.residentId]
-          if (!insight) return false
-          return getReadinessLevel(insight.readinessLevel, insight.favorableProbability).label.toLowerCase() === level
-        }
-        return true
-      })
-    : residents
+
+  const filteredResidents = useMemo(() => {
+    if (!signalFilter) return residents
+
+    return residents.filter(resident => {
+      if (signalFilter.startsWith('risk-')) {
+        const level = signalFilter.slice(5)
+        const insight = residentInsights[resident.residentId]
+        if (!insight) return false
+        return getRiskLevel(insight.riskLevel, insight.concernProbability).label.toLowerCase() === level
+      }
+
+      if (signalFilter.startsWith('reint-')) {
+        const level = signalFilter.slice(6)
+        const insight = reintegrationInsights[resident.residentId]
+        if (!insight) return false
+        return getReadinessLevel(insight.readinessLevel, insight.favorableProbability).label.toLowerCase() === level
+      }
+
+      return true
+    })
+  }, [reintegrationInsights, residentInsights, residents, signalFilter])
+
   const selectedResidentInsight = selected ? residentInsights[selected.residentId] : undefined
   const residentRiskLevel = selectedResidentInsight
     ? getRiskLevel(selectedResidentInsight.riskLevel, selectedResidentInsight.concernProbability)
     : null
+
   const selectedReintegrationInsight = selected ? reintegrationInsights[selected.residentId] : undefined
   const readinessLevel = selectedReintegrationInsight
     ? getReadinessLevel(selectedReintegrationInsight.readinessLevel, selectedReintegrationInsight.favorableProbability)
     : null
 
   const safehouseMap = useMemo(() => {
-    const m = new Map<number, string>()
-    safehouses.forEach(s => m.set(s.safehouseId, s.name))
-    return m
+    const map = new Map<number, string>()
+    safehouses.forEach(safehouse => map.set(safehouse.safehouseId, safehouse.name))
+    return map
   }, [safehouses])
 
-  // Overdue visit calculation
   const overdueInfo = useMemo(() => {
     if (visitsLoading) return null
     if (visits.length === 0) return { overdue: true, noRecord: true, days: null }
+
     const sorted = [...visits]
-      .filter(v => v.visitDate)
-      .sort((a, b) => new Date(b.visitDate!).getTime() - new Date(a.visitDate!).getTime())
+      .filter(visit => visit.visitDate)
+      .sort((left, right) => new Date(right.visitDate!).getTime() - new Date(left.visitDate!).getTime())
+
     if (sorted.length === 0) return { overdue: true, noRecord: true, days: null }
+
     const days = daysSince(sorted[0].visitDate!)
     return { overdue: days > 30, noRecord: false, days }
   }, [visits, visitsLoading])
 
-  // Concern visits
   const concernVisits = useMemo(
-    () => visits.filter(v => v.visitOutcome?.toLowerCase() === 'concern'),
-    [visits]
+    () => visits.filter(visit => visit.visitOutcome?.toLowerCase() === 'concern'),
+    [visits],
   )
 
-  // Sorted visits and sessions for display
   const sortedVisits = useMemo(
-    () => [...visits].sort((a, b) => (b.visitDate ?? '').localeCompare(a.visitDate ?? '')),
-    [visits]
+    () => [...visits].sort((left, right) => (right.visitDate ?? '').localeCompare(left.visitDate ?? '')),
+    [visits],
   )
   const displayedVisits = visitsShowAll ? sortedVisits : sortedVisits.slice(0, 10)
 
   const sortedSessions = useMemo(
-    () => [...sessions].sort((a, b) => (b.sessionDate ?? '').localeCompare(a.sessionDate ?? '')),
-    [sessions]
+    () => [...sessions].sort((left, right) => (right.sessionDate ?? '').localeCompare(left.sessionDate ?? '')),
+    [sessions],
   )
   const displayedSessions = sessionsShowAll ? sortedSessions : sortedSessions.slice(0, 10)
 
-  async function handleSaveField(field: 'socialWorker' | 'conferenceDate') {
+  function flashSaved(message = 'Changes saved') {
+    setSavedMessage(message)
+  }
+
+  function prepareResidentView(resident: Resident | null) {
+    setStatusError(null)
+    setSelected(resident)
+    setVisits([])
+    setSessions([])
+    setVisitsLoading(Boolean(resident))
+    setSessionsLoading(Boolean(resident))
+    setDetailTab('visits')
+    setVisitsShowAll(false)
+    setSessionsShowAll(false)
+    setEditField(null)
+    setEditError(null)
+    setPendingStatusChange(null)
+  }
+
+  async function handleSaveField(field: ResidentEditField) {
     if (!selected) return
+
     setEditSaving(true)
     setEditError(null)
+
     try {
       const updated: Resident = {
         ...selected,
         ...(field === 'socialWorker' ? { assignedSocialWorker: editValue || undefined } : {}),
         ...(field === 'conferenceDate' ? { caseConferenceDate: editValue || undefined } : {}),
       }
+
       await apiPut(`/api/residents/${selected.residentId}`, residentToUpsertInput(updated))
       setSelected(updated)
-      setResidents(prev => prev.map(r => r.residentId === updated.residentId ? updated : r))
+      setResidents(previous => previous.map(resident => resident.residentId === updated.residentId ? updated : resident))
       setResidentReloadToken(token => token + 1)
       setEditField(null)
-    } catch (err) {
-      setEditError(err instanceof Error ? err.message : 'Failed to save. Try again.')
+      flashSaved()
+    } catch (error) {
+      setEditError(error instanceof Error ? error.message : 'Failed to save. Try again.')
     } finally {
       setEditSaving(false)
     }
   }
 
-  async function handleStatusChange(newStatus: string) {
+  async function commitStatusChange(newStatus: 'Active' | 'Closed') {
     if (!selected) return
+
     setStatusSaving(true)
     setStatusError(null)
+
     try {
       const updated: Resident = { ...selected, caseStatus: newStatus }
       await apiPut(`/api/residents/${selected.residentId}`, residentToUpsertInput(updated))
+
       if (statusFilter && statusFilter !== newStatus) {
-        setSelected(null)
-        setVisits([])
-        setSessions([])
+        prepareResidentView(null)
       } else {
         setSelected(updated)
       }
-      setResidents(prev => prev.map(r => r.residentId === updated.residentId ? updated : r))
+
+      setResidents(previous => previous.map(resident => resident.residentId === updated.residentId ? updated : resident))
       setResidentReloadToken(token => token + 1)
-    } catch (err) {
-      setStatusError(err instanceof Error ? err.message : 'Failed to update resident status.')
+      setPendingStatusChange(null)
+      flashSaved()
+    } catch (error) {
+      setStatusError(error instanceof Error ? error.message : 'Failed to update resident status.')
     } finally {
       setStatusSaving(false)
     }
   }
 
-  async function handleSaveNote(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSaveNote(event: React.FormEvent) {
+    event.preventDefault()
     if (!selected) return
+
     setNoteSaving(true)
     setNoteError(null)
+
     try {
-      await apiPost('/api/processrecordings', {
+      const payload: ProcessRecordingUpsertInput = {
         residentId: selected.residentId,
         sessionDate: noteDate,
         sessionType: noteType,
         socialWorker: noteSocialWorker,
         sessionNarrative: noteNarrative,
         notesRestricted: noteRestricted ? 'Y' : 'N',
-      })
+      }
+
+      await apiPost('/api/processrecordings', payload)
       const updated = await fetchProcessRecordings(selected.residentId)
       setSessions(updated.items)
       setShowNoteModal(false)
@@ -317,8 +352,9 @@ export default function CaseloadPage() {
       setNoteSocialWorker('')
       setNoteNarrative('')
       setNoteRestricted(false)
-    } catch (err) {
-      setNoteError(err instanceof Error ? err.message : 'Failed to save note.')
+      flashSaved()
+    } catch (error) {
+      setNoteError(error instanceof Error ? error.message : 'Failed to save note.')
     } finally {
       setNoteSaving(false)
     }
@@ -334,6 +370,11 @@ export default function CaseloadPage() {
     setShowNoteModal(true)
   }
 
+  function closeNoteModal() {
+    if (noteSaving) return
+    setShowNoteModal(false)
+  }
+
   function openVisitModal() {
     setVisitDate(todayStr())
     setVisitType('Home Visit')
@@ -344,30 +385,40 @@ export default function CaseloadPage() {
     setShowVisitModal(true)
   }
 
-  async function handleSaveVisit(e: React.FormEvent) {
-    e.preventDefault()
+  function closeVisitModal() {
+    if (visitSaving) return
+    setShowVisitModal(false)
+  }
+
+  async function handleSaveVisit(event: React.FormEvent) {
+    event.preventDefault()
     if (!selected) return
+
     setVisitSaving(true)
     setVisitError(null)
+
     try {
-      await apiPost('/api/homevisitations', {
+      const payload: HomeVisitationUpsertInput = {
         residentId: selected.residentId,
-        visitDate: visitDate,
+        visitDate,
         visitType,
         socialWorker: visitSocialWorker,
         observations: visitObservations,
         visitOutcome,
-      })
-      const r = await fetchVisitations(selected.residentId)
-      setVisits(r.items)
+      }
+
+      await apiPost('/api/homevisitations', payload)
+      const response = await fetchVisitations(selected.residentId)
+      setVisits(response.items)
       setShowVisitModal(false)
       setVisitDate(todayStr())
       setVisitType('Home Visit')
       setVisitSocialWorker('')
       setVisitObservations('')
       setVisitOutcome('Positive')
-    } catch (err) {
-      setVisitError(err instanceof Error ? err.message : 'Failed to save visit.')
+      flashSaved()
+    } catch (error) {
+      setVisitError(error instanceof Error ? error.message : 'Failed to save visit.')
     } finally {
       setVisitSaving(false)
     }
@@ -393,8 +444,8 @@ export default function CaseloadPage() {
     setShowNewResidentModal(false)
   }
 
-  async function handleCreateResident(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleCreateResident(event: React.FormEvent) {
+    event.preventDefault()
     if (!newResidentSafehouseId) {
       setNewResidentError('Select a safehouse before creating a resident.')
       return
@@ -416,22 +467,14 @@ export default function CaseloadPage() {
         caseConferenceDate: newResidentConferenceDate || null,
       })
 
-      setSelected(created)
-      setStatusError(null)
-      setVisits([])
-      setSessions([])
-      setVisitsLoading(true)
-      setSessionsLoading(true)
-      setDetailTab('visits')
-      setVisitsShowAll(false)
-      setSessionsShowAll(false)
-      setEditField(null)
+      prepareResidentView(created)
       setShowNewResidentModal(false)
       setListLoading(true)
       setListError(null)
       setResidentReloadToken(token => token + 1)
-    } catch (err) {
-      setNewResidentError(err instanceof Error ? err.message : 'Failed to create resident.')
+      flashSaved('Resident created')
+    } catch (error) {
+      setNewResidentError(error instanceof Error ? error.message : 'Failed to create resident.')
     } finally {
       setNewResidentSaving(false)
     }
@@ -440,527 +483,182 @@ export default function CaseloadPage() {
   return (
     <AdminLayout>
       <div className="cl-layout">
-        <div className="cl-sidebar">
-          <div className="cl-sidebar__header">
-            <div className="cl-sidebar__actions">
-              <p className="cl-sidebar__title">Residents</p>
-              <button className="cl-new-resident-btn" onClick={openNewResidentModal} disabled={safehouses.length === 0}>
-                + New Resident
-              </button>
-            </div>
-            <input
-              className="cl-search"
-              placeholder="Search residents..."
-              value={search}
-              onChange={e => {
-                setSearch(e.target.value)
-                setPageNum(1)
-                setListLoading(true)
-                setListError(null)
-              }}
-            />
-            <div className="cl-filters">
-              <select
-                value={safehouseFilter}
-                onChange={e => {
-                  setSafehouseFilter(e.target.value)
-                  setPageNum(1)
-                  setListLoading(true)
-                  setListError(null)
-                }}
-              >
-                <option value="">All safehouses</option>
-                {safehouses.map(s => <option key={s.safehouseId} value={s.safehouseId}>{s.name}</option>)}
-              </select>
-              <div className="cl-filters__row">
-                <select
-                  value={statusFilter}
-                  onChange={e => {
-                    setStatusFilter(e.target.value)
-                    setPageNum(1)
-                    setListLoading(true)
-                    setListError(null)
-                  }}
-                >
-                  <option value="">All statuses</option>
-                  <option value="Active">Active</option>
-                  <option value="Closed">Closed</option>
-                </select>
-                <select
-                  value={signalFilter}
-                  onChange={e => setSignalFilter(e.target.value)}
-                >
-                  <option value="">All signals</option>
-                  <optgroup label="Support Need">
-                    <option value="risk-high">High support need</option>
-                    <option value="risk-medium">Medium support need</option>
-                    <option value="risk-low">Low support need</option>
-                  </optgroup>
-                  <optgroup label="Reintegration">
-                    <option value="reint-high">High readiness</option>
-                    <option value="reint-medium">Medium readiness</option>
-                    <option value="reint-low">Low readiness</option>
-                  </optgroup>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div className="cl-list">
-            {listLoading && <div className="inline-loading">Loading...</div>}
-            {listError && <p className="admin-error" style={{ padding: '1rem' }}>{listError}</p>}
-            {!listLoading && !listError && filteredResidents.length === 0 && <div className="empty-state">No residents found.</div>}
-            {!listLoading && !listError && filteredResidents.map(r => (
-              <button
-                key={r.residentId}
-                className={`cl-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`}
-                onClick={() => {
-                  setStatusError(null)
-                  setSelected(r)
-                  setVisits([])
-                  setSessions([])
-                  setVisitsLoading(true)
-                  setSessionsLoading(true)
-                  setDetailTab('visits')
-                  setVisitsShowAll(false)
-                  setSessionsShowAll(false)
-                  setEditField(null)
-                }}
-              >
-                <span className="cl-row__id">{r.caseControlNo}</span>
-                <span className="cl-row__meta">
-                  {statusBadge(r.caseStatus)}
-                  {r.caseCategory && <span>{r.caseCategory}</span>}
-                  {r.assignedSocialWorker && <span>{r.assignedSocialWorker}</span>}
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="cl-pager">
-            <span className="cl-pager__info">Page {pageNum} of {totalPages}, {totalCount} records</span>
-            <button
-              className="cl-pager__btn"
-              disabled={pageNum <= 1}
-              onClick={() => {
-                setPageNum(p => p - 1)
-                setListLoading(true)
-                setListError(null)
-              }}
-            >Prev</button>
-            <button
-              className="cl-pager__btn"
-              disabled={pageNum >= totalPages}
-              onClick={() => {
-                setPageNum(p => p + 1)
-                setListLoading(true)
-                setListError(null)
-              }}
-            >Next</button>
-          </div>
-        </div>
+        <CaseloadSidebar
+          residents={filteredResidents}
+          safehouses={safehouses}
+          selectedResidentId={selected?.residentId ?? null}
+          search={search}
+          safehouseFilter={safehouseFilter}
+          statusFilter={statusFilter}
+          signalFilter={signalFilter}
+          listLoading={listLoading}
+          listError={listError}
+          pageNum={pageNum}
+          totalPages={totalPages}
+          totalCount={totalCount}
+          onOpenNewResident={openNewResidentModal}
+          onSearchChange={value => {
+            setSearch(value)
+            setPageNum(1)
+            setListLoading(true)
+            setListError(null)
+          }}
+          onSafehouseFilterChange={value => {
+            setSafehouseFilter(value)
+            setPageNum(1)
+            setListLoading(true)
+            setListError(null)
+          }}
+          onStatusFilterChange={value => {
+            setStatusFilter(value)
+            setPageNum(1)
+            setListLoading(true)
+            setListError(null)
+          }}
+          onSignalFilterChange={setSignalFilter}
+          onSelectResident={resident => prepareResidentView(resident)}
+          onPrevPage={() => {
+            setPageNum(previous => previous - 1)
+            setListLoading(true)
+            setListError(null)
+          }}
+          onNextPage={() => {
+            setPageNum(previous => previous + 1)
+            setListLoading(true)
+            setListError(null)
+          }}
+        />
 
-        <div className="cl-detail">
-          {/* Case Conference Countdown — always visible when conferences pending */}
-          {summary && summary.upcomingCaseConferences > 0 && (
-            <a href="/admin/reports" className="cl-conference-notice">
-              &#9889; {summary.upcomingCaseConferences} upcoming case conference{summary.upcomingCaseConferences !== 1 ? 's' : ''} scheduled — review caseloads and prepare documentation.
-            </a>
-          )}
-
-          {!selected && <div className="cl-detail__empty">Select a resident to view details</div>}
-          {selected && (
-            <>
-              <div className="cl-resident-header">
-                <h2>{selected.caseControlNo}</h2>
-                {statusBadge(selected.caseStatus)}
-                <span style={{ fontSize: '0.85rem', color: 'var(--adm-muted)' }}>
-                  {safehouseMap.get(selected.safehouseId) ?? `Safehouse ${selected.safehouseId}`}
-                </span>
-                {selected.caseStatus?.toLowerCase() === 'active' && (
-                  <button className="cl-status-btn cl-status-btn--close" onClick={() => handleStatusChange('Closed')} disabled={statusSaving}>
-                    {statusSaving ? 'Saving\u2026' : 'Close Case'}
-                  </button>
-                )}
-                {selected.caseStatus?.toLowerCase() === 'closed' && (
-                  <button className="cl-status-btn cl-status-btn--reopen" onClick={() => handleStatusChange('Active')} disabled={statusSaving}>
-                    {statusSaving ? 'Saving\u2026' : 'Reopen Case'}
-                  </button>
-                )}
-              </div>
-              {statusError && <p className="admin-error">{statusError}</p>}
-
-              {(residentRiskLevel || readinessLevel) && (
-                <div className="cl-signal-row">
-                  {residentRiskLevel && (
-                    <div className="cl-signal-strip">
-                      <span className="cl-signal-strip__label">Resident Signal</span>
-                      <span
-                        className="cl-signal-strip__info"
-                        data-tip="Likelihood this resident needs increased care or intervention. Low = routine check-ins, Medium = monitor closely, High = proactive support recommended."
-                        aria-label="About resident signal"
-                        tabIndex={0}
-                      >ⓘ</span>
-                      <span className={`cl-ml-pill cl-ml-pill--${residentRiskLevel.tone}`}>{residentRiskLevel.label}</span>
-                    </div>
-                  )}
-                  {readinessLevel && (
-                    <div className="cl-signal-strip">
-                      <span className="cl-signal-strip__label">Reintegration</span>
-                      <span
-                        className="cl-signal-strip__info"
-                        data-tip="How ready this resident is to transition out of the shelter. Low = not yet ready, Medium = approaching readiness, High = recommend scheduling a reintegration review."
-                        aria-label="About reintegration signal"
-                        tabIndex={0}
-                      >ⓘ</span>
-                      <span className={`cl-ml-pill cl-ml-pill--${readinessLevel.tone}`}>{readinessLevel.label}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Per-Resident Case Conference Countdown */}
-              {selected.caseConferenceDate && (() => {
-                const d = daysUntil(selected.caseConferenceDate)
-                if (d <= 0) return (
-                  <div className="cl-conference-banner cl-conference-banner--urgent">
-                    ⚑ Case conference was {Math.abs(d)} day{Math.abs(d) !== 1 ? 's' : ''} ago — update records immediately.
-                  </div>
-                )
-                if (d <= 7) return (
-                  <div className="cl-conference-banner cl-conference-banner--soon">
-                    ⚑ Case conference in {d} day{d !== 1 ? 's' : ''} — {selected.caseConferenceDate}. Prepare documentation.
-                  </div>
-                )
-                return null
-              })()}
-
-              {/* Overdue Visit Warning */}
-              {!visitsLoading && overdueInfo?.overdue && (
-                <div className="cl-overdue-banner">
-                  {overdueInfo.noRecord
-                    ? 'No visit on record.'
-                    : `No recent home visit recorded — last visit was ${overdueInfo.days} day${overdueInfo.days !== 1 ? 's' : ''} ago.`}
-                </div>
-              )}
-
-              <dl className="cl-fields">
-                <div className="cl-field"><dt>Date of Birth</dt><dd>{selected.dateOfBirth ?? '\u2014'}</dd></div>
-                <div className="cl-field"><dt>Sex</dt><dd>{selected.sex ?? '\u2014'}</dd></div>
-                <div className="cl-field"><dt>Case Category</dt><dd>{selected.caseCategory ?? '\u2014'}</dd></div>
-                <div className="cl-field">
-                  <dt>Social Worker</dt>
-                  {editField === 'socialWorker' ? (
-                    <dd>
-                      <div className="cl-field__edit-row">
-                        <input className="cl-field__edit-input" value={editValue} onChange={e => setEditValue(e.target.value)} autoFocus />
-                        <button className="cl-field__edit-save" onClick={() => handleSaveField('socialWorker')} disabled={editSaving}>&#10003;</button>
-                        <button className="cl-field__edit-cancel" onClick={() => setEditField(null)}>&#10005;</button>
-                      </div>
-                      {editError && <span className="cl-field__edit-error">{editError}</span>}
-                    </dd>
-                  ) : (
-                    <dd className="cl-field__editable">
-                      {selected.assignedSocialWorker ?? '\u2014'}
-                      <button className="cl-field__edit-btn" onClick={() => { setEditField('socialWorker'); setEditValue(selected.assignedSocialWorker ?? ''); setEditError(null) }}>&#9998;</button>
-                    </dd>
-                  )}
-                </div>
-                <div className="cl-field"><dt>Internal Code</dt><dd>{selected.internalCode ?? '\u2014'}</dd></div>
-                <div className="cl-field"><dt>Safehouse</dt><dd>{safehouseMap.get(selected.safehouseId) ?? String(selected.safehouseId)}</dd></div>
-                <div className="cl-field">
-                  <dt>Case Conference</dt>
-                  {editField === 'conferenceDate' ? (
-                    <dd>
-                      <div className="cl-field__edit-row">
-                        <input type="date" className="cl-field__edit-input" value={editValue} onChange={e => setEditValue(e.target.value)} autoFocus />
-                        <button className="cl-field__edit-save" onClick={() => handleSaveField('conferenceDate')} disabled={editSaving}>&#10003;</button>
-                        <button className="cl-field__edit-cancel" onClick={() => setEditField(null)}>&#10005;</button>
-                      </div>
-                      {editError && <span className="cl-field__edit-error">{editError}</span>}
-                    </dd>
-                  ) : (
-                    <dd className="cl-field__editable">
-                      {selected.caseConferenceDate ?? '\u2014'}
-                      <button className="cl-field__edit-btn" onClick={() => { setEditField('conferenceDate'); setEditValue(selected.caseConferenceDate ?? ''); setEditError(null) }}>&#9998;</button>
-                    </dd>
-                  )}
-                </div>
-              </dl>
-
-              <div className="cl-detail-tabs">
-                <button
-                  className={`cl-detail-tab${detailTab === 'visits' ? ' is-active' : ''}`}
-                  onClick={() => setDetailTab('visits')}
-                >Visit History</button>
-                <button
-                  className={`cl-detail-tab${detailTab === 'notes' ? ' is-active' : ''}`}
-                  onClick={() => setDetailTab('notes')}
-                >Session Notes</button>
-              </div>
-
-              {detailTab === 'visits' && (
-                <>
-                  <div className="cl-section-header">
-                    <p className="section-title" style={{ margin: 0 }}>Visit History</p>
-                    <button className="cl-add-note-btn" onClick={openVisitModal}>+ Log Visit</button>
-                  </div>
-                  {visitsLoading && <div className="inline-loading">Loading visits...</div>}
-                  {!visitsLoading && concernVisits.length > 0 && (
-                    <div className="cl-concern-callout">
-                      &#9888; {concernVisits.length} visit{concernVisits.length !== 1 ? 's' : ''} flagged with Concern outcome — review observations below.
-                    </div>
-                  )}
-                  {!visitsLoading && sortedVisits.length === 0 && <div className="empty-state">No visit history</div>}
-                  {!visitsLoading && sortedVisits.length > 0 && (
-                    <>
-                      <div className="cl-timeline">
-                        {displayedVisits.map(v => (
-                          <div key={v.visitationId} className={`cl-timeline-card${v.visitOutcome?.toLowerCase() === 'concern' ? ' cl-timeline-card--concern' : ''}`}>
-                            <div className="cl-timeline-card__header">
-                              <span className="cl-timeline-card__date">{v.visitDate ?? 'No date'}</span>
-                              {v.visitType && <span className="badge badge--blue">{v.visitType}</span>}
-                              {v.visitOutcome && <span className={`badge ${v.visitOutcome.toLowerCase() === 'positive' ? 'badge--green' : v.visitOutcome.toLowerCase() === 'concern' ? 'badge--red' : 'badge--gray'}`}>{v.visitOutcome}</span>}
-                              <span className="cl-timeline-card__worker">{v.socialWorker}</span>
-                            </div>
-                            {v.observations && <p className="cl-timeline-card__text">{v.observations}</p>}
-                          </div>
-                        ))}
-                      </div>
-                      {sortedVisits.length > 10 && (
-                        !visitsShowAll
-                          ? <button className="cl-show-more" onClick={() => setVisitsShowAll(true)}>Show {sortedVisits.length - 10} more visits</button>
-                          : <button className="cl-show-more" onClick={() => setVisitsShowAll(false)}>Show less</button>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-
-              {detailTab === 'notes' && (
-                <>
-                  <div className="cl-section-header">
-                    <p className="section-title" style={{ margin: 0 }}>Session Notes</p>
-                    <button className="cl-add-note-btn" onClick={openNoteModal}>+ Add Note</button>
-                  </div>
-                  {sessionsLoading && <div className="inline-loading">Loading sessions...</div>}
-                  {!sessionsLoading && sortedSessions.length === 0 && <div className="empty-state">No session notes</div>}
-                  {!sessionsLoading && sortedSessions.length > 0 && (
-                    <>
-                      <div className="cl-timeline">
-                        {displayedSessions.map(s => (
-                          <div key={s.recordingId} className="cl-timeline-card">
-                            <div className="cl-timeline-card__header">
-                              <span className="cl-timeline-card__date">{s.sessionDate ?? 'No date'}</span>
-                              {s.sessionType && <span className="badge badge--purple">{s.sessionType}</span>}
-                              {s.notesRestricted === 'Y' && <span className="badge badge--red">Restricted</span>}
-                              <span className="cl-timeline-card__worker">{s.socialWorker}</span>
-                            </div>
-                            <p className="cl-timeline-card__text">{s.sessionNarrative || <em>No narrative recorded</em>}</p>
-                          </div>
-                        ))}
-                      </div>
-                      {sortedSessions.length > 10 && (
-                        !sessionsShowAll
-                          ? <button className="cl-show-more" onClick={() => setSessionsShowAll(true)}>Show {sortedSessions.length - 10} more sessions</button>
-                          : <button className="cl-show-more" onClick={() => setSessionsShowAll(false)}>Show less</button>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-            </>
-          )}
-        </div>
+        <ResidentDetailPanel
+          selected={selected}
+          summary={summary}
+          triageCard={triageCard}
+          safehouseMap={safehouseMap}
+          residentRiskLevel={residentRiskLevel}
+          readinessLevel={readinessLevel}
+          statusSaving={statusSaving}
+          statusError={statusError}
+          onRequestStatusChange={newStatus => setPendingStatusChange(newStatus)}
+          visitsLoading={visitsLoading}
+          overdueInfo={overdueInfo}
+          concernVisits={concernVisits}
+          detailTab={detailTab}
+          onDetailTabChange={setDetailTab}
+          editField={editField}
+          editValue={editValue}
+          editSaving={editSaving}
+          editError={editError}
+          onEditValueChange={setEditValue}
+          onStartEdit={(field, value) => {
+            setEditField(field)
+            setEditValue(value)
+            setEditError(null)
+          }}
+          onCancelEdit={() => {
+            setEditField(null)
+            setEditError(null)
+          }}
+          onSaveField={handleSaveField}
+          onOpenVisitModal={openVisitModal}
+          onOpenNoteModal={openNoteModal}
+          sortedVisits={sortedVisits}
+          displayedVisits={displayedVisits}
+          visitsShowAll={visitsShowAll}
+          onToggleVisitsShowAll={setVisitsShowAll}
+          sessionsLoading={sessionsLoading}
+          sortedSessions={sortedSessions}
+          displayedSessions={displayedSessions}
+          sessionsShowAll={sessionsShowAll}
+          onToggleSessionsShowAll={setSessionsShowAll}
+        />
       </div>
 
-      {/* Add Session Note Modal */}
       {showNoteModal && (
-        <div className="cl-modal-overlay" onClick={() => setShowNoteModal(false)}>
-          <div className="cl-modal" onClick={e => e.stopPropagation()}>
-            <p className="cl-modal__title">Add Session Note</p>
-            <form onSubmit={handleSaveNote} className="cl-modal__form">
-              <label className="cl-modal__label">
-                Date
-                <input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)} required className="cl-modal__input" />
-              </label>
-              <label className="cl-modal__label">
-                Session Type
-                <select value={noteType} onChange={e => setNoteType(e.target.value)} className="cl-modal__input">
-                  <option>Individual</option>
-                  <option>Group</option>
-                  <option>Family</option>
-                  <option>Crisis</option>
-                  <option>Assessment</option>
-                  <option>Other</option>
-                </select>
-              </label>
-              <label className="cl-modal__label">
-                Social Worker
-                <input type="text" value={noteSocialWorker} onChange={e => setNoteSocialWorker(e.target.value)} placeholder="Social worker name" className="cl-modal__input" />
-              </label>
-              <label className="cl-modal__label">
-                Session Narrative
-                <textarea rows={4} value={noteNarrative} onChange={e => setNoteNarrative(e.target.value)} placeholder="Session narrative..." className="cl-modal__input cl-modal__textarea" />
-              </label>
-              <label className="cl-modal__checkbox-row">
-                <input type="checkbox" checked={noteRestricted} onChange={e => setNoteRestricted(e.target.checked)} />
-                Mark as restricted
-              </label>
-              {noteError && <p className="cl-modal__error">{noteError}</p>}
-              <div className="cl-modal__actions">
-                <button type="submit" className="cl-modal__save" disabled={noteSaving}>{noteSaving ? 'Saving\u2026' : 'Save Note'}</button>
-                <button type="button" className="cl-modal__cancel" onClick={() => setShowNoteModal(false)}>Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <ResidentNoteModal
+          noteDate={noteDate}
+          noteType={noteType}
+          noteSocialWorker={noteSocialWorker}
+          noteNarrative={noteNarrative}
+          noteRestricted={noteRestricted}
+          noteSaving={noteSaving}
+          noteError={noteError}
+          onClose={closeNoteModal}
+          onSubmit={handleSaveNote}
+          onNoteDateChange={setNoteDate}
+          onNoteTypeChange={setNoteType}
+          onNoteSocialWorkerChange={setNoteSocialWorker}
+          onNoteNarrativeChange={setNoteNarrative}
+          onNoteRestrictedChange={setNoteRestricted}
+        />
       )}
 
-      {/* Log Visit Modal */}
       {showVisitModal && (
-        <div className="cl-modal-overlay" onClick={() => setShowVisitModal(false)}>
-          <div className="cl-modal" onClick={e => e.stopPropagation()}>
-            <p className="cl-modal__title">Log Visit</p>
-            <form onSubmit={handleSaveVisit} className="cl-modal__form">
-              <label className="cl-modal__label">
-                Date
-                <input type="date" value={visitDate} onChange={e => setVisitDate(e.target.value)} required className="cl-modal__input" />
-              </label>
-              <label className="cl-modal__label">
-                Visit Type
-                <select value={visitType} onChange={e => setVisitType(e.target.value)} className="cl-modal__input">
-                  <option>Home Visit</option>
-                  <option>Follow-up</option>
-                  <option>Initial</option>
-                </select>
-              </label>
-              <label className="cl-modal__label">
-                Social Worker
-                <input type="text" value={visitSocialWorker} onChange={e => setVisitSocialWorker(e.target.value)} placeholder="Social worker name" className="cl-modal__input" />
-              </label>
-              <label className="cl-modal__label">
-                Observations
-                <textarea rows={4} value={visitObservations} onChange={e => setVisitObservations(e.target.value)} placeholder="Observations..." className="cl-modal__input cl-modal__textarea" />
-              </label>
-              <label className="cl-modal__label">
-                Outcome
-                <select value={visitOutcome} onChange={e => setVisitOutcome(e.target.value)} className="cl-modal__input">
-                  <option>Positive</option>
-                  <option>Concern</option>
-                  <option>Neutral</option>
-                </select>
-              </label>
-              {visitError && <p className="cl-modal__error">{visitError}</p>}
-              <div className="cl-modal__actions">
-                <button type="submit" className="cl-modal__save" disabled={visitSaving}>{visitSaving ? 'Saving\u2026' : 'Save Visit'}</button>
-                <button type="button" className="cl-modal__cancel" onClick={() => setShowVisitModal(false)}>Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <ResidentVisitModal
+          visitDate={visitDate}
+          visitType={visitType}
+          visitSocialWorker={visitSocialWorker}
+          visitObservations={visitObservations}
+          visitOutcome={visitOutcome}
+          visitSaving={visitSaving}
+          visitError={visitError}
+          onClose={closeVisitModal}
+          onSubmit={handleSaveVisit}
+          onVisitDateChange={setVisitDate}
+          onVisitTypeChange={setVisitType}
+          onVisitSocialWorkerChange={setVisitSocialWorker}
+          onVisitObservationsChange={setVisitObservations}
+          onVisitOutcomeChange={setVisitOutcome}
+        />
       )}
 
       {showNewResidentModal && (
-        <div className="cl-modal-overlay" onClick={closeNewResidentModal}>
-          <div className="cl-modal" onClick={e => e.stopPropagation()}>
-            <p className="cl-modal__title">Add New Resident</p>
-            <form onSubmit={handleCreateResident} className="cl-modal__form">
-              <label className="cl-modal__label">
-                Case Control Number
-                <input
-                  type="text"
-                  value={newResidentCaseControlNo}
-                  onChange={e => setNewResidentCaseControlNo(e.target.value)}
-                  required
-                  className="cl-modal__input"
-                  placeholder="Case control number"
-                />
-              </label>
-              <label className="cl-modal__label">
-                Safehouse
-                <select
-                  value={newResidentSafehouseId}
-                  onChange={e => setNewResidentSafehouseId(e.target.value)}
-                  required
-                  className="cl-modal__input"
-                >
-                  {safehouses.map(safehouse => (
-                    <option key={safehouse.safehouseId} value={safehouse.safehouseId}>
-                      {safehouse.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="cl-modal__label">
-                Internal Code
-                <input
-                  type="text"
-                  value={newResidentInternalCode}
-                  onChange={e => setNewResidentInternalCode(e.target.value)}
-                  className="cl-modal__input"
-                  placeholder="Optional internal code"
-                />
-              </label>
-              <label className="cl-modal__label">
-                Status
-                <select value={newResidentStatus} onChange={e => setNewResidentStatus(e.target.value)} className="cl-modal__input">
-                  <option>Active</option>
-                  <option>Closed</option>
-                </select>
-              </label>
-              <label className="cl-modal__label">
-                Case Category
-                <input
-                  type="text"
-                  value={newResidentCategory}
-                  onChange={e => setNewResidentCategory(e.target.value)}
-                  className="cl-modal__input"
-                  placeholder="Case category"
-                />
-              </label>
-              <label className="cl-modal__label">
-                Social Worker
-                <input
-                  type="text"
-                  value={newResidentSocialWorker}
-                  onChange={e => setNewResidentSocialWorker(e.target.value)}
-                  className="cl-modal__input"
-                  placeholder="Assigned social worker"
-                />
-              </label>
-              <label className="cl-modal__label">
-                Date of Birth
-                <input type="date" value={newResidentDob} onChange={e => setNewResidentDob(e.target.value)} className="cl-modal__input" />
-              </label>
-              <label className="cl-modal__label">
-                Sex
-                <select value={newResidentSex} onChange={e => setNewResidentSex(e.target.value)} className="cl-modal__input">
-                  <option value="">Not set</option>
-                  <option value="Female">Female</option>
-                  <option value="Male">Male</option>
-                </select>
-              </label>
-              <label className="cl-modal__label">
-                Case Conference Date
-                <input
-                  type="date"
-                  value={newResidentConferenceDate}
-                  onChange={e => setNewResidentConferenceDate(e.target.value)}
-                  className="cl-modal__input"
-                />
-              </label>
-              {newResidentError && <p className="cl-modal__error">{newResidentError}</p>}
-              <div className="cl-modal__actions">
-                <button type="submit" className="cl-modal__save" disabled={newResidentSaving}>
-                  {newResidentSaving ? 'Saving\u2026' : 'Create Resident'}
-                </button>
-                <button type="button" className="cl-modal__cancel" onClick={closeNewResidentModal} disabled={newResidentSaving}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <NewResidentModal
+          safehouses={safehouses}
+          caseControlNo={newResidentCaseControlNo}
+          internalCode={newResidentInternalCode}
+          safehouseId={newResidentSafehouseId}
+          status={newResidentStatus}
+          category={newResidentCategory}
+          socialWorker={newResidentSocialWorker}
+          dateOfBirth={newResidentDob}
+          sex={newResidentSex}
+          conferenceDate={newResidentConferenceDate}
+          saving={newResidentSaving}
+          error={newResidentError}
+          onClose={closeNewResidentModal}
+          onSubmit={handleCreateResident}
+          onCaseControlNoChange={setNewResidentCaseControlNo}
+          onInternalCodeChange={setNewResidentInternalCode}
+          onSafehouseIdChange={setNewResidentSafehouseId}
+          onStatusChange={setNewResidentStatus}
+          onCategoryChange={setNewResidentCategory}
+          onSocialWorkerChange={setNewResidentSocialWorker}
+          onDateOfBirthChange={setNewResidentDob}
+          onSexChange={setNewResidentSex}
+          onConferenceDateChange={setNewResidentConferenceDate}
+        />
       )}
+
+      {selected && pendingStatusChange && (
+        <ConfirmDeleteModal
+          title={pendingStatusChange === 'Closed' ? 'Close resident case?' : 'Reopen resident case?'}
+          description={
+            pendingStatusChange === 'Closed'
+              ? `${selected.caseControlNo} will be marked Closed immediately. Confirm before updating the case record.`
+              : `${selected.caseControlNo} will be moved back to Active status immediately. Confirm before updating the case record.`
+          }
+          confirmLabel={pendingStatusChange === 'Closed' ? 'Close Case' : 'Reopen Case'}
+          confirmTone="accent"
+          busy={statusSaving}
+          onCancel={() => {
+            if (statusSaving) return
+            setPendingStatusChange(null)
+          }}
+          onConfirm={() => void commitStatusChange(pendingStatusChange)}
+        />
+      )}
+
+      <SavedToast message={savedMessage} onDismiss={() => setSavedMessage(null)} />
     </AdminLayout>
   )
 }

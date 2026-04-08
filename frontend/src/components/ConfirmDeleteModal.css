@@ -4,7 +4,7 @@
   background: rgba(34, 24, 19, 0.45);
   display: grid;
   place-items: center;
-  z-index: 100;
+  z-index: 300;
   padding: 1rem;
 }
 
@@ -22,6 +22,12 @@
   font-size: 1.15rem;
 }
 
+.confirm-delete-dialog p {
+  margin: 0;
+  color: var(--adm-muted, #5b6770);
+  line-height: 1.5;
+}
+
 .confirm-delete-actions {
   display: flex;
   justify-content: flex-end;
@@ -37,6 +43,12 @@
   cursor: pointer;
 }
 
+.confirm-delete-cancel:disabled,
+.confirm-delete-ok:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .confirm-delete-cancel {
   border: 1px solid var(--base-line);
   background: #fff;
@@ -46,4 +58,8 @@
   border: none;
   background: #a33;
   color: #fff;
+}
+
+.confirm-delete-ok--accent {
+  background: var(--adm-accent, #245ea6);
 }
