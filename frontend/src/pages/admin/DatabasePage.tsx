@@ -578,8 +578,8 @@ export default function DatabasePage() {
 
         {deleteOpen && (
           <ConfirmDeleteModal
-            title="Delete record?"
-            description={deleting ? 'Deleting record...' : 'This action removes the selected record from the database.'}
+            title="Are you sure you want to delete this record?"
+            description={deleting ? 'Deleting record...' : 'This action is permanent and cannot be undone.'}
             onCancel={() => {
               if (!deleting) setDeleteOpen(false)
             }}
