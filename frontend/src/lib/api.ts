@@ -19,9 +19,26 @@ export function apiUrl(path: string): string {
 async function readApiError(response: Response): Promise<string> {
   const text = await response.text()
   try {
-    const data = JSON.parse(text) as { message?: unknown }
+    const data = JSON.parse(text) as { message?: unknown; title?: unknown; errors?: Record<string, unknown> }
     if (data && typeof data.message === 'string') {
       return data.message
+    }
+    if (data && data.errors && typeof data.errors === 'object') {
+      const details = Object.entries(data.errors)
+        .flatMap(([field, value]) => {
+          if (Array.isArray(value)) {
+            return value
+              .filter((item): item is string => typeof item === 'string')
+              .map(item => `${field}: ${item}`)
+          }
+          return typeof value === 'string' ? [`${field}: ${value}`] : []
+        })
+      if (details.length > 0) {
+        return details.join(' ')
+      }
+    }
+    if (data && typeof data.title === 'string') {
+      return data.title
     }
   } catch {
     // fall through to raw text

@@ -12,6 +12,18 @@ export interface Resident {
   notesRestricted?: string | null
 }
 
+export interface ResidentUpsertInput {
+  caseControlNo: string
+  internalCode?: string | null
+  safehouseId: number
+  caseStatus?: string | null
+  sex?: string | null
+  dateOfBirth?: string | null
+  caseCategory?: string | null
+  assignedSocialWorker?: string | null
+  caseConferenceDate?: string | null
+}
+
 export interface Safehouse {
   safehouseId: number
   safehouseCode: string

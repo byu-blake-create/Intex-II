@@ -3,7 +3,7 @@ import AdminLayout from '../../components/AdminLayout'
 import { fetchSafehouses } from '../../lib/safehousesApi'
 import { fetchResidents } from '../../lib/residentsApi'
 import { apiPut } from '../../lib/api'
-import type { Safehouse, Resident } from '../../types/domain'
+import type { Safehouse, Resident, ResidentUpsertInput } from '../../types/domain'
 import './SafehousesPage.css'
 
 const RESIDENT_PAGE_SIZE = 30
@@ -14,6 +14,20 @@ function statusBadge(status: string | null | undefined) {
   if (s === 'active') return <span className="badge badge--green">Active</span>
   if (s === 'closed') return <span className="badge badge--gray">Closed</span>
   return <span className="badge badge--blue">{status}</span>
+}
+
+function residentToUpsertInput(resident: Resident): ResidentUpsertInput {
+  return {
+    caseControlNo: resident.caseControlNo.trim(),
+    internalCode: resident.internalCode ?? null,
+    safehouseId: resident.safehouseId,
+    caseStatus: resident.caseStatus ?? null,
+    sex: resident.sex ?? null,
+    dateOfBirth: resident.dateOfBirth ?? null,
+    caseCategory: resident.caseCategory ?? null,
+    assignedSocialWorker: resident.assignedSocialWorker ?? null,
+    caseConferenceDate: resident.caseConferenceDate ?? null,
+  }
 }
 
 export default function SafehousesPage() {
@@ -119,7 +133,7 @@ export default function SafehousesPage() {
         safehouseId: Number(reassignSafehouseId),
       }
 
-      await apiPut(`/api/residents/${reassignResident.residentId}`, updatedResident)
+      await apiPut(`/api/residents/${reassignResident.residentId}`, residentToUpsertInput(updatedResident))
       setPageNum(1)
       setListLoading(true)
       setDetailLoading(true)
