@@ -16,7 +16,7 @@ export function apiUrl(path: string): string {
   return `${base}${normalizedPath}`
 }
 
-async function readApiError(response: Response): Promise<string> {
+export async function readApiError(response: Response): Promise<string> {
   const text = await response.text()
   try {
     const data = JSON.parse(text) as { message?: unknown; title?: unknown; errors?: Record<string, unknown> }

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text;
+using System.Text.Encodings.Web;
 using NorthStarShelter.API.Data;
 using NorthStarShelter.API.Models;
 
@@ -42,7 +44,18 @@ public class AuthController : ControllerBase
         string FirstName,
         string LastName,
         int? SupporterId,
-        string[] Roles);
+        string[] Roles,
+        bool TwoFactorEnabled);
+
+    public record TwoFactorLoginRequest(string? AuthenticatorCode, string? RecoveryCode);
+
+    public record MfaSetupResponse(string SharedKey, string AuthenticatorUri);
+
+    public record MfaConfirmRequest(string Code);
+
+    public record MfaConfirmResponse(IReadOnlyList<string> RecoveryCodes, AuthUserResponse User);
+
+    public record MfaDisableRequest(string? Password);
 
     [HttpGet("google/login")]
     public IActionResult GoogleLogin([FromQuery] string? returnUrl = "/")
@@ -173,9 +186,58 @@ public class AuthController : ControllerBase
             isPersistent: true,
             lockoutOnFailure: false);
 
+        if (result.RequiresTwoFactor)
+        {
+            return Ok(new { requiresTwoFactor = true });
+        }
+
         if (!result.Succeeded)
         {
             return Unauthorized(new { message = "Invalid email or password." });
+        }
+
+        user = await EnsureSupporterLinkAsync(user);
+        return Ok(await BuildAuthResponseAsync(user));
+    }
+
+    /// <summary>Completes password sign-in when TOTP MFA is enabled (uses the temporary 2FA cookie from <see cref="Login"/>).</summary>
+    [HttpPost("login/2fa")]
+    [AllowAnonymous]
+    public async Task<IActionResult> LoginTwoFactor([FromBody] TwoFactorLoginRequest req)
+    {
+        var hasAuthenticator = !string.IsNullOrWhiteSpace(req.AuthenticatorCode);
+        var hasRecovery = !string.IsNullOrWhiteSpace(req.RecoveryCode);
+        if (hasAuthenticator == hasRecovery)
+        {
+            return BadRequest(new { message = "Send either authenticatorCode or recoveryCode (not both)." });
+        }
+
+        var pendingUser = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+        if (pendingUser is null)
+        {
+            return Unauthorized(new { message = "Your sign-in session expired. Please sign in again with your password." });
+        }
+
+        Microsoft.AspNetCore.Identity.SignInResult signInResult;
+        if (hasRecovery)
+        {
+            signInResult = await _signInManager.TwoFactorRecoveryCodeSignInAsync(req.RecoveryCode!.Trim().Replace(" ", string.Empty, StringComparison.Ordinal));
+        }
+        else
+        {
+            var code = req.AuthenticatorCode!.Replace(" ", string.Empty, StringComparison.Ordinal).Trim();
+            signInResult = await _signInManager.TwoFactorAuthenticatorSignInAsync(code, isPersistent: true, rememberClient: false);
+        }
+
+        if (!signInResult.Succeeded)
+        {
+            return Unauthorized(new { message = "Invalid verification or recovery code." });
+        }
+
+        var user = await _userManager.FindByIdAsync(pendingUser.Id);
+        if (user is null)
+        {
+            return Unauthorized(new { message = "Account could not be loaded." });
         }
 
         user = await EnsureSupporterLinkAsync(user);
@@ -268,6 +330,102 @@ public class AuthController : ControllerBase
         return Ok(await BuildAuthResponseAsync(user));
     }
 
+    /// <summary>Begins authenticator enrollment. Keep at least one admin and one non-admin account without MFA for grading.</summary>
+    [HttpPost("mfa/setup")]
+    [Authorize]
+    public async Task<IActionResult> BeginMfaSetup()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        if (await _userManager.GetTwoFactorEnabledAsync(user))
+        {
+            return BadRequest(new { message = "Two-factor sign-in is already on. Turn it off before running setup again." });
+        }
+
+        await _userManager.ResetAuthenticatorKeyAsync(user);
+        var unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
+        if (string.IsNullOrWhiteSpace(unformattedKey))
+        {
+            return Problem(detail: "Could not create an authenticator key.");
+        }
+
+        var email = await _userManager.GetEmailAsync(user) ?? user.UserName ?? string.Empty;
+        var uri = BuildAuthenticatorUri(email, unformattedKey);
+        return Ok(new MfaSetupResponse(FormatAuthenticatorKey(unformattedKey), uri));
+    }
+
+    [HttpPost("mfa/confirm")]
+    [Authorize]
+    public async Task<IActionResult> ConfirmMfaSetup([FromBody] MfaConfirmRequest? req)
+    {
+        var code = (req?.Code ?? string.Empty).Replace(" ", string.Empty, StringComparison.Ordinal).Trim();
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return BadRequest(new { message = "Enter the 6-digit code from your authenticator app." });
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        if (await _userManager.GetTwoFactorEnabledAsync(user))
+        {
+            return BadRequest(new { message = "Two-factor sign-in is already enabled." });
+        }
+
+        var tokenProvider = _userManager.Options.Tokens.AuthenticatorTokenProvider;
+        if (string.IsNullOrWhiteSpace(tokenProvider))
+        {
+            tokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+        }
+
+        var valid = await _userManager.VerifyTwoFactorTokenAsync(user, tokenProvider, code);
+        if (!valid)
+        {
+            return BadRequest(new { message = "That code did not match. Check the time on your phone and try a new code." });
+        }
+
+        await _userManager.SetTwoFactorEnabledAsync(user, true);
+        var recovery = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+        var codes = recovery is null ? Array.Empty<string>() : recovery.ToArray();
+        return Ok(new MfaConfirmResponse(codes, await BuildAuthResponseAsync(user)));
+    }
+
+    [HttpPost("mfa/disable")]
+    [Authorize]
+    public async Task<IActionResult> DisableMfa([FromBody] MfaDisableRequest? req)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        if (!await _userManager.GetTwoFactorEnabledAsync(user))
+        {
+            return BadRequest(new { message = "Two-factor sign-in is not enabled." });
+        }
+
+        if (await _userManager.HasPasswordAsync(user))
+        {
+            if (string.IsNullOrWhiteSpace(req?.Password)
+                || !await _userManager.CheckPasswordAsync(user, req.Password))
+            {
+                return Unauthorized(new { message = "Current password is required to turn off authenticator sign-in." });
+            }
+        }
+
+        await _userManager.SetTwoFactorEnabledAsync(user, false);
+        await _userManager.ResetAuthenticatorKeyAsync(user);
+        return Ok(await BuildAuthResponseAsync(user));
+    }
+
     [HttpPost("logout")]
     [Authorize]
     public async Task<IActionResult> Logout()
@@ -327,14 +485,38 @@ public class AuthController : ControllerBase
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(role => role, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-
+        var twoFa = await _userManager.GetTwoFactorEnabledAsync(user);
         return new AuthUserResponse(
             user.Email ?? string.Empty,
             user.DisplayName ?? $"{user.FirstName} {user.LastName}".Trim() ?? user.Email ?? string.Empty,
             user.FirstName ?? string.Empty,
             user.LastName ?? string.Empty,
             user.SupporterId,
-            roles);
+            roles,
+            twoFa);
+    }
+
+    private static string FormatAuthenticatorKey(string unformattedKey)
+    {
+        var sb = new StringBuilder();
+        for (var i = 0; i < unformattedKey.Length; i++)
+        {
+            if (i > 0 && i % 4 == 0)
+            {
+                sb.Append(' ');
+            }
+
+            sb.Append(unformattedKey[i]);
+        }
+
+        return sb.ToString().ToLowerInvariant();
+    }
+
+    private static string BuildAuthenticatorUri(string email, string unformattedKey)
+    {
+        var issuer = UrlEncoder.Default.Encode("North Star Shelter");
+        var account = UrlEncoder.Default.Encode(email);
+        return $"otpauth://totp/{issuer}:{account}?secret={unformattedKey}&issuer={issuer}&digits=6";
     }
 
     private bool IsGoogleAuthConfigured()
