@@ -1,18 +1,34 @@
-from fastapi import FastAPI, HTTPException
+import os
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+import joblib
+import numpy as np
+import pandas as pd
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
-import joblib
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from datetime import datetime
 
-MODELS_DIR = Path(__file__).parent.parent / "IS455" / "models"
-ENGAGEMENT_MODEL_PATH = MODELS_DIR / "social_post_performance_gb.pkl"
-CLICKS_MODEL_PATH = MODELS_DIR / "social_click_throughs_gb.pkl"
 
-app = FastAPI(title="Social Post Performance ML Service")
+def resolve_model_path(filename: str) -> Path:
+    candidates = [
+        Path(__file__).parent / "models" / filename,
+        Path(__file__).parent.parent / "IS455" / "models" / filename,
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    return candidates[0]
+
+
+ENGAGEMENT_MODEL_PATH = resolve_model_path("social_post_performance_gb.pkl")
+CLICKS_MODEL_PATH = resolve_model_path("social_click_throughs_gb.pkl")
+REACH_MODEL_PATH = resolve_model_path("social_reach_gb.pkl")
+IMPRESSIONS_MODEL_PATH = resolve_model_path("social_impressions_gb.pkl")
+PREDICT_API_KEY = os.getenv("PREDICT_API_KEY", "").strip()
+
+app = FastAPI(title="North Star Social Predict Service")
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,10 +38,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-model = None
+engagement_model = None
 clicks_model = None
-model_r2 = 0.7521
-clicks_r2 = 0.4684
+reach_model = None
+impressions_model = None
 
 PLATFORM_AVERAGES = {
     "Facebook": 0.098,
@@ -34,40 +50,6 @@ PLATFORM_AVERAGES = {
     "YouTube": 0.074,
     "TikTok": 0.135,
 }
-
-
-@app.on_event("startup")
-def load_model():
-    global model, clicks_model
-    if not ENGAGEMENT_MODEL_PATH.exists():
-        raise RuntimeError(f"Engagement model not found at {ENGAGEMENT_MODEL_PATH}")
-    model = joblib.load(ENGAGEMENT_MODEL_PATH)
-    if not CLICKS_MODEL_PATH.exists():
-        raise RuntimeError(f"Click-through model not found at {CLICKS_MODEL_PATH}")
-    clicks_model = joblib.load(CLICKS_MODEL_PATH)
-
-
-class PredictRequest(BaseModel):
-    post_hour: int
-    num_hashtags: int
-    mentions_count: int
-    caption_length: int
-    has_call_to_action: bool
-    features_resident_story: bool
-    is_boosted: bool
-    boost_budget_php: float = 0.0
-    follower_count_at_post: int = 5000
-    month_num: int = datetime.now().month
-    is_weekend: bool
-    platform: str
-    day_of_week: str
-    post_type: str
-    media_type: str
-    call_to_action_type: Optional[str] = None
-    content_topic: str
-    sentiment_tone: str
-    campaign_name: Optional[str] = None
-
 
 FEATURE_COLUMNS = [
     "post_hour",
@@ -92,79 +74,55 @@ FEATURE_COLUMNS = [
 ]
 
 
-def get_engagement_tier(rate: float) -> tuple[str, str]:
-    if rate < 0.07:
-        return "Low", "This post is predicted to perform below average for your audience."
-    elif rate <= 0.15:
-        return "Medium", "This post is predicted to perform around average for your audience."
-    else:
-        return "High", "This post is predicted to perform above average for your audience."
+class PredictRequest(BaseModel):
+    post_hour: int
+    num_hashtags: int
+    mentions_count: int
+    caption_length: int
+    has_call_to_action: bool
+    features_resident_story: bool
+    is_boosted: bool
+    boost_budget_php: float = 0.0
+    follower_count_at_post: int = 5000
+    month_num: int = datetime.now().month
+    is_weekend: bool
+    platform: str
+    day_of_week: str
+    post_type: str
+    media_type: str
+    call_to_action_type: Optional[str] = None
+    content_topic: str
+    sentiment_tone: str
+    campaign_name: Optional[str] = None
 
 
-def get_clicks_tier(clicks: int) -> tuple[str, str]:
-    if clicks < 50:
-        return "Low", "Below average click-through for your post history."
-    elif clicks <= 150:
-        return "Medium", "About average click-through performance."
-    else:
-        return "High", "Strong click-through — above average for your audience."
+@app.on_event("startup")
+def load_models() -> None:
+    global engagement_model, clicks_model, reach_model, impressions_model
+
+    for path in [
+        ENGAGEMENT_MODEL_PATH,
+        CLICKS_MODEL_PATH,
+        REACH_MODEL_PATH,
+        IMPRESSIONS_MODEL_PATH,
+    ]:
+        if not path.exists():
+            raise RuntimeError(f"Model not found at {path}")
+
+    engagement_model = joblib.load(ENGAGEMENT_MODEL_PATH)
+    clicks_model = joblib.load(CLICKS_MODEL_PATH)
+    reach_model = joblib.load(REACH_MODEL_PATH)
+    impressions_model = joblib.load(IMPRESSIONS_MODEL_PATH)
 
 
-def build_tips(req: PredictRequest, predicted_engagement: float, predicted_clicks: int) -> list[str]:
-    tips = []
-
-    if req.post_hour >= 22 or req.post_hour <= 6:
-        tips.append(
-            "Consider posting during peak hours (9am or 3pm) to maximize reach, engagement, and click-throughs."
-        )
-
-    if not req.has_call_to_action:
-        tips.append(
-            "Adding a clear call-to-action (e.g., 'Share your story', 'Donate now') typically boosts both engagement and clicks."
-        )
-
-    if not req.features_resident_story:
-        tips.append(
-            "Posts featuring resident stories tend to average higher engagement — consider incorporating a personal narrative."
-        )
-
-    if not req.is_boosted and predicted_engagement < 0.07:
-        tips.append(
-            "This post is predicted to have low organic reach. Boosting it with even a small budget could significantly increase visibility and clicks."
-        )
-
-    if req.platform == "LinkedIn" and req.media_type == "text":
-        tips.append(
-            "LinkedIn posts with an image or graphic typically outperform text-only posts — try adding a visual."
-        )
-
-    if predicted_clicks < 10 and req.has_call_to_action:
-        tips.append(
-            "Click-throughs look low — try linking directly to a landing page or campaign URL in your post."
-        )
-
-    if len(tips) == 0:
-        tips.append(
-            f"Great setup! Your combination of {req.platform} + {req.post_type} looks strong. Keep engaging with your audience consistently."
-        )
-
-    return tips[:3]
+def require_api_key(x_predict_api_key: Optional[str]) -> None:
+    if not PREDICT_API_KEY:
+        return
+    if x_predict_api_key != PREDICT_API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid prediction service key")
 
 
-@app.get("/health")
-def health():
-    return {
-        "status": "ok",
-        "engagement_model_loaded": model is not None,
-        "clicks_model_loaded": clicks_model is not None,
-    }
-
-
-@app.post("/predict")
-def predict(req: PredictRequest):
-    if model is None or clicks_model is None:
-        raise HTTPException(status_code=503, detail="Models not loaded")
-
+def build_frame(req: PredictRequest) -> pd.DataFrame:
     row = {
         "post_hour": req.post_hour,
         "num_hashtags": req.num_hashtags,
@@ -186,48 +144,112 @@ def predict(req: PredictRequest):
         "sentiment_tone": req.sentiment_tone,
         "campaign_name": req.campaign_name if req.campaign_name is not None else np.nan,
     }
+    return pd.DataFrame([row], columns=FEATURE_COLUMNS)
 
-    df = pd.DataFrame([row], columns=FEATURE_COLUMNS)
 
-    # Engagement prediction
-    predicted_rate = float(model.predict(df)[0])
-    predicted_rate = max(0.0, predicted_rate)
-    engagement_tier, engagement_tier_description = get_engagement_tier(predicted_rate)
-    pct_str = f"{predicted_rate * 100:.1f}%"
+def get_engagement_tier(rate: float) -> tuple[str, str]:
+    if rate < 0.07:
+        return "Low", "Below average engagement. Try posting at peak hours or adding a call-to-action."
+    if rate < 0.15:
+        return "Medium", "Decent engagement. Consider featuring a resident story to boost further."
+    return "High", "Excellent engagement! This post is performing well above average."
 
-    # Click-through prediction
-    raw_clicks = float(clicks_model.predict(df)[0])
-    predicted_clicks = max(0, round(raw_clicks))
-    clicks_tier, clicks_tier_description = get_clicks_tier(predicted_clicks)
-    clicks_str = f"{predicted_clicks} click{'s' if predicted_clicks != 1 else ''}"
 
-    platform_avg = PLATFORM_AVERAGES.get(req.platform, 0.095)
-    platform_context = (
-        f"{req.platform} posts in your history average ~{platform_avg * 100:.1f}% engagement. "
+def get_clicks_tier(clicks: int) -> tuple[str, str]:
+    if clicks < 50:
+        return "Low", "Low click-throughs. Boosting or a stronger CTA may help."
+    if clicks < 150:
+        return "Medium", "Moderate click-throughs. Good baseline performance."
+    return "High", "High click-throughs! This post is driving strong traffic."
+
+
+def get_reach_tier(reach: int) -> tuple[str, str]:
+    if reach < 500:
+        return "Low", "Low reach. Try boosting or posting during peak hours."
+    if reach < 2000:
+        return "Medium", "Moderate reach. Adding hashtags or a resident story may extend it."
+    return "High", "Excellent reach! This post is connecting with a wide audience."
+
+
+def get_impressions_tier(impressions: int) -> tuple[str, str]:
+    if impressions < 1000:
+        return "Low", "Low impressions. Consider boosting to increase visibility."
+    if impressions < 5000:
+        return "Medium", "Moderate impressions. Good exposure for an organic post."
+    return "High", "High impressions! This post is getting strong visibility."
+
+
+def build_platform_context(platform: str, predicted_rate: float) -> str:
+    platform_avg = PLATFORM_AVERAGES.get(platform, 0.095)
+    return (
+        f"{platform} posts in your history average ~{platform_avg * 100:.1f}% engagement. "
         f"This post is predicted at {predicted_rate * 100:.1f}%."
     )
 
-    tips = build_tips(req, predicted_rate, predicted_clicks)
+
+def build_tips(req: PredictRequest, predicted_clicks: int) -> list[str]:
+    tips: list[str] = []
+    if not req.has_call_to_action:
+        tips.append("Add a call-to-action to increase clicks.")
+    if not req.features_resident_story:
+        tips.append("Feature a resident story to humanise your post.")
+    if not req.is_boosted and predicted_clicks < 50:
+        tips.append("Consider boosting this post to expand reach.")
+    if req.num_hashtags < 5 or req.num_hashtags > 15:
+        tips.append("Aim for 5–15 hashtags for optimal discoverability.")
+    if req.post_hour < 8 or req.post_hour > 21:
+        tips.append("Post between 8 AM–9 PM for peak audience activity.")
+    if not tips:
+        tips.append("Great post setup! Monitor performance after publishing.")
+    return tips
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "engagementModelLoaded": engagement_model is not None,
+        "clicksModelLoaded": clicks_model is not None,
+        "reachModelLoaded": reach_model is not None,
+        "impressionsModelLoaded": impressions_model is not None,
+    }
+
+
+@app.post("/predict")
+def predict(req: PredictRequest, x_predict_api_key: Optional[str] = Header(default=None)):
+    require_api_key(x_predict_api_key)
+
+    if any(model is None for model in [engagement_model, clicks_model, reach_model, impressions_model]):
+        raise HTTPException(status_code=503, detail="Models not loaded")
+
+    df = build_frame(req)
+
+    predicted_rate = max(0.0, float(engagement_model.predict(df)[0]))
+    predicted_clicks = max(0, round(float(clicks_model.predict(df)[0])))
+    predicted_reach = max(0, round(float(reach_model.predict(df)[0])))
+    predicted_impressions = max(0, round(float(impressions_model.predict(df)[0])))
+
+    engagement_tier, engagement_desc = get_engagement_tier(predicted_rate)
+    clicks_tier, clicks_desc = get_clicks_tier(predicted_clicks)
+    reach_tier, reach_desc = get_reach_tier(predicted_reach)
+    impressions_tier, impressions_desc = get_impressions_tier(predicted_impressions)
 
     return {
-        # Engagement
-        "engagement_predicted_rate": round(predicted_rate, 4),
-        "engagement_predicted_pct": pct_str,
-        "engagement_tier": engagement_tier,
-        "engagement_tier_description": engagement_tier_description,
-        # Click-throughs
-        "clicks_predicted": predicted_clicks,
-        "clicks_predicted_str": clicks_str,
-        "clicks_tier": clicks_tier,
-        "clicks_tier_description": clicks_tier_description,
-        # Context
-        "platform_context": platform_context,
-        "model_note": f"Based on models with R\u00b2={model_r2} (engagement) and R\u00b2={clicks_r2} (clicks) trained on 812 posts",
-        "tips": tips,
-        # Backward-compatible fields
-        "predicted_engagement_rate": round(predicted_rate, 4),
-        "predicted_pct": pct_str,
-        "tier": engagement_tier,
-        "tier_description": engagement_tier_description,
-        "model_r2": model_r2,
+        "engagementPredictedRate": round(predicted_rate, 4),
+        "engagementPredictedPct": f"{predicted_rate * 100:.1f}%",
+        "engagementTier": engagement_tier,
+        "engagementTierDescription": engagement_desc,
+        "clicksPredicted": predicted_clicks,
+        "clicksPredictedStr": f"{predicted_clicks:,}",
+        "clicksTier": clicks_tier,
+        "clicksTierDescription": clicks_desc,
+        "reachPredicted": predicted_reach,
+        "reachTier": reach_tier,
+        "reachTierDescription": reach_desc,
+        "impressionsPredicted": predicted_impressions,
+        "impressionsTier": impressions_tier,
+        "impressionsTierDescription": impressions_desc,
+        "platformContext": build_platform_context(req.platform, predicted_rate),
+        "modelNote": "Predictions served by the homelab prediction service using gradient boosting models.",
+        "tips": build_tips(req, predicted_clicks),
     }
