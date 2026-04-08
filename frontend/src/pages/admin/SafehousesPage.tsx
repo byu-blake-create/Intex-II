@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
 import { fetchSafehouses } from '../../lib/safehousesApi'
 import { fetchResidents } from '../../lib/residentsApi'
+import { apiPut } from '../../lib/api'
 import type { Safehouse, Resident } from '../../types/domain'
 import './SafehousesPage.css'
 
@@ -29,12 +30,19 @@ export default function SafehousesPage() {
   const [pageNum, setPageNum] = useState(1)
   const [detailLoading, setDetailLoading] = useState(false)
   const [allCountLoading, setAllCountLoading] = useState(false)
+  const [reloadToken, setReloadToken] = useState(0)
+  const [reassignResident, setReassignResident] = useState<Resident | null>(null)
+  const [reassignSafehouseId, setReassignSafehouseId] = useState('')
+  const [reassignSaving, setReassignSaving] = useState(false)
+  const [reassignError, setReassignError] = useState<string | null>(null)
 
   // Load all safehouses on mount
   useEffect(() => {
+    setListLoading(true)
     fetchSafehouses(1, 100)
       .then(r => {
         setSafehouses(r.items)
+        setSelected(current => current ? r.items.find(item => item.safehouseId === current.safehouseId) ?? current : current)
         setListLoading(false)
         // Load active resident counts for all safehouses
         if (r.items.length > 0) {
@@ -51,10 +59,16 @@ export default function SafehousesPage() {
             setActiveCounts(m)
             setCountsLoading(false)
           })
+        } else {
+          setActiveCounts(new Map())
+          setCountsLoading(false)
         }
       })
-      .catch(() => setListLoading(false))
-  }, [])
+      .catch(() => {
+        setListLoading(false)
+        setCountsLoading(false)
+      })
+  }, [reloadToken])
 
   // Load active residents for selected safehouse (paginated)
   useEffect(() => {
@@ -64,7 +78,7 @@ export default function SafehousesPage() {
       .then(r => { setResidents(r.items); setTotalCount(r.totalCount) })
       .catch(() => { setResidents([]); setTotalCount(0) })
       .finally(() => setDetailLoading(false))
-  }, [selected, pageNum])
+  }, [selected, pageNum, reloadToken])
 
   // Load all-residents count for selected safehouse
   useEffect(() => {
@@ -74,9 +88,56 @@ export default function SafehousesPage() {
       .then(r => setAllCount(r.totalCount))
       .catch(() => setAllCount(0))
       .finally(() => setAllCountLoading(false))
-  }, [selected])
+  }, [selected, reloadToken])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / RESIDENT_PAGE_SIZE))
+
+  function openReassignModal(resident: Resident) {
+    const fallbackSafehouse = safehouses.find(safehouse => safehouse.safehouseId !== resident.safehouseId)
+    setReassignResident(resident)
+    setReassignSafehouseId(fallbackSafehouse ? String(fallbackSafehouse.safehouseId) : '')
+    setReassignError(null)
+    setReassignSaving(false)
+  }
+
+  function closeReassignModal() {
+    if (reassignSaving) return
+    setReassignResident(null)
+    setReassignSafehouseId('')
+    setReassignError(null)
+  }
+
+  async function handleReassignResident(e: React.FormEvent) {
+    e.preventDefault()
+    if (!reassignResident || !reassignSafehouseId) {
+      setReassignError('Choose a destination safehouse.')
+      return
+    }
+
+    setReassignSaving(true)
+    setReassignError(null)
+
+    try {
+      const updatedResident: Resident = {
+        ...reassignResident,
+        safehouseId: Number(reassignSafehouseId),
+      }
+
+      await apiPut(`/api/residents/${reassignResident.residentId}`, updatedResident)
+      setPageNum(1)
+      setDetailLoading(true)
+      setAllCountLoading(true)
+      setCountsLoading(true)
+      setReassignSaving(false)
+      setReassignResident(null)
+      setReassignSafehouseId('')
+      setReassignError(null)
+      setReloadToken(token => token + 1)
+    } catch (err) {
+      setReassignError(err instanceof Error ? err.message : 'Failed to reassign resident.')
+      setReassignSaving(false)
+    }
+  }
 
   return (
     <AdminLayout>
@@ -149,7 +210,16 @@ export default function SafehousesPage() {
                     <div className="sh-resident-list">
                       {residents.map(r => (
                         <div key={r.residentId} className="sh-resident-row">
-                          <span className="sh-resident-row__id">{r.caseControlNo}</span>
+                          <div className="sh-resident-row__top">
+                            <span className="sh-resident-row__id">{r.caseControlNo}</span>
+                            <button
+                              className="sh-reassign-btn"
+                              onClick={() => openReassignModal(r)}
+                              disabled={safehouses.length < 2}
+                            >
+                              Reassign
+                            </button>
+                          </div>
                           <span className="sh-resident-row__meta">
                             {statusBadge(r.caseStatus)}
                             {r.caseCategory && <span className="sh-resident-row__cat">{r.caseCategory}</span>}
@@ -195,6 +265,43 @@ export default function SafehousesPage() {
           )}
         </div>
       </div>
+
+      {reassignResident && (
+        <div className="sh-modal-overlay" onClick={closeReassignModal}>
+          <div className="sh-modal" onClick={e => e.stopPropagation()}>
+            <p className="sh-modal__title">Reassign Resident</p>
+            <p className="sh-modal__sub">{reassignResident.caseControlNo}</p>
+            <form onSubmit={handleReassignResident} className="sh-modal__form">
+              <label className="sh-modal__label">
+                Destination Safehouse
+                <select
+                  value={reassignSafehouseId}
+                  onChange={e => setReassignSafehouseId(e.target.value)}
+                  className="sh-modal__input"
+                  required
+                >
+                  {safehouses
+                    .filter(safehouse => safehouse.safehouseId !== reassignResident.safehouseId)
+                    .map(safehouse => (
+                      <option key={safehouse.safehouseId} value={safehouse.safehouseId}>
+                        {safehouse.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              {reassignError && <p className="sh-modal__error">{reassignError}</p>}
+              <div className="sh-modal__actions">
+                <button type="submit" className="sh-modal__save" disabled={reassignSaving}>
+                  {reassignSaving ? 'Saving…' : 'Move Resident'}
+                </button>
+                <button type="button" className="sh-modal__cancel" onClick={closeReassignModal} disabled={reassignSaving}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   )
 }

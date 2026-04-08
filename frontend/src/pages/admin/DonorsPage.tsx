@@ -49,6 +49,7 @@ export default function DonorsPage() {
   const [showContactModal, setShowContactModal] = useState(false)
   const [contactDate, setContactDate] = useState('')
   const [contactType, setContactType] = useState('Phone call')
+  const [contactOutcome, setContactOutcome] = useState('Follow up needed')
   const [contactNotes, setContactNotes] = useState('')
   const [contactSaving, setContactSaving] = useState(false)
   const [contactSuccess, setContactSuccess] = useState(false)
@@ -124,6 +125,7 @@ export default function DonorsPage() {
     const today = new Date().toISOString().slice(0, 10)
     setContactDate(today)
     setContactType('Phone call')
+    setContactOutcome('Follow up needed')
     setContactNotes('')
     setContactSaving(false)
     setContactSuccess(false)
@@ -144,6 +146,7 @@ export default function DonorsPage() {
       await apiPost(`/api/supporters/${selected.supporterId}/contacts`, {
         contactDate,
         contactType,
+        outcome: contactOutcome.trim() || null,
         notes: contactNotes,
       })
       setContactSuccess(true)
@@ -347,6 +350,7 @@ export default function DonorsPage() {
                           <tr>
                             <th>Date</th>
                             <th>Type</th>
+                            <th>Outcome</th>
                             <th>Notes</th>
                           </tr>
                         </thead>
@@ -355,6 +359,7 @@ export default function DonorsPage() {
                             <tr key={c.supporterContactId}>
                               <td>{c.contactDate}</td>
                               <td>{c.contactType}</td>
+                              <td>{c.outcome ?? '\u2014'}</td>
                               <td>{c.notes ?? '\u2014'}</td>
                             </tr>
                           ))}
@@ -401,6 +406,16 @@ export default function DonorsPage() {
                     <option>Letter</option>
                     <option>Other</option>
                   </select>
+                </label>
+                <label className="dn-modal__label">
+                  Outcome / Result
+                  <input
+                    type="text"
+                    className="dn-modal__input"
+                    placeholder="Pledged, follow up, not interested..."
+                    value={contactOutcome}
+                    onChange={e => setContactOutcome(e.target.value)}
+                  />
                 </label>
                 <label className="dn-modal__label">
                   Notes

@@ -6,6 +6,7 @@ public class SupporterContact
     public int SupporterId { get; set; }
     public DateOnly ContactDate { get; set; }
     public string ContactType { get; set; } = string.Empty;
+    public string? Outcome { get; set; }
     public string? Notes { get; set; }
     public DateTime? CreatedAt { get; set; }
 

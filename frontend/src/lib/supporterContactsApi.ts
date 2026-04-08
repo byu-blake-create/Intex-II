@@ -5,6 +5,7 @@ export interface SupporterContact {
   supporterId: number
   contactDate: string
   contactType: string
+  outcome?: string | null
   notes?: string | null
   createdAt?: string | null
 }

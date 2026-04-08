@@ -62,6 +62,7 @@ export default function CaseloadPage() {
   const [listError, setListError] = useState<string | null>(null)
   const [triageCard, setTriageCard] = useState<AdminDashboardCard | null>(null)
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
+  const [residentReloadToken, setResidentReloadToken] = useState(0)
 
   // Detail tab state
   const [detailTab, setDetailTab] = useState<'visits' | 'notes'>('visits')
@@ -99,6 +100,20 @@ export default function CaseloadPage() {
   const [visitSaving, setVisitSaving] = useState(false)
   const [visitError, setVisitError] = useState<string | null>(null)
 
+  // New resident modal state
+  const [showNewResidentModal, setShowNewResidentModal] = useState(false)
+  const [newResidentCaseControlNo, setNewResidentCaseControlNo] = useState('')
+  const [newResidentInternalCode, setNewResidentInternalCode] = useState('')
+  const [newResidentSafehouseId, setNewResidentSafehouseId] = useState('')
+  const [newResidentStatus, setNewResidentStatus] = useState('Active')
+  const [newResidentCategory, setNewResidentCategory] = useState('')
+  const [newResidentSocialWorker, setNewResidentSocialWorker] = useState('')
+  const [newResidentDob, setNewResidentDob] = useState('')
+  const [newResidentSex, setNewResidentSex] = useState('')
+  const [newResidentConferenceDate, setNewResidentConferenceDate] = useState('')
+  const [newResidentSaving, setNewResidentSaving] = useState(false)
+  const [newResidentError, setNewResidentError] = useState<string | null>(null)
+
   // Debounce text input to avoid an API call per keystroke
   const debouncedSearch = useDebounce(search, 350)
 
@@ -124,7 +139,7 @@ export default function CaseloadPage() {
       .catch(() => { if (mounted) setListError('Failed to load residents.') })
       .finally(() => { if (mounted) setListLoading(false) })
     return () => { mounted = false }
-  }, [pageNum, debouncedSearch, safehouseFilter, statusFilter])
+  }, [pageNum, debouncedSearch, safehouseFilter, statusFilter, residentReloadToken])
 
   useEffect(() => {
     if (!selected) return
@@ -291,11 +306,80 @@ export default function CaseloadPage() {
     }
   }
 
+  function openNewResidentModal() {
+    setNewResidentCaseControlNo('')
+    setNewResidentInternalCode('')
+    setNewResidentSafehouseId(safehouses[0] ? String(safehouses[0].safehouseId) : '')
+    setNewResidentStatus('Active')
+    setNewResidentCategory('')
+    setNewResidentSocialWorker('')
+    setNewResidentDob('')
+    setNewResidentSex('')
+    setNewResidentConferenceDate('')
+    setNewResidentError(null)
+    setNewResidentSaving(false)
+    setShowNewResidentModal(true)
+  }
+
+  function closeNewResidentModal() {
+    if (newResidentSaving) return
+    setShowNewResidentModal(false)
+  }
+
+  async function handleCreateResident(e: React.FormEvent) {
+    e.preventDefault()
+    if (!newResidentSafehouseId) {
+      setNewResidentError('Select a safehouse before creating a resident.')
+      return
+    }
+
+    setNewResidentSaving(true)
+    setNewResidentError(null)
+
+    try {
+      const created = await apiPost<Resident>('/api/residents', {
+        caseControlNo: newResidentCaseControlNo.trim(),
+        internalCode: newResidentInternalCode.trim() || null,
+        safehouseId: Number(newResidentSafehouseId),
+        caseStatus: newResidentStatus,
+        sex: newResidentSex || null,
+        dateOfBirth: newResidentDob || null,
+        caseCategory: newResidentCategory.trim() || null,
+        assignedSocialWorker: newResidentSocialWorker.trim() || null,
+        caseConferenceDate: newResidentConferenceDate || null,
+      })
+
+      setSelected(created)
+      setVisits([])
+      setSessions([])
+      setVisitsLoading(true)
+      setSessionsLoading(true)
+      setDetailTab('visits')
+      setVisitsShowAll(false)
+      setSessionsShowAll(false)
+      setEditField(null)
+      setShowNewResidentModal(false)
+      setListLoading(true)
+      setListError(null)
+      setResidentReloadToken(token => token + 1)
+    } catch (err) {
+      setNewResidentError(err instanceof Error ? err.message : 'Failed to create resident.')
+    } finally {
+      setNewResidentSaving(false)
+    }
+  }
+
   return (
     <AdminLayout>
       <div className="cl-layout">
         <div className="cl-sidebar">
           <div className="cl-sidebar__header">
+            <div className="cl-sidebar__actions">
+              <p className="cl-sidebar__title">Residents</p>
+              <button className="cl-new-resident-btn" onClick={openNewResidentModal} disabled={safehouses.length === 0}>
+                + New Resident
+              </button>
+            </div>
             <input
               className="cl-search"
               placeholder="Search residents..."
@@ -658,6 +742,109 @@ export default function CaseloadPage() {
               <div className="cl-modal__actions">
                 <button type="submit" className="cl-modal__save" disabled={visitSaving}>{visitSaving ? 'Saving\u2026' : 'Save Visit'}</button>
                 <button type="button" className="cl-modal__cancel" onClick={() => setShowVisitModal(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showNewResidentModal && (
+        <div className="cl-modal-overlay" onClick={closeNewResidentModal}>
+          <div className="cl-modal" onClick={e => e.stopPropagation()}>
+            <p className="cl-modal__title">Add New Resident</p>
+            <form onSubmit={handleCreateResident} className="cl-modal__form">
+              <label className="cl-modal__label">
+                Case Control Number
+                <input
+                  type="text"
+                  value={newResidentCaseControlNo}
+                  onChange={e => setNewResidentCaseControlNo(e.target.value)}
+                  required
+                  className="cl-modal__input"
+                  placeholder="Case control number"
+                />
+              </label>
+              <label className="cl-modal__label">
+                Safehouse
+                <select
+                  value={newResidentSafehouseId}
+                  onChange={e => setNewResidentSafehouseId(e.target.value)}
+                  required
+                  className="cl-modal__input"
+                >
+                  {safehouses.map(safehouse => (
+                    <option key={safehouse.safehouseId} value={safehouse.safehouseId}>
+                      {safehouse.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="cl-modal__label">
+                Internal Code
+                <input
+                  type="text"
+                  value={newResidentInternalCode}
+                  onChange={e => setNewResidentInternalCode(e.target.value)}
+                  className="cl-modal__input"
+                  placeholder="Optional internal code"
+                />
+              </label>
+              <label className="cl-modal__label">
+                Status
+                <select value={newResidentStatus} onChange={e => setNewResidentStatus(e.target.value)} className="cl-modal__input">
+                  <option>Active</option>
+                  <option>Closed</option>
+                </select>
+              </label>
+              <label className="cl-modal__label">
+                Case Category
+                <input
+                  type="text"
+                  value={newResidentCategory}
+                  onChange={e => setNewResidentCategory(e.target.value)}
+                  className="cl-modal__input"
+                  placeholder="Case category"
+                />
+              </label>
+              <label className="cl-modal__label">
+                Social Worker
+                <input
+                  type="text"
+                  value={newResidentSocialWorker}
+                  onChange={e => setNewResidentSocialWorker(e.target.value)}
+                  className="cl-modal__input"
+                  placeholder="Assigned social worker"
+                />
+              </label>
+              <label className="cl-modal__label">
+                Date of Birth
+                <input type="date" value={newResidentDob} onChange={e => setNewResidentDob(e.target.value)} className="cl-modal__input" />
+              </label>
+              <label className="cl-modal__label">
+                Sex
+                <select value={newResidentSex} onChange={e => setNewResidentSex(e.target.value)} className="cl-modal__input">
+                  <option value="">Not set</option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                </select>
+              </label>
+              <label className="cl-modal__label">
+                Case Conference Date
+                <input
+                  type="date"
+                  value={newResidentConferenceDate}
+                  onChange={e => setNewResidentConferenceDate(e.target.value)}
+                  className="cl-modal__input"
+                />
+              </label>
+              {newResidentError && <p className="cl-modal__error">{newResidentError}</p>}
+              <div className="cl-modal__actions">
+                <button type="submit" className="cl-modal__save" disabled={newResidentSaving}>
+                  {newResidentSaving ? 'Saving\u2026' : 'Create Resident'}
+                </button>
+                <button type="button" className="cl-modal__cancel" onClick={closeNewResidentModal} disabled={newResidentSaving}>
+                  Cancel
+                </button>
               </div>
             </form>
           </div>

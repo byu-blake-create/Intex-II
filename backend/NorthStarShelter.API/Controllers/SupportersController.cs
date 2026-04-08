@@ -93,6 +93,7 @@ public class SupportersController : ControllerBase
             SupporterId = id,
             ContactDate = request.ContactDate,
             ContactType = request.ContactType.Trim(),
+            Outcome = string.IsNullOrWhiteSpace(request.Outcome) ? null : request.Outcome.Trim(),
             Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
             CreatedAt = DateTime.UtcNow,
         };
@@ -129,5 +130,6 @@ public class SupportersController : ControllerBase
     public sealed record CreateSupporterContactRequest(
         DateOnly ContactDate,
         string ContactType,
+        string? Outcome,
         string? Notes);
 }
