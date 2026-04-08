@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace NorthStarShelter.API.Controllers;
 
@@ -56,13 +59,20 @@ public record SocialPredictResponse(
 [Authorize]
 public class SocialPredictController : ControllerBase
 {
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly string? _predictServiceBaseUrl;
+    private readonly string? _predictServiceApiKey;
     private readonly string _engagementModelPath;
     private readonly string _clicksModelPath;
     private readonly string _reachModelPath;
     private readonly string _impressionsModelPath;
 
-    public SocialPredictController(IConfiguration config, IWebHostEnvironment env)
+    public SocialPredictController(IConfiguration config, IWebHostEnvironment env, IHttpClientFactory httpClientFactory)
     {
+        _httpClientFactory = httpClientFactory;
+        _predictServiceBaseUrl = config["PredictService:BaseUrl"]?.Trim().TrimEnd('/');
+        _predictServiceApiKey = config["PredictService:ApiKey"]?.Trim();
+
         string contentRoot = env.ContentRootPath;
         string engRel = config["MlModels:EngagementModelPath"] ?? "models/social_post_performance_gb.onnx";
         string clkRel = config["MlModels:ClicksModelPath"] ?? "models/social_click_throughs_gb.onnx";
@@ -76,8 +86,13 @@ public class SocialPredictController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<SocialPredictResponse> Predict([FromBody] SocialPredictRequest req)
+    public async Task<ActionResult> Predict([FromBody] SocialPredictRequest req, CancellationToken cancellationToken)
     {
+        if (!string.IsNullOrWhiteSpace(_predictServiceBaseUrl))
+        {
+            return await ProxyPredictAsync(req, cancellationToken);
+        }
+
         if (!System.IO.File.Exists(_engagementModelPath))
             return StatusCode(503, $"Engagement model not found at: {_engagementModelPath}");
         if (!System.IO.File.Exists(_clicksModelPath))
@@ -161,6 +176,50 @@ public class SocialPredictController : ControllerBase
         );
 
         return Ok(response);
+    }
+
+    private async Task<ActionResult> ProxyPredictAsync(SocialPredictRequest req, CancellationToken cancellationToken)
+    {
+        var client = _httpClientFactory.CreateClient();
+        var payload = JsonSerializer.Serialize(new
+        {
+            post_hour = req.PostHour,
+            num_hashtags = req.NumHashtags,
+            mentions_count = req.MentionsCount,
+            caption_length = req.CaptionLength,
+            has_call_to_action = req.HasCallToAction,
+            features_resident_story = req.FeaturesResidentStory,
+            is_boosted = req.IsBoosted,
+            boost_budget_php = req.BoostBudgetPhp,
+            follower_count_at_post = req.FollowerCountAtPost,
+            month_num = req.MonthNum,
+            is_weekend = req.IsWeekend,
+            platform = req.Platform,
+            day_of_week = req.DayOfWeek,
+            post_type = req.PostType,
+            media_type = req.MediaType,
+            call_to_action_type = req.CallToActionType,
+            content_topic = req.ContentTopic,
+            sentiment_tone = req.SentimentTone,
+            campaign_name = req.CampaignName,
+        });
+
+        using var message = new HttpRequestMessage(HttpMethod.Post, $"{_predictServiceBaseUrl}/predict");
+        message.Content = new StringContent(payload, Encoding.UTF8, "application/json");
+        message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        if (!string.IsNullOrWhiteSpace(_predictServiceApiKey))
+        {
+            message.Headers.Add("X-Predict-Api-Key", _predictServiceApiKey);
+        }
+
+        var response = await client.SendAsync(message, cancellationToken);
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            return StatusCode(502, $"Prediction service error: {responseBody}");
+        }
+
+        return Content(responseBody, "application/json");
     }
 
     // ── ONNX inference helper ─────────────────────────────────────────────────
