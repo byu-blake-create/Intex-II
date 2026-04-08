@@ -61,6 +61,23 @@ export interface ProcessRecording {
   notesRestricted?: string | null
 }
 
+export interface ProcessRecordingUpsertInput {
+  residentId: number
+  sessionDate?: string | null
+  socialWorker?: string | null
+  sessionType?: string | null
+  sessionDurationMinutes?: number | null
+  emotionalStateObserved?: string | null
+  emotionalStateEnd?: string | null
+  sessionNarrative?: string | null
+  interventionsApplied?: string | null
+  followUpActions?: string | null
+  progressNoted?: string | null
+  concernsFlagged?: string | null
+  referralMade?: string | null
+  notesRestricted?: string | null
+}
+
 export interface HomeVisitation {
   visitationId: number
   residentId: number
@@ -68,6 +85,22 @@ export interface HomeVisitation {
   socialWorker?: string | null
   visitType?: string | null
   observations?: string | null
+  visitOutcome?: string | null
+}
+
+export interface HomeVisitationUpsertInput {
+  residentId: number
+  visitDate?: string | null
+  socialWorker?: string | null
+  visitType?: string | null
+  locationVisited?: string | null
+  familyMembersPresent?: string | null
+  purpose?: string | null
+  observations?: string | null
+  familyCooperationLevel?: string | null
+  safetyConcernsNoted?: string | null
+  followUpNeeded?: boolean | null
+  followUpNotes?: string | null
   visitOutcome?: string | null
 }
 
