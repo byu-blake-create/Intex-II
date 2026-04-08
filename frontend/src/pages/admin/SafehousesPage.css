@@ -1,4 +1,4 @@
-.sh-layout { display:grid; grid-template-columns:320px 1fr; gap:0; min-height:calc(100svh - 60px); background:var(--adm-card); }
+.sh-layout { display:grid; grid-template-columns:320px 1fr; gap:0; min-height:calc(100svh - 60px); }
 .sh-sidebar { border-right:1px solid var(--adm-border); display:flex; flex-direction:column; overflow:hidden; }
 .sh-sidebar__header { padding:1.25rem; border-bottom:1px solid var(--adm-border); flex-shrink:0; }
 .sh-sidebar__title { font-size:1rem; font-weight:800; color:var(--adm-ink); }
