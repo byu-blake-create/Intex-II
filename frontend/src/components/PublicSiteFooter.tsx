@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../contexts/auth'
 import { openConsentPreferences } from '../lib/cookieConsent'
 import './PublicSiteFooter.css'
 
@@ -10,6 +11,8 @@ const socials = [
 ]
 
 export default function PublicSiteFooter() {
+  const { user } = useAuth()
+
   return (
     <footer className="public-footer">
       <div className="public-footer__inner">
@@ -66,6 +69,11 @@ export default function PublicSiteFooter() {
             <Link className="public-footer__text-link" to="/privacy">
               Privacy statement
             </Link>
+            {user && (
+              <Link className="public-footer__text-link" to="/account/security">
+                Account security
+              </Link>
+            )}
             <button type="button" className="public-footer__text-button" onClick={handleManageCookies}>
               Cookie preferences
             </button>

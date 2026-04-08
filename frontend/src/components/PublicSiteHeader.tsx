@@ -68,12 +68,6 @@ export default function PublicSiteHeader({
           </Link>
         )}
 
-        {user && (
-          <Link className="home-nav__donate" to="/account/security">
-            Security
-          </Link>
-        )}
-
         {user ? (
           <div className="home-nav__account">
             <span className="home-nav__account-email">{accountLabel}</span>
