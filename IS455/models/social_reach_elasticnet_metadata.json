@@ -1,7 +1,7 @@
 {
-  "name": "social_impressions_gb",
-  "trained_at": "2026-04-08T19:12:17+00:00",
-  "label_definition": "impressions for a social media post",
+  "name": "social_reach_elasticnet",
+  "trained_at": "2026-04-08T19:12:04+00:00",
+  "label_definition": "reach for a social media post",
   "feature_names": [
     "post_hour",
     "num_hashtags",
@@ -24,12 +24,12 @@
     "campaign_name"
   ],
   "metrics": {
-    "rmse": 4643.0,
-    "mae": 3013.0,
-    "r2": 0.442
+    "rmse": 2832.5,
+    "mae": 1935.9,
+    "r2": 0.4738
   },
   "random_seed": 42,
-  "model_path": "C:\\Users\\johne\\Documents\\Coding\\BYU\\Intex-II\\IS455\\models\\social_impressions_gb.pkl",
-  "model_type": "GradientBoostingRegressor",
+  "model_path": "C:\\Users\\johne\\Documents\\Coding\\BYU\\Intex-II\\IS455\\models\\social_reach_elasticnet.pkl",
+  "model_type": "ElasticNet",
   "split_date": "2025-07-18 17:56:00"
 }

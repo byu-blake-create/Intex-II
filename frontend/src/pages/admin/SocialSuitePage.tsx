@@ -145,7 +145,7 @@ function LearnTab({
           <div className="stat-card">
             <p className="stat-card__label">
               Avg Click-Throughs
-              <span className="ss-kpi-info" data-tip="Measures how many people clicked a link in your post — directly indicates donor and volunteer traffic driven to your site.">ⓘ</span>
+              <span className="ss-kpi-info" data-tip="Measures how many people clicked a link in your post — directly indicates donor and volunteer traffic driven to your site." aria-label="About average click-throughs" tabIndex={0}>ⓘ</span>
             </p>
             <p className="stat-card__value">{avgClicks == null ? '—' : avgClicks.toFixed(1)}</p>
             <p className="stat-card__sub">Per post average</p>
@@ -153,7 +153,7 @@ function LearnTab({
           <div className="stat-card">
             <p className="stat-card__label">
               Avg Reach
-              <span className="ss-kpi-info" data-tip="The number of unique accounts that saw your post — shows how far your content is spreading beyond your existing followers.">ⓘ</span>
+              <span className="ss-kpi-info" data-tip="The number of unique accounts that saw your post — shows how far your content is spreading beyond your existing followers." aria-label="About average reach" tabIndex={0}>ⓘ</span>
             </p>
             <p className="stat-card__value">{avgReach == null ? '—' : Math.round(avgReach).toLocaleString()}</p>
             <p className="stat-card__sub">Per post average</p>
@@ -161,7 +161,7 @@ function LearnTab({
           <div className="stat-card">
             <p className="stat-card__label">
               Avg Impressions
-              <span className="ss-kpi-info" data-tip="Total times your post was displayed, including repeat views — reflects overall visibility and how often your content resurfaces.">ⓘ</span>
+              <span className="ss-kpi-info" data-tip="Total times your post was displayed, including repeat views — reflects overall visibility and how often your content resurfaces." aria-label="About average impressions" tabIndex={0}>ⓘ</span>
             </p>
             <p className="stat-card__value">{avgImpressions == null ? '—' : Math.round(avgImpressions).toLocaleString()}</p>
             <p className="stat-card__sub">Per post average</p>
@@ -169,7 +169,7 @@ function LearnTab({
           <div className="stat-card">
             <p className="stat-card__label">
               Avg Engagement
-              <span className="ss-kpi-info" data-tip="Likes, comments, and shares as a percentage of reach — indicates how resonant and compelling your content is to those who see it.">ⓘ</span>
+              <span className="ss-kpi-info" data-tip="Likes, comments, and shares as a percentage of reach — indicates how resonant and compelling your content is to those who see it." aria-label="About average engagement" tabIndex={0}>ⓘ</span>
             </p>
             <p className="stat-card__value">{pct(avgEngagement)}</p>
             <p className="stat-card__sub">As a percentage</p>
@@ -177,7 +177,7 @@ function LearnTab({
           <div className="stat-card">
             <p className="stat-card__label">
               Best Post Type
-              <span className="ss-kpi-info" data-tip="The post format with the highest average click-throughs for the selected platform — use this as your go-to format.">ⓘ</span>
+              <span className="ss-kpi-info" data-tip="The post format with the highest average click-throughs for the selected platform — use this as your go-to format." aria-label="About best post type" tabIndex={0}>ⓘ</span>
             </p>
             <p className="stat-card__value" style={{ fontSize: '1.3rem' }}>{bestPostType?.postType ?? '—'}</p>
             <p className="stat-card__sub">{(() => { const ps = [...new Set(posts.map(p => p.platform).filter(Boolean))]; return ps.length === 1 ? ps[0] : 'All platforms'; })()}</p>

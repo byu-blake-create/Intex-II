@@ -21,6 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\..\IS455\models\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <TargetPath>models\%(Filename)%(Extension)</TargetPath>
+    </Content>
     <Content Include="..\..\IS455\models\social_post_performance_gb.onnx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

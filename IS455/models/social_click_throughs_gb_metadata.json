@@ -1,6 +1,6 @@
 {
   "name": "social_click_throughs_gb",
-  "trained_at": "2026-04-07T22:57:58.574836+00:00",
+  "trained_at": "2026-04-08T19:11:50+00:00",
   "label_definition": "click_throughs for a social media post",
   "feature_names": [
     "post_hour",
@@ -24,11 +24,12 @@
     "campaign_name"
   ],
   "metrics": {
-    "rmse": 115.3096,
-    "mae": 64.353,
-    "r2": 0.4684
+    "rmse": 122.17,
+    "mae": 68.85,
+    "r2": 0.4033
   },
   "random_seed": 42,
   "model_path": "C:\\Users\\johne\\Documents\\Coding\\BYU\\Intex-II\\IS455\\models\\social_click_throughs_gb.pkl",
-  "model_type": "GradientBoostingRegressor"
+  "model_type": "GradientBoostingRegressor",
+  "split_date": "2025-07-18 17:56:00"
 }

@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
 import { fetchSupporters } from '../../lib/supportersApi'
 import { fetchDonations } from '../../lib/donationsApi'
-import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
 import { apiPost } from '../../lib/api'
 import { fetchSupporterContacts, type SupporterContact } from '../../lib/supporterContactsApi'
+import { fetchDonorWatchlist, fetchTopOpportunities, type DonorInsight } from '../../lib/mlApi'
 import type { Supporter, Donation } from '../../types/domain'
 import './DonorsPage.css'
 
@@ -32,18 +32,26 @@ function typeBadge(t: string) {
   return <span className="badge badge--blue">{t}</span>
 }
 
+function getRiskLevel(probability: number) {
+  if (probability >= 0.75) return { label: 'High', tone: 'high' as const }
+  if (probability >= 0.4) return { label: 'Medium', tone: 'medium' as const }
+  return { label: 'Low', tone: 'low' as const }
+}
+
 export default function DonorsPage() {
   const [supporters, setSupporters] = useState<Supporter[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [pageNum, setPageNum] = useState(1)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+  const [signalFilter, setSignalFilter] = useState('')
   const [selected, setSelected] = useState<Supporter | null>(null)
   const [donations, setDonations] = useState<Donation[]>([])
   const [donLoading, setDonLoading] = useState(false)
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
-  const [watchlistCard, setWatchlistCard] = useState<AdminDashboardCard | null>(null)
+  const [donorInsights, setDonorInsights] = useState<Record<number, DonorInsight>>({})
+  const [opportunityInsights, setOpportunityInsights] = useState<Record<number, DonorInsight>>({})
 
   // Contact modal state
   const [showContactModal, setShowContactModal] = useState(false)
@@ -61,9 +69,12 @@ export default function DonorsPage() {
   const [contactsLoading, setContactsLoading] = useState(false)
 
   useEffect(() => {
-    fetchAdminDashboard().then(d => {
-      setWatchlistCard(d.cards.find(c => c.id === 'donor-watchlist') ?? null)
-    }).catch(() => {})
+    fetchDonorWatchlist()
+      .then(items => setDonorInsights(Object.fromEntries(items.map(item => [item.supporterId, item]))))
+      .catch(() => {})
+    fetchTopOpportunities()
+      .then(items => setOpportunityInsights(Object.fromEntries(items.map(item => [item.supporterId, item]))))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -89,8 +100,28 @@ export default function DonorsPage() {
   }, [selected])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const filteredSupporters = signalFilter
+    ? supporters.filter(s => {
+        if (signalFilter.startsWith('churn-')) {
+          const level = signalFilter.slice(6)
+          const insight = donorInsights[s.supporterId]
+          if (!insight) return false
+          return getRiskLevel(insight.churnProbability).label.toLowerCase() === level
+        }
+        if (signalFilter.startsWith('gift-')) {
+          const tier = signalFilter.slice(5)
+          const insight = opportunityInsights[s.supporterId]
+          if (!insight) return false
+          return (insight.opportunityTier?.toLowerCase() ?? 'standard') === tier
+        }
+        return true
+      })
+    : supporters
 
   const donationTotal = donations.reduce((sum, d) => sum + (d.amount ?? 0), 0)
+  const selectedDonorInsight = selected ? donorInsights[selected.supporterId] : undefined
+  const selectedOpportunityInsight = selected ? opportunityInsights[selected.supporterId] : undefined
+  const donorRiskLevel = selectedDonorInsight ? getRiskLevel(selectedDonorInsight.churnProbability) : null
 
   // Lapsed donor logic
   const isLapsed = (() => {
@@ -191,13 +222,29 @@ export default function DonorsPage() {
                 <option value="Individual">Individual</option>
                 <option value="Organization">Organization</option>
               </select>
+              <select
+                value={signalFilter}
+                onChange={e => setSignalFilter(e.target.value)}
+              >
+                <option value="">All signals</option>
+                <optgroup label="Churn Risk">
+                  <option value="churn-high">High churn risk</option>
+                  <option value="churn-medium">Medium churn risk</option>
+                  <option value="churn-low">Low churn risk</option>
+                </optgroup>
+                <optgroup label="Gift Opportunity">
+                  <option value="gift-major">Major donor potential</option>
+                  <option value="gift-mid">Mid-range upgrade</option>
+                  <option value="gift-standard">Standard gift level</option>
+                </optgroup>
+              </select>
             </div>
           </div>
           <div className="dn-list">
             {listLoading && <div className="inline-loading">Loading...</div>}
             {listError && <p className="admin-error" style={{ padding: '1rem' }}>{listError}</p>}
-            {!listLoading && !listError && supporters.length === 0 && <div className="empty-state">No supporters found.</div>}
-            {!listLoading && !listError && supporters.map(s => (
+            {!listLoading && !listError && filteredSupporters.length === 0 && <div className="empty-state">No supporters found.</div>}
+            {!listLoading && !listError && filteredSupporters.map(s => (
               <button
                 key={s.supporterId}
                 className={`dn-row${selected?.supporterId === s.supporterId ? ' is-selected' : ''}`}
@@ -263,10 +310,34 @@ export default function DonorsPage() {
                 </div>
               </div>
 
-              {watchlistCard && (
-                <div className="dn-ml-box">
-                  <p className="dn-ml-box__label">Donor Signal</p>
-                  <p>{watchlistCard.plainLanguage} {watchlistCard.detail}</p>
+              {(selectedDonorInsight || selectedOpportunityInsight) && (
+                <div className="dn-signal-row">
+                  {donorRiskLevel && (
+                    <div className="dn-signal-strip">
+                      <span className="dn-signal-strip__label">Donor Signal</span>
+                      <span
+                        className="dn-signal-strip__info"
+                        data-tip="Likelihood this donor stops giving. Low = retain normally, Medium = consider outreach, High = prioritize contact."
+                        aria-label="About donor signal"
+                        tabIndex={0}
+                      >ⓘ</span>
+                      <span className={`dn-ml-pill dn-ml-pill--${donorRiskLevel.tone}`}>{donorRiskLevel.label}</span>
+                    </div>
+                  )}
+                  {selectedOpportunityInsight && (
+                    <div className="dn-signal-strip">
+                      <span className="dn-signal-strip__label">Gift Opportunity</span>
+                      <span
+                        className="dn-signal-strip__info"
+                        data-tip="Suggested tier for a larger ask based on this donor's giving history. Standard = typical gift level, Mid = mid-range upgrade, Major = major donor potential."
+                        aria-label="About gift opportunity"
+                        tabIndex={0}
+                      >ⓘ</span>
+                      <span className={`dn-ml-pill dn-ml-pill--${selectedOpportunityInsight.opportunityTier?.toLowerCase() === 'major' ? 'high' : selectedOpportunityInsight.opportunityTier?.toLowerCase() === 'mid' ? 'medium' : 'low'}`}>
+                        {selectedOpportunityInsight.opportunityTier ?? 'Standard'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
 

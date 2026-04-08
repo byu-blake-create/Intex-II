@@ -4,9 +4,9 @@ import { fetchResidents } from '../../lib/residentsApi'
 import { fetchSafehouses } from '../../lib/safehousesApi'
 import { fetchVisitations } from '../../lib/visitationsApi'
 import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
-import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
 import { fetchSummary } from '../../lib/reportsApi'
 import { apiPost, apiPut } from '../../lib/api'
+import { fetchResidentWatchlist, type ResidentInsight, fetchReintegrationPredictions, type ReintegrationInsight } from '../../lib/mlApi'
 import type { Resident, ResidentUpsertInput, Safehouse, HomeVisitation, ProcessRecording, DashboardSummary } from '../../types/domain'
 import './CaseloadPage.css'
 
@@ -59,6 +59,20 @@ function residentToUpsertInput(resident: Resident): ResidentUpsertInput {
   }
 }
 
+function getRiskLevel(level: string | null | undefined, probability: number) {
+  const normalized = level?.toLowerCase()
+  if (normalized === 'high' || probability >= 0.75) return { label: 'High', tone: 'high' as const }
+  if (normalized === 'medium' || probability >= 0.4) return { label: 'Medium', tone: 'medium' as const }
+  return { label: 'Low', tone: 'low' as const }
+}
+
+function getReadinessLevel(level: string | null | undefined, probability: number) {
+  const normalized = level?.toLowerCase()
+  if (normalized === 'high' || probability >= 0.75) return { label: 'High', tone: 'high' as const }
+  if (normalized === 'medium' || probability >= 0.4) return { label: 'Medium', tone: 'medium' as const }
+  return { label: 'Low', tone: 'low' as const }
+}
+
 export default function CaseloadPage() {
   const [residents, setResidents] = useState<Resident[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -66,6 +80,7 @@ export default function CaseloadPage() {
   const [search, setSearch] = useState('')
   const [safehouseFilter, setSafehouseFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [signalFilter, setSignalFilter] = useState('')
   const [safehouses, setSafehouses] = useState<Safehouse[]>([])
   const [selected, setSelected] = useState<Resident | null>(null)
   const [visits, setVisits] = useState<HomeVisitation[]>([])
@@ -74,7 +89,8 @@ export default function CaseloadPage() {
   const [sessionsLoading, setSessionsLoading] = useState(false)
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
-  const [triageCard, setTriageCard] = useState<AdminDashboardCard | null>(null)
+  const [residentInsights, setResidentInsights] = useState<Record<number, ResidentInsight>>({})
+  const [reintegrationInsights, setReintegrationInsights] = useState<Record<number, ReintegrationInsight>>({})
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [residentReloadToken, setResidentReloadToken] = useState(0)
 
@@ -134,10 +150,12 @@ export default function CaseloadPage() {
 
   useEffect(() => {
     fetchSafehouses().then(r => setSafehouses(r.items)).catch(() => {})
-    fetchAdminDashboard().then(d => {
-      const c = d.cards.find(card => card.id === 'resident-triage') ?? null
-      setTriageCard(c)
-    }).catch(() => {})
+    fetchResidentWatchlist()
+      .then(items => setResidentInsights(Object.fromEntries(items.map(item => [item.residentId, item]))))
+      .catch(() => {})
+    fetchReintegrationPredictions()
+      .then(items => setReintegrationInsights(Object.fromEntries(items.map(item => [item.residentId, item]))))
+      .catch(() => {})
     fetchSummary().then(s => setSummary(s)).catch(() => {})
   }, [])
 
@@ -169,6 +187,31 @@ export default function CaseloadPage() {
   }, [selected])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const filteredResidents = signalFilter
+    ? residents.filter(r => {
+        if (signalFilter.startsWith('risk-')) {
+          const level = signalFilter.slice(5)
+          const insight = residentInsights[r.residentId]
+          if (!insight) return false
+          return getRiskLevel(insight.riskLevel, insight.concernProbability).label.toLowerCase() === level
+        }
+        if (signalFilter.startsWith('reint-')) {
+          const level = signalFilter.slice(6)
+          const insight = reintegrationInsights[r.residentId]
+          if (!insight) return false
+          return getReadinessLevel(insight.readinessLevel, insight.favorableProbability).label.toLowerCase() === level
+        }
+        return true
+      })
+    : residents
+  const selectedResidentInsight = selected ? residentInsights[selected.residentId] : undefined
+  const residentRiskLevel = selectedResidentInsight
+    ? getRiskLevel(selectedResidentInsight.riskLevel, selectedResidentInsight.concernProbability)
+    : null
+  const selectedReintegrationInsight = selected ? reintegrationInsights[selected.residentId] : undefined
+  const readinessLevel = selectedReintegrationInsight
+    ? getReadinessLevel(selectedReintegrationInsight.readinessLevel, selectedReintegrationInsight.favorableProbability)
+    : null
 
   const safehouseMap = useMemo(() => {
     const m = new Map<number, string>()
@@ -429,26 +472,44 @@ export default function CaseloadPage() {
                 <option value="">All safehouses</option>
                 {safehouses.map(s => <option key={s.safehouseId} value={s.safehouseId}>{s.name}</option>)}
               </select>
-              <select
-                value={statusFilter}
-                onChange={e => {
-                  setStatusFilter(e.target.value)
-                  setPageNum(1)
-                  setListLoading(true)
-                  setListError(null)
-                }}
-              >
-                <option value="">All statuses</option>
-                <option value="Active">Active</option>
-                <option value="Closed">Closed</option>
-              </select>
+              <div className="cl-filters__row">
+                <select
+                  value={statusFilter}
+                  onChange={e => {
+                    setStatusFilter(e.target.value)
+                    setPageNum(1)
+                    setListLoading(true)
+                    setListError(null)
+                  }}
+                >
+                  <option value="">All statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Closed">Closed</option>
+                </select>
+                <select
+                  value={signalFilter}
+                  onChange={e => setSignalFilter(e.target.value)}
+                >
+                  <option value="">All signals</option>
+                  <optgroup label="Support Need">
+                    <option value="risk-high">High support need</option>
+                    <option value="risk-medium">Medium support need</option>
+                    <option value="risk-low">Low support need</option>
+                  </optgroup>
+                  <optgroup label="Reintegration">
+                    <option value="reint-high">High readiness</option>
+                    <option value="reint-medium">Medium readiness</option>
+                    <option value="reint-low">Low readiness</option>
+                  </optgroup>
+                </select>
+              </div>
             </div>
           </div>
           <div className="cl-list">
             {listLoading && <div className="inline-loading">Loading...</div>}
             {listError && <p className="admin-error" style={{ padding: '1rem' }}>{listError}</p>}
-            {!listLoading && !listError && residents.length === 0 && <div className="empty-state">No residents found.</div>}
-            {!listLoading && !listError && residents.map(r => (
+            {!listLoading && !listError && filteredResidents.length === 0 && <div className="empty-state">No residents found.</div>}
+            {!listLoading && !listError && filteredResidents.map(r => (
               <button
                 key={r.residentId}
                 className={`cl-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`}
@@ -508,12 +569,6 @@ export default function CaseloadPage() {
           {!selected && <div className="cl-detail__empty">Select a resident to view details</div>}
           {selected && (
             <>
-              {triageCard && (
-                <div className="cl-ml-box">
-                  <p className="cl-ml-box__label">Resident Signal</p>
-                  <p>{triageCard.plainLanguage} {triageCard.detail}</p>
-                </div>
-              )}
               <div className="cl-resident-header">
                 <h2>{selected.caseControlNo}</h2>
                 {statusBadge(selected.caseStatus)}
@@ -532,6 +587,35 @@ export default function CaseloadPage() {
                 )}
               </div>
               {statusError && <p className="admin-error">{statusError}</p>}
+
+              {(residentRiskLevel || readinessLevel) && (
+                <div className="cl-signal-row">
+                  {residentRiskLevel && (
+                    <div className="cl-signal-strip">
+                      <span className="cl-signal-strip__label">Resident Signal</span>
+                      <span
+                        className="cl-signal-strip__info"
+                        data-tip="Likelihood this resident needs increased care or intervention. Low = routine check-ins, Medium = monitor closely, High = proactive support recommended."
+                        aria-label="About resident signal"
+                        tabIndex={0}
+                      >ⓘ</span>
+                      <span className={`cl-ml-pill cl-ml-pill--${residentRiskLevel.tone}`}>{residentRiskLevel.label}</span>
+                    </div>
+                  )}
+                  {readinessLevel && (
+                    <div className="cl-signal-strip">
+                      <span className="cl-signal-strip__label">Reintegration</span>
+                      <span
+                        className="cl-signal-strip__info"
+                        data-tip="How ready this resident is to transition out of the shelter. Low = not yet ready, Medium = approaching readiness, High = recommend scheduling a reintegration review."
+                        aria-label="About reintegration signal"
+                        tabIndex={0}
+                      >ⓘ</span>
+                      <span className={`cl-ml-pill cl-ml-pill--${readinessLevel.tone}`}>{readinessLevel.label}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Per-Resident Case Conference Countdown */}
               {selected.caseConferenceDate && (() => {
