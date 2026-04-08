@@ -20,6 +20,8 @@ frontend/.env.local
 # Misc
 .DS_Store
 *.log
+publish-*/
+publish-*.zip
 
 # Local agent/tooling state
 .claude/

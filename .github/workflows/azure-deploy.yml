@@ -21,7 +21,10 @@ jobs:
         run: |
           dotnet restore backend/NorthStarShelter.API/NorthStarShelter.API.csproj
           dotnet publish backend/NorthStarShelter.API/NorthStarShelter.API.csproj \
-            -c Release -o ./publish
+            -c Release \
+            -r win-x64 \
+            --self-contained false \
+            -o ./publish
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
