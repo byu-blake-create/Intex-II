@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
 import {
+  fetchAllSocialMediaPosts,
   fetchSocialMediaInsights,
-  fetchSocialMediaPosts,
   fetchRecommendations,
   type SocialMediaInsights,
   type SocialRecommendation,
@@ -252,60 +252,152 @@ function LearnTab({
 
 // ─── Tab: Plan ────────────────────────────────────────────────────────────────
 
-function PlanTab({ onDraftThis }: { onDraftThis: (platform: string, topic: string) => void }) {
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const DAY_SHORT: Record<string, string> = {
+  Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed',
+  Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun'
+}
+
+function CalCard({ rec, onDraft, detailed = false }: {
+  rec: SocialRecommendation
+  onDraft: (p: string, t: string) => void
+  detailed?: boolean
+}) {
+  const lift = (rec.expectedClicks - rec.platformBaselineClicks).toFixed(0)
+  return (
+    <div className={`ss-cal-card ss-cal-card--${rec.category}`}>
+      <div className="ss-cal-card__header">
+        <span className={rec.priority === 'high' ? 'ss-priority-badge ss-priority-badge--high' : 'ss-priority-badge ss-priority-badge--medium'}>
+          {rec.priority}
+        </span>
+        <span className="ss-cal-card__time">{rec.suggestedHour}</span>
+      </div>
+      <div className="ss-cal-card__topic">{toLabel(rec.topic)}</div>
+      <div className="ss-cal-card__chips">
+        <span className="ss-chip ss-chip--xs">{toLabel(rec.bestPostType)}</span>
+        <span className="ss-chip ss-chip--xs">{toLabel(rec.bestTone)}</span>
+      </div>
+      <div className="ss-cal-card__clicks">+{lift} clicks</div>
+      {detailed && <p className="ss-cal-card__reasoning">{rec.reasoning}</p>}
+      <button type="button" className="ss-cal-card__draft" onClick={() => onDraft(rec.platform, rec.topic)}>
+        Draft →
+      </button>
+    </div>
+  )
+}
+
+function PlanTab({ onDraftThis, selectedPlatform }: {
+  onDraftThis: (platform: string, topic: string) => void
+  selectedPlatform: string
+}) {
   const [recs, setRecs] = useState<SocialRecommendation[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadedPlatform, setLoadedPlatform] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
-    fetchRecommendations()
-      .then(data => { if (mounted) setRecs(data) })
-      .catch(() => { if (mounted) setError(null) }) // graceful empty
-      .finally(() => { if (mounted) setLoading(false) })
+    fetchRecommendations(selectedPlatform || undefined)
+      .then(data => {
+        if (mounted) {
+          setRecs(data)
+          setLoadedPlatform(selectedPlatform)
+        }
+      })
+      .catch(() => { if (mounted) setError(null) })
     return () => { mounted = false }
-  }, [])
+  }, [selectedPlatform])
 
-  if (loading) return <div className="ss-tab-content"><div className="inline-loading">Loading recommendations...</div></div>
+  const loading = loadedPlatform !== selectedPlatform
+
+  if (loading) return <div className="ss-tab-content"><div className="inline-loading">Loading plan...</div></div>
   if (error) return <div className="ss-tab-content"><p className="admin-error">{error}</p></div>
+  if (recs.length === 0) return (
+    <div className="ss-tab-content">
+      <div className="empty-state">No recommendations yet. Check back after more post data is collected.</div>
+    </div>
+  )
 
-  if (recs.length === 0) {
+  // ── Single platform view ──────────────────────────────────
+  if (selectedPlatform) {
+    const untapped = recs.filter(r => r.category === 'untapped')
+    const doubleDown = recs.filter(r => r.category === 'double_down')
     return (
       <div className="ss-tab-content">
-        <div className="empty-state">
-          No recommendations available yet. Check back after more post data has been collected.
+        <p className="section-title">Content Plan — {selectedPlatform}</p>
+        <div className="ss-plan-summary">
+          <div className="ss-plan-summary__box ss-plan-summary__box--untapped">
+            <span className="ss-plan-summary__count">{untapped.length}</span>
+            <span className="ss-plan-summary__label">💡 Untapped Topics</span>
+            <span className="ss-plan-summary__sub">High potential, low posting frequency</span>
+          </div>
+          <div className="ss-plan-summary__box ss-plan-summary__box--double-down">
+            <span className="ss-plan-summary__count">{doubleDown.length}</span>
+            <span className="ss-plan-summary__label">🔥 Double Down</span>
+            <span className="ss-plan-summary__sub">Already working — post more</span>
+          </div>
+        </div>
+        <div className="ss-calendar">
+          <div className="ss-calendar-grid">
+            {/* Header row */}
+            <div className="ss-calendar-header-row">
+              <div className="ss-calendar-header-cell" />
+              {DAYS.map(d => (
+                <div key={d} className="ss-calendar-header-cell">{DAY_SHORT[d]}</div>
+              ))}
+            </div>
+            {/* Single platform row */}
+            <div className="ss-calendar-platform-label">
+              <span className="badge badge--blue" style={{ fontSize: '0.72rem' }}>{selectedPlatform}</span>
+            </div>
+            {DAYS.map(day => {
+              const dayRecs = recs.filter(r => r.suggestedDay === day)
+              return (
+                <div key={day} className="ss-calendar-day-cell">
+                  {dayRecs.map((rec, i) => (
+                    <CalCard key={i} rec={rec} onDraft={onDraftThis} detailed />
+                  ))}
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     )
   }
 
+  // ── All platforms view ────────────────────────────────────
+  const platforms = [...new Set(recs.map(r => r.platform))]
   return (
     <div className="ss-tab-content">
-      <p className="section-title">Recommended Posts</p>
-      <div style={{ display: 'grid', gap: '0.85rem' }}>
-        {recs.map((rec, i) => (
-          <div key={i} className="ss-live-card">
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <span className="badge badge--blue">{rec.platform}</span>
-              <span className={rec.priority === 'high' ? 'ss-priority-badge ss-priority-badge--high' : 'ss-priority-badge ss-priority-badge--medium'}>
-                {rec.priority}
-              </span>
-              <strong style={{ fontSize: '0.9rem', color: 'var(--adm-ink)' }}>{toLabel(rec.topic)}</strong>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <span className="ss-chip">{rec.suggestedHour}</span>
-              <span style={{ fontSize: '0.82rem', color: 'var(--adm-muted)' }}>
-                {(rec.expectedEngagement * 100).toFixed(1)}% expected vs {(rec.platformBaseline * 100).toFixed(1)}% baseline
-              </span>
-            </div>
-            <p style={{ margin: 0, fontSize: '0.83rem', color: 'var(--adm-ink)', lineHeight: 1.5 }}>{rec.reasoning}</p>
-            <div>
-              <button type="button" className="ss-draft-btn" onClick={() => onDraftThis(rec.platform, rec.topic)}>
-                → Draft this
-              </button>
-            </div>
+      <p className="section-title">Content Calendar — All Platforms</p>
+      <div className="ss-calendar">
+        <div className="ss-calendar-grid">
+          {/* Header row */}
+          <div className="ss-calendar-header-row">
+            <div className="ss-calendar-header-cell" />
+            {DAYS.map(d => (
+              <div key={d} className="ss-calendar-header-cell">{DAY_SHORT[d]}</div>
+            ))}
           </div>
-        ))}
+          {/* One row per platform */}
+          {platforms.map(platform => (
+            <React.Fragment key={platform}>
+              <div className="ss-calendar-platform-label">
+                <span className="badge badge--blue" style={{ fontSize: '0.72rem' }}>{platform}</span>
+              </div>
+              {DAYS.map(day => {
+                const dayRecs = recs.filter(r => r.platform === platform && r.suggestedDay === day)
+                return (
+                  <div key={day} className="ss-calendar-day-cell">
+                    {dayRecs.map((rec, i) => (
+                      <CalCard key={i} rec={rec} onDraft={onDraftThis} />
+                    ))}
+                  </div>
+                )
+              })}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -648,66 +740,73 @@ function DraftTab({ prefill }: { prefill: { platform?: string; topic?: string } 
   return (
     <div className="ss-tab-content">
       <div className="ss-captions-layout">
-        <form className="ss-form" onSubmit={e => void handleGenerate(e)}>
-          <div className="ss-form-section">
-            <p className="ss-form-section__title">Caption Setup</p>
-            <div className="ss-field">
-              <label>Platform</label>
-              <select value={form.platform} onChange={e => setField('platform', e.target.value)}>
-                {PLATFORMS.map(p => <option key={p}>{p}</option>)}
-              </select>
+        <div className="ss-captions-layout__form">
+          <form className="ss-form" onSubmit={e => void handleGenerate(e)}>
+            <div className="ss-form-section">
+              <p className="ss-form-section__title">Caption Setup</p>
+              <div className="ss-field">
+                <label>Platform</label>
+                <select value={form.platform} onChange={e => setField('platform', e.target.value)}>
+                  {PLATFORMS.map(p => <option key={p}>{p}</option>)}
+                </select>
+              </div>
+              <div className="ss-field">
+                <label>Topic</label>
+                <select value={form.topic} onChange={e => setField('topic', e.target.value)}>
+                  {CONTENT_TOPICS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                </select>
+              </div>
+              <div className="ss-field">
+                <label>Tone</label>
+                <select value={form.tone} onChange={e => setField('tone', e.target.value)}>
+                  {SENTIMENT_TONES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                </select>
+              </div>
+              <div className="ss-field">
+                <label>Campaign (optional)</label>
+                <input type="text" value={form.campaign ?? ''} onChange={e => setField('campaign', e.target.value)} placeholder="e.g. Spring 2025" />
+              </div>
+              <div className="ss-field">
+                <label>Call to Action phrase (optional)</label>
+                <input type="text" value={form.ctaPhrase ?? ''} onChange={e => setField('ctaPhrase', e.target.value)} placeholder="e.g. Donate today" />
+              </div>
+              <div className="ss-toggle-row">
+                <label>Include resident story</label>
+                <label className="ss-toggle">
+                  <input type="checkbox" checked={form.includeResidentStory} onChange={e => setField('includeResidentStory', e.target.checked)} />
+                  <span className="ss-toggle__track" />
+                </label>
+              </div>
+              <div className="ss-field">
+                <label>Additional context (optional)</label>
+                <textarea
+                  value={form.additionalContext ?? ''}
+                  onChange={e => setField('additionalContext', e.target.value)}
+                  placeholder="Any extra guidance for the AI..."
+                  rows={4}
+                  style={{ padding: '0.4rem 0.55rem', borderRadius: '8px', border: '1px solid var(--adm-border)', background: 'var(--adm-card)', color: 'var(--adm-ink)', fontSize: '0.88rem', resize: 'vertical' }}
+                />
+              </div>
             </div>
-            <div className="ss-field">
-              <label>Topic</label>
-              <select value={form.topic} onChange={e => setField('topic', e.target.value)}>
-                {CONTENT_TOPICS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-              </select>
-            </div>
-            <div className="ss-field">
-              <label>Tone</label>
-              <select value={form.tone} onChange={e => setField('tone', e.target.value)}>
-                {SENTIMENT_TONES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-              </select>
-            </div>
-            <div className="ss-field">
-              <label>Campaign (optional)</label>
-              <input type="text" value={form.campaign ?? ''} onChange={e => setField('campaign', e.target.value)} placeholder="e.g. Spring 2025" />
-            </div>
-            <div className="ss-field">
-              <label>Call to Action phrase (optional)</label>
-              <input type="text" value={form.ctaPhrase ?? ''} onChange={e => setField('ctaPhrase', e.target.value)} placeholder="e.g. Donate today" />
-            </div>
-            <div className="ss-toggle-row">
-              <label>Include resident story</label>
-              <label className="ss-toggle">
-                <input type="checkbox" checked={form.includeResidentStory} onChange={e => setField('includeResidentStory', e.target.checked)} />
-                <span className="ss-toggle__track" />
-              </label>
-            </div>
-            <div className="ss-field">
-              <label>Additional context (optional)</label>
-              <textarea
-                value={form.additionalContext ?? ''}
-                onChange={e => setField('additionalContext', e.target.value)}
-                placeholder="Any extra guidance for the AI..."
-                rows={3}
-                style={{ padding: '0.4rem 0.55rem', borderRadius: '8px', border: '1px solid var(--adm-border)', background: 'var(--adm-card)', color: 'var(--adm-ink)', fontSize: '0.88rem', resize: 'vertical' }}
-              />
-            </div>
-          </div>
 
-          <button type="submit" className="ss-generate-btn" disabled={loading}>
-            {loading ? (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span className="ss-spinner" /> Generating...
-              </span>
-            ) : 'Generate Captions'}
-          </button>
-          {error && <p className="admin-error">{error}</p>}
-        </form>
+            <button type="submit" className="ss-generate-btn" disabled={loading}>
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="ss-spinner" /> Generating...
+                </span>
+              ) : 'Generate Captions'}
+            </button>
+            {error && <p className="admin-error">{error}</p>}
+          </form>
+        </div>
 
-        {result && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="ss-captions-layout__results">
+          {result ? (
+            <>
+              <div className="ss-results-header">
+                <p className="ss-form-section__title">Generated Variants</p>
+                <span className="ss-results-header__count">{result.variants.length} options</span>
+              </div>
             {result.variants.map((variant, i) => (
               <div key={i} className="ss-caption-variant">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
@@ -761,8 +860,17 @@ function DraftTab({ prefill }: { prefill: { platform?: string; topic?: string } 
             >
               Regenerate
             </button>
-          </div>
-        )}
+            </>
+          ) : (
+            <div className="ss-caption-placeholder">
+              <p className="ss-form-section__title">Generated Variants</p>
+              <h3>Caption variants will appear here.</h3>
+              <p>
+                Choose your setup on the left, then generate captions to compare multiple options side by side.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -772,11 +880,36 @@ function DraftTab({ prefill }: { prefill: { platform?: string; topic?: string } 
 
 type SortKey = 'platform' | 'engagementRate' | 'clickThroughs' | 'donationReferrals' | 'createdAt'
 type SortDir = 'asc' | 'desc'
+const POSTS_TAB_PAGE_SIZE = 11
+
+function SortHeader({
+  label,
+  col,
+  active,
+  sortDir,
+  onSort,
+}: {
+  label: string
+  col: SortKey
+  active: boolean
+  sortDir: SortDir
+  onSort: (key: SortKey) => void
+}) {
+  return (
+    <th
+      style={{ cursor: 'pointer', userSelect: 'none', color: active ? 'var(--adm-accent)' : undefined }}
+      onClick={() => onSort(col)}
+    >
+      {label} {active ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+    </th>
+  )
+}
 
 function PostsTab({ posts }: { posts: SocialMediaPost[] }) {
   const [search, setSearch] = useState('')
   const [sortKey, setSortKey] = useState<SortKey>('createdAt')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const [currentPage, setCurrentPage] = useState(1)
   const [selectedPost, setSelectedPost] = useState<SocialMediaPost | null>(null)
 
   function handleSort(key: SortKey) {
@@ -813,17 +946,13 @@ function PostsTab({ posts }: { posts: SocialMediaPost[] }) {
     })
   }, [filtered, sortKey, sortDir])
 
-  function SortHeader({ label, col }: { label: string; col: SortKey }) {
-    const active = sortKey === col
-    return (
-      <th
-        style={{ cursor: 'pointer', userSelect: 'none', color: active ? 'var(--adm-accent)' : undefined }}
-        onClick={() => handleSort(col)}
-      >
-        {label} {active ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-      </th>
-    )
-  }
+  const totalPages = Math.max(1, Math.ceil(sorted.length / POSTS_TAB_PAGE_SIZE))
+  const currentPageSafe = Math.min(currentPage, totalPages)
+
+  const pagedPosts = useMemo(() => {
+    const start = (currentPageSafe - 1) * POSTS_TAB_PAGE_SIZE
+    return sorted.slice(start, start + POSTS_TAB_PAGE_SIZE)
+  }, [currentPageSafe, sorted])
 
   return (
     <div className="ss-tab-content">
@@ -832,7 +961,10 @@ function PostsTab({ posts }: { posts: SocialMediaPost[] }) {
           type="search"
           placeholder="Search caption or campaign..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => {
+            setSearch(e.target.value)
+            setCurrentPage(1)
+          }}
           style={{ padding: '0.4rem 0.75rem', borderRadius: '8px', border: '1px solid var(--adm-border)', background: 'var(--adm-card)', color: 'var(--adm-ink)', fontSize: '0.88rem', width: '100%', maxWidth: '320px' }}
         />
       </div>
@@ -840,38 +972,59 @@ function PostsTab({ posts }: { posts: SocialMediaPost[] }) {
       {sorted.length === 0 ? (
         <div className="empty-state">No posts match the current filter.</div>
       ) : (
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Created</th>
-                <SortHeader label="Platform" col="platform" />
-                <th>Post Type</th>
-                <th>Campaign</th>
-                <SortHeader label="Engagement" col="engagementRate" />
-                <SortHeader label="Clicks" col="clickThroughs" />
-                <SortHeader label="Referrals" col="donationReferrals" />
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map(post => (
-                <tr
-                  key={post.postId}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedPost(post)}
-                >
-                  <td>{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '\u2014'}</td>
-                  <td>{post.platform ?? '\u2014'}</td>
-                  <td>{post.postType ?? '\u2014'}</td>
-                  <td>{post.campaignName ?? '\u2014'}</td>
-                  <td>{pct(post.engagementRate)}</td>
-                  <td>{post.clickThroughs?.toLocaleString() ?? '\u2014'}</td>
-                  <td>{post.donationReferrals?.toLocaleString() ?? '\u2014'}</td>
+        <>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Created</th>
+                  <SortHeader label="Platform" col="platform" active={sortKey === 'platform'} sortDir={sortDir} onSort={handleSort} />
+                  <th>Post Type</th>
+                  <th>Campaign</th>
+                  <SortHeader label="Engagement" col="engagementRate" active={sortKey === 'engagementRate'} sortDir={sortDir} onSort={handleSort} />
+                  <SortHeader label="Clicks" col="clickThroughs" active={sortKey === 'clickThroughs'} sortDir={sortDir} onSort={handleSort} />
+                  <SortHeader label="Referrals" col="donationReferrals" active={sortKey === 'donationReferrals'} sortDir={sortDir} onSort={handleSort} />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {pagedPosts.map(post => (
+                  <tr
+                    key={post.postId}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => setSelectedPost(post)}
+                  >
+                    <td>{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '\u2014'}</td>
+                    <td>{post.platform ?? '\u2014'}</td>
+                    <td>{post.postType ?? '\u2014'}</td>
+                    <td>{post.campaignName ?? '\u2014'}</td>
+                    <td>{pct(post.engagementRate)}</td>
+                    <td>{post.clickThroughs?.toLocaleString() ?? '\u2014'}</td>
+                    <td>{post.donationReferrals?.toLocaleString() ?? '\u2014'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="pager">
+            <span className="pager__info">Page {currentPageSafe} of {totalPages}, {sorted.length} posts</span>
+            <button
+              type="button"
+              className="pager__btn"
+              disabled={currentPageSafe <= 1}
+              onClick={() => setCurrentPage(page => page - 1)}
+            >
+              Prev
+            </button>
+            <button
+              type="button"
+              className="pager__btn"
+              disabled={currentPageSafe >= totalPages}
+              onClick={() => setCurrentPage(page => page + 1)}
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
 
       {selectedPost && (
@@ -938,7 +1091,7 @@ export default function SocialSuitePage() {
 
   // Fetch full platform list once on mount, independent of filtered posts
   useEffect(() => {
-    fetchSocialMediaPosts({ pageSize: 200 }).then(result => {
+    fetchAllSocialMediaPosts().then(result => {
       const uniquePlatforms = Array.from(
         new Set(result.items.map(p => p.platform).filter((v): v is string => Boolean(v)))
       ).sort()
@@ -948,16 +1101,16 @@ export default function SocialSuitePage() {
 
   useEffect(() => {
     let mounted = true
-    setLoading(true)
-    setError(null)
 
     Promise.all([
-      fetchSocialMediaPosts({ pageSize: 100, platform: platform || undefined }),
+      fetchAllSocialMediaPosts({ platform: platform || undefined }),
       fetchSocialMediaInsights(platform || undefined),
     ])
       .then(([result, nextInsights]) => {
-        if (mounted) setPosts(result.items)
-        if (mounted) setInsights(nextInsights)
+        if (mounted) {
+          setPosts(result.items)
+          setInsights(nextInsights)
+        }
       })
       .catch(() => {
         if (mounted) setError('Could not load social media posts.')
@@ -1010,7 +1163,6 @@ export default function SocialSuitePage() {
               </select>
             </div>
           </label>
-          <span className="ss-post-count">{posts.length} posts loaded</span>
         </div>
 
         <div className="ss-tabs">
@@ -1036,7 +1188,7 @@ export default function SocialSuitePage() {
             onDraftThis={handleDraftThis}
           />
         )}
-        {activeTab === 'plan' && <PlanTab onDraftThis={handleDraftThis} />}
+        {activeTab === 'plan' && <PlanTab onDraftThis={handleDraftThis} selectedPlatform={platform} />}
         {activeTab === 'predict' && <PredictTab onDraftFromPredict={handleDraftThis} />}
         {activeTab === 'draft' && <DraftTab prefill={draftPrefill} />}
         {activeTab === 'posts' && <PostsTab posts={posts} />}
