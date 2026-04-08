@@ -25,17 +25,6 @@ export default function PublicSiteHeader({
         </span>
       </Link>
 
-      {user && (showDonations || showAdmin) && (
-        <nav className="home-nav__links home-nav__links--dashboards" aria-label="Your account">
-          {showDonations && (
-            <Link to="/donations">Donations</Link>
-          )}
-          {showAdmin && (
-            <Link to="/admin">Admin</Link>
-          )}
-        </nav>
-      )}
-
       <div className="home-nav__actions">
         <button
           type="button"
@@ -61,9 +50,23 @@ export default function PublicSiteHeader({
           </span>
         </button>
 
-        <Link className="home-nav__donate" to="/donate">
-          Donate
-        </Link>
+        {showAdmin ? (
+          <Link className="home-nav__donate home-nav__admin" to="/admin">
+            Admin
+          </Link>
+        ) : (
+          !showDonations && (
+            <Link className="home-nav__donate" to="/donate">
+              Donate
+            </Link>
+          )
+        )}
+
+        {showDonations && !showAdmin && (
+          <Link className="home-nav__donate home-nav__admin" to="/donations">
+            Donations
+          </Link>
+        )}
 
         {user ? (
           <div className="home-nav__account">

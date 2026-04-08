@@ -47,6 +47,16 @@ public class AuthController : ControllerBase
     [HttpGet("google/login")]
     public IActionResult GoogleLogin([FromQuery] string? returnUrl = "/")
     {
+        // Google is only registered in Program.cs when ClientId + ClientSecret exist (see Azure / user-secrets / .env).
+        if (!IsGoogleAuthConfigured())
+        {
+            return BadRequest(new
+            {
+                message =
+                    "Google sign-in is not configured on this environment. Add Authentication:Google:ClientId and Authentication:Google:ClientSecret (user secrets, .env, or appsettings).",
+            });
+        }
+
         var callbackUrl = Url.Action(
             nameof(GoogleCallback),
             values: new { returnUrl = NormalizeReturnUrl(returnUrl) });
@@ -325,6 +335,13 @@ public class AuthController : ControllerBase
             user.LastName ?? string.Empty,
             user.SupporterId,
             roles);
+    }
+
+    private bool IsGoogleAuthConfigured()
+    {
+        var id = _configuration["Authentication:Google:ClientId"];
+        var secret = _configuration["Authentication:Google:ClientSecret"];
+        return !string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(secret);
     }
 
     private static string NormalizeReturnUrl(string? returnUrl)

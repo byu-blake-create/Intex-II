@@ -338,6 +338,8 @@ public class ReportsController : ControllerBase
             .OrderByDescending(p => p.FavorableProbability)
             .FirstOrDefault();
 
+        var hasSafehouseForecast = nextSafehouseForecasts.Length > 0;
+
         var topSafehouseForecast = nextSafehouseForecasts
             .Select(p =>
             {
@@ -461,25 +463,25 @@ public class ReportsController : ControllerBase
             new(
                 "safehouse-forecast",
                 "forecast",
-                "Safehouses nearing capacity",
-                nextSafehouseForecasts.Length > 0 ? safehouseAttentionCount.ToString() : (safehouseLoad?.ActiveResidents ?? 0).ToString(),
-                nextSafehouseForecasts.Length > 0
+                hasSafehouseForecast ? "Safehouses nearing capacity" : "Safehouse occupancy snapshot",
+                hasSafehouseForecast ? safehouseAttentionCount.ToString() : (safehouseLoad?.ActiveResidents ?? 0).ToString(),
+                hasSafehouseForecast
                     ? $"The safehouse forecast projects capacity pressure for {nextForecastMonth ?? "the next cycle"}."
-                    : $"{safehouseLoad?.Name ?? "No safehouse data"} currently has the highest active resident count.",
-                nextSafehouseForecasts.Length > 0 && topSafehouseForecast is not null
+                    : "This card summarizes live occupancy pressure from the current resident roster.",
+                hasSafehouseForecast && topSafehouseForecast is not null
                     ? $"{topSafehouseForecast.SafehouseName} leads the forecast at {topSafehouseForecast.Forecast.PredictedActiveResidents:N1} residents ({topSafehouseForecast.Utilization:P0} of capacity)."
                     : safehouseLoad is null
                         ? "No safehouse occupancy data is available."
-                        : "Active resident counts are derived directly from the current resident roster.",
+                        : $"{safehouseLoad.Name} currently has the highest active resident count. This is a live operational snapshot, not a forecast output.",
                 "/admin/reports",
                 "Open operational reports",
                 BuildModelInfo(
                     safehouseForecastMetadata,
-                    "Safehouse forecast model",
-                    nextSafehouseForecasts.Length > 0 ? "artifact-backed" : "db-live",
+                    hasSafehouseForecast ? "Safehouse forecast model" : "Live occupancy signal",
+                    hasSafehouseForecast ? "artifact-backed" : "db-live",
                     snapshotLabel,
-                    "Scope",
-                    "Active residents",
+                    hasSafehouseForecast ? "Scope" : "Source",
+                    hasSafehouseForecast ? "Active residents" : "Residents table",
                     topSafehouseForecast is not null ? $"Forecast month: {nextForecastMonth}" : "Calculated from the live Residents table.")),
             new(
                 "outreach-highlight",
@@ -570,7 +572,7 @@ public class ReportsController : ControllerBase
         var dto = new CommandCenterDto(
             snapshotLabel,
             summary,
-            "These signals combine deployed IS455 model artifacts with live SQL records and should still be reviewed alongside the full resident and donor record before action is taken.",
+            string.Empty,
             heroChips,
             cards,
             priorities,

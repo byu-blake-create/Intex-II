@@ -19,9 +19,8 @@ Work from the assumption that this subtree is the source of truth for:
 - `455-Things/ml-pipelines/shared/data_loader.py` — shared CSV loading and snapshot builders
 - `455-Things/ml-pipelines/shared/model_utils.py` — artifact serialization, metadata, metrics helpers
 - `455-Things/ml-pipelines/shared/targets.md` — locked target definitions
-- `455-Things/IS455-ML-Deliverables-Plan.md` — grading-driven pipeline plan and notebook section requirements
 - `models/` — serialized models, metadata, and prediction JSONs for app/backend consumption
-- `455-Things/lighthouse_csv_v7/lighthouse_csv_v7/` — raw CSV source data
+- `455-Things/lighthouse_csv_v7/` — raw CSV source data
 
 ## Current Status Snapshot
 

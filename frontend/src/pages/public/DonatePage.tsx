@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/auth'
 import { submitPublicDonation } from '../../lib/donationsApi'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
@@ -11,6 +12,7 @@ const presetAmounts = [25, 50, 100, 250, 500]
 export default function DonatePage() {
   const { theme, setTheme } = usePublicTheme()
   const { user } = useAuth()
+  const isDonor = Boolean(user?.roles.includes('Donor'))
 
   const [selectedPreset, setSelectedPreset] = useState<number | null>(50)
   const [customAmount, setCustomAmount] = useState('')
@@ -73,6 +75,18 @@ export default function DonatePage() {
       <PublicSiteHeader theme={theme} setTheme={setTheme} />
 
       <main className="donate-page__main">
+        {isDonor && (
+          <Link className="donate-dashboard-banner" to="/donations">
+            <span className="donate-dashboard-banner__label">Your donor dashboard</span>
+            <span className="donate-dashboard-banner__title">
+              View your donation history, totals, and impact
+            </span>
+            <span className="donate-dashboard-banner__arrow" aria-hidden="true">
+              Open dashboard →
+            </span>
+          </Link>
+        )}
+
         {!success ? (
           <form className="donate-card" onSubmit={handleDonateClick}>
             <div className="donate-card__header">

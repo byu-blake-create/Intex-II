@@ -1,6 +1,6 @@
 {
   "name": "social_post_performance_gb",
-  "trained_at": "2026-04-08T19:11:38+00:00",
+  "trained_at": "2026-04-08T22:35:55+00:00",
   "label_definition": "engagement_rate for a social media post",
   "feature_names": [
     "post_hour",

@@ -1,6 +1,6 @@
 {
   "name": "resident_risk_gb",
-  "trained_at": "2026-04-08T19:10:51+00:00",
+  "trained_at": "2026-04-08T22:35:21+00:00",
   "label_definition": "1 if the resident will have any concern-flagged session in the next 90 days",
   "feature_names": [
     "days_since_admission",
