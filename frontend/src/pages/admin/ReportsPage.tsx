@@ -66,7 +66,7 @@ export default function ReportsPage() {
       <div className="rp">
         <header className="page-header">
           <h1>Reports &amp; Analytics</h1>
-          <p>Operational metrics, donation trends, and live database-backed signals</p>
+          <p>Operational metrics, donation trends, and deployed ML-backed signals</p>
         </header>
 
         {loading && <div className="inline-loading">Loading reports...</div>}
