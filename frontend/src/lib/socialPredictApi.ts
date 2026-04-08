@@ -1,3 +1,5 @@
+import { apiPost } from './api'
+
 export interface PredictRequest {
   platform: string
   postHour: number
@@ -46,11 +48,5 @@ export interface PredictResponse {
 }
 
 export async function predictPostPerformance(req: PredictRequest): Promise<PredictResponse> {
-  const response = await fetch('/api/socialpredict', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(req),
-  })
-  if (!response.ok) throw new Error(await response.text())
-  return response.json() as Promise<PredictResponse>
+  return apiPost<PredictResponse>('/api/socialpredict', req)
 }
