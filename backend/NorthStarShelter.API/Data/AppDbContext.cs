@@ -14,6 +14,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Partner> Partners => Set<Partner>();
     public DbSet<PartnerAssignment> PartnerAssignments => Set<PartnerAssignment>();
     public DbSet<Supporter> Supporters => Set<Supporter>();
+    public DbSet<SupporterContact> SupporterContacts => Set<SupporterContact>();
     public DbSet<Donation> Donations => Set<Donation>();
     public DbSet<DonationAllocation> DonationAllocations => Set<DonationAllocation>();
     public DbSet<InKindDonationItem> InKindDonationItems => Set<InKindDonationItem>();
@@ -58,6 +59,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .WithMany(s => s.Donations)
             .HasForeignKey(d => d.SupporterId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<SupporterContact>()
+            .HasOne(c => c.Supporter)
+            .WithMany(s => s.Contacts)
+            .HasForeignKey(c => c.SupporterId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Entity<AppUser>()
             .HasOne(u => u.Supporter)

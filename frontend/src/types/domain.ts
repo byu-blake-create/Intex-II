@@ -8,6 +8,7 @@ export interface Resident {
   dateOfBirth?: string | null
   caseCategory?: string | null
   assignedSocialWorker?: string | null
+  caseConferenceDate?: string | null
   notesRestricted?: string | null
 }
 

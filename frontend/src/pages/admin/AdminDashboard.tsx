@@ -6,7 +6,7 @@ import {
   type AdminDashboardData,
   type AdminDashboardCard,
 } from '../../lib/adminDashboardApi'
-import { fetchSummary } from '../../lib/reportsApi'
+import { fetchSummary, fetchDonationsByMonth } from '../../lib/reportsApi'
 import type { DashboardSummary } from '../../types/domain'
 import './AdminDashboard.css'
 
@@ -51,14 +51,21 @@ export default function AdminDashboard() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [donationTrend, setDonationTrend] = useState<{ direction: 'up' | 'down' | 'flat'; pct: number } | null>(null)
 
   useEffect(() => {
     let mounted = true
-    Promise.all([fetchSummary(), fetchAdminDashboard()])
-      .then(([s, d]) => {
+    Promise.all([fetchSummary(), fetchAdminDashboard(), fetchDonationsByMonth(2)])
+      .then(([s, d, monthly]) => {
         if (mounted) {
           setSummary(s)
           setDashData(d)
+          if (monthly.length >= 2) {
+            const prev = monthly[monthly.length - 2].total
+            const curr = monthly[monthly.length - 1].total
+            const pct = prev === 0 ? 0 : Math.round(Math.abs((curr - prev) / prev) * 100)
+            setDonationTrend({ direction: curr > prev ? 'up' : curr < prev ? 'down' : 'flat', pct })
+          }
         }
       })
       .catch(() => {
@@ -72,14 +79,9 @@ export default function AdminDashboard() {
     }
   }, [])
 
-  const statCards = summary
-    ? [
-        { label: 'Active Residents', value: String(summary.activeResidents), sub: 'Currently in shelter' },
-        { label: 'Donations (30d)', value: String(summary.totalDonationsLast30Days), sub: 'Transaction count' },
-        { label: 'Amount (30d)', value: `$${summary.donationAmountLast30Days.toLocaleString()}`, sub: 'Total received' },
-        { label: 'Case Conferences', value: String(summary.upcomingCaseConferences), sub: 'Upcoming' },
-      ]
-    : []
+  const allAlertCards = dashData?.cards.filter(c => c.tone === 'alert') ?? []
+  const safetyAlertCards = allAlertCards.filter(c => c.route.includes('caseload') || c.route.includes('visitations'))
+  const attentionCards = allAlertCards.filter(c => !c.route.includes('caseload') && !c.route.includes('visitations'))
 
   return (
     <AdminLayout>
@@ -99,10 +101,31 @@ export default function AdminDashboard() {
         )}
         {error && <p className="dash__error" role="alert">{error}</p>}
 
+        {/* Safety Alerts strip */}
+        {!loading && !error && safetyAlertCards.length > 0 && (
+          <section className="dash__safety-alerts">
+            <span className="dash__safety-label">Safety Alerts</span>
+            <div className="dash__safety-strip">
+              {safetyAlertCards.map(card => (
+                <div key={card.id} className="dash__safety-item">
+                  <span className="dash__safety-item__title">{card.title}</span>
+                  <span className="dash__safety-item__value">{card.value}</span>
+                  <Link to={card.route} className="dash__safety-item__link">{card.routeLabel} &rarr;</Link>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Stat cards */}
         {!loading && !error && summary && (
           <div className="dash__stat-grid">
-            {statCards.map((s, i) => (
+            {[
+              { label: 'Active Residents', value: String(summary.activeResidents), sub: 'Currently in shelter', trend: null },
+              { label: 'Donations (30d)', value: String(summary.totalDonationsLast30Days), sub: 'Transaction count', trend: null },
+              { label: 'Amount (30d)', value: `$${summary.donationAmountLast30Days.toLocaleString()}`, sub: 'Total received', trend: donationTrend },
+              { label: 'Case Conferences', value: String(summary.upcomingCaseConferences), sub: 'Upcoming', trend: null },
+            ].map((s, i) => (
               <div
                 key={s.label}
                 className="stat-card"
@@ -110,6 +133,12 @@ export default function AdminDashboard() {
               >
                 <p className="stat-card__label">{s.label}</p>
                 <p className="stat-card__value">{s.value}</p>
+                {s.trend && (
+                  <p className={`stat-card__trend stat-card__trend--${s.trend.direction}`}>
+                    {s.trend.direction === 'up' ? '↑' : s.trend.direction === 'down' ? '↓' : '–'}
+                    {' '}{s.trend.pct}% vs last month
+                  </p>
+                )}
                 <p className="stat-card__sub">{s.sub}</p>
               </div>
             ))}
@@ -119,6 +148,33 @@ export default function AdminDashboard() {
         {/* Disclaimer */}
         {dashData && (
           <p className="dash__disclaimer">{dashData.disclaimer}</p>
+        )}
+
+        {/* Action Items / Needs Attention */}
+        {!loading && !error && summary && (
+          <section className="dash__action-items">
+            <span className="dash__action-label">Needs Attention</span>
+            {(summary.upcomingCaseConferences > 0 || attentionCards.length > 0) ? (
+              <div className="dash__action-list">
+                {summary.upcomingCaseConferences > 0 && (
+                  <div className="dash__action-row">
+                    <span className="dash__action-row__text">
+                      {summary.upcomingCaseConferences} upcoming case conference{summary.upcomingCaseConferences !== 1 ? 's' : ''}
+                    </span>
+                    <Link to="/admin/caseload" className="dash__action-row__link">View caseload &rarr;</Link>
+                  </div>
+                )}
+                {attentionCards.map(card => (
+                  <div key={card.id} className="dash__action-row">
+                    <span className="dash__action-row__text">{card.title}</span>
+                    <Link to={card.route} className="dash__action-row__link">{card.routeLabel} &rarr;</Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className="dash__action-clear">&#10003; All clear</span>
+            )}
+          </section>
         )}
 
         {/* Signals */}
