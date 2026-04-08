@@ -7,6 +7,7 @@ namespace NorthStarShelter.API.Data;
 public static class SeedData
 {
     /// <summary>Creates default roles and the initial admin account when <c>Seed:AdminPassword</c> is set.</summary>
+    /// <remarks>Leave seeded grading accounts without TOTP MFA enabled (see course requirements).</remarks>
     public static async Task InitializeAsync(
         IServiceProvider services,
         IConfiguration configuration,

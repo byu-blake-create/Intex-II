@@ -8,7 +8,7 @@ import type { AuthUser } from '../../contexts/auth'
 import './HomePage.css'
 
 export default function LoginPage() {
-  const { login, register } = useAuth()
+  const { login, register, completeTwoFactorLogin } = useAuth()
   const navigate = useNavigate()
   const { theme } = usePublicTheme()
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -19,6 +19,9 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [awaitingMfa, setAwaitingMfa] = useState(false)
+  const [mfaUseRecovery, setMfaUseRecovery] = useState(false)
+  const [mfaCode, setMfaCode] = useState('')
 
   function destinationFor(user: AuthUser) {
     if (user.roles.includes('Staff') || user.roles.includes('Admin')) return '/admin'
@@ -40,11 +43,35 @@ export default function LoginPage() {
         const user = await register(email, password, firstName, lastName)
         navigate(destinationFor(user))
       } else {
-        const user = await login(email, password)
-        navigate(destinationFor(user))
+        const result = await login(email, password)
+        if ('requiresTwoFactor' in result) {
+          setAwaitingMfa(true)
+          setMfaCode('')
+          setMfaUseRecovery(false)
+          return
+        }
+        navigate(destinationFor(result))
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid email or password.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleMfaSubmit(e: FormEvent) {
+    e.preventDefault()
+    setError('')
+    setSubmitting(true)
+    try {
+      const user = mfaUseRecovery
+        ? await completeTwoFactorLogin({ recoveryCode: mfaCode })
+        : await completeTwoFactorLogin({ authenticatorCode: mfaCode })
+      setAwaitingMfa(false)
+      setMfaCode('')
+      navigate(destinationFor(user))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed.')
     } finally {
       setSubmitting(false)
     }
@@ -158,6 +185,8 @@ export default function LoginPage() {
                 onClick={() => {
                   setMode('login')
                   setError('')
+                  setAwaitingMfa(false)
+                  setMfaCode('')
                 }}
                 style={{
                   padding: '0.55rem 0.95rem',
@@ -176,6 +205,8 @@ export default function LoginPage() {
                 onClick={() => {
                   setMode('register')
                   setError('')
+                  setAwaitingMfa(false)
+                  setMfaCode('')
                 }}
                 style={{
                   padding: '0.55rem 0.95rem',
@@ -212,10 +243,64 @@ export default function LoginPage() {
             </div>
 
             <form
-              onSubmit={handleSubmit}
+              onSubmit={awaitingMfa ? handleMfaSubmit : handleSubmit}
               className="login-page__form"
             >
-              {mode === 'login' && (
+              {awaitingMfa && (
+                <>
+                  <p style={{ margin: 0, lineHeight: 1.7, fontWeight: 700 }}>
+                    Two-step verification
+                  </p>
+                  <p style={{ margin: 0, lineHeight: 1.7, color: 'var(--page-muted)', fontSize: '0.9rem' }}>
+                    Enter the code from your authenticator app, or use a one-time recovery code.
+                  </p>
+                  <label className="login-page__field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={mfaUseRecovery}
+                      onChange={e => {
+                        setMfaUseRecovery(e.target.checked)
+                        setMfaCode('')
+                      }}
+                    />
+                    <span>Use a recovery code instead</span>
+                  </label>
+                  <label className="login-page__field">
+                    <span>{mfaUseRecovery ? 'Recovery code' : 'Authenticator code'}</span>
+                    <input
+                      type="text"
+                      value={mfaCode}
+                      onChange={e => setMfaCode(e.target.value)}
+                      required
+                      autoComplete="one-time-code"
+                      className="login-page__input"
+                      inputMode={mfaUseRecovery ? 'text' : 'numeric'}
+                      placeholder={mfaUseRecovery ? 'XXXX-XXXX-...' : '6-digit code'}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAwaitingMfa(false)
+                      setMfaCode('')
+                      setError('')
+                    }}
+                    style={{
+                      padding: '0.65rem 1rem',
+                      borderRadius: '999px',
+                      border: '1px solid var(--page-auth-border)',
+                      background: 'transparent',
+                      color: 'var(--page-ink)',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Back to password
+                  </button>
+                </>
+              )}
+
+              {mode === 'login' && !awaitingMfa && (
                 <>
                   <button
                     type="button"
@@ -238,7 +323,7 @@ export default function LoginPage() {
                 </>
               )}
 
-              {mode === 'register' && (
+              {mode === 'register' && !awaitingMfa && (
                 <div className="login-page__name-grid">
                   <label className="login-page__field">
                     <span>First name</span>
@@ -266,31 +351,35 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <label className="login-page__field">
-                <span>Email</span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  className="login-page__input"
-                />
-              </label>
+              {!awaitingMfa && (
+                <label className="login-page__field">
+                  <span>Email</span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                    className="login-page__input"
+                  />
+                </label>
+              )}
 
-              <label className="login-page__field">
-                <span>Password</span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                  className="login-page__input"
-                />
-              </label>
+              {!awaitingMfa && (
+                <label className="login-page__field">
+                  <span>Password</span>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                    className="login-page__input"
+                  />
+                </label>
+              )}
 
-              {mode === 'register' && (
+              {mode === 'register' && !awaitingMfa && (
                 <label className="login-page__field">
                   <span>Confirm password</span>
                   <input
@@ -325,8 +414,16 @@ export default function LoginPage() {
                 }}
               >
                 {submitting
-                  ? (mode === 'register' ? 'Creating account...' : 'Signing in...')
-                  : (mode === 'register' ? 'Create Account' : 'Sign In')}
+                  ? awaitingMfa
+                    ? 'Verifying...'
+                    : mode === 'register'
+                      ? 'Creating account...'
+                      : 'Signing in...'
+                  : awaitingMfa
+                    ? 'Verify and sign in'
+                    : mode === 'register'
+                      ? 'Create Account'
+                      : 'Sign In'}
               </button>
             </form>
           </section>

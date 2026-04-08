@@ -34,6 +34,7 @@ export default function PublicSiteHeader({
         {roleLink && (
           <Link to={roleLink.to}>{roleLink.label}</Link>
         )}
+        {user && <Link to="/account/security">Security</Link>}
       </nav>
 
       <div className="home-nav__actions">

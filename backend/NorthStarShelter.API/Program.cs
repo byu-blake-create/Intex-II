@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -96,6 +97,27 @@ builder.Services.ConfigureApplicationCookie(options =>
         ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
         return Task.CompletedTask;
     };
+});
+
+// Intermediate 2FA cookies must follow the same SameSite/Secure rules as the auth cookie for cross-site SPA + API.
+var isDevEnvironment = builder.Environment.IsDevelopment();
+builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorUserIdScheme, options =>
+{
+    options.Cookie.Name = "northstar.2fa.user";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = isDevEnvironment ? SameSiteMode.Lax : SameSiteMode.None;
+    options.Cookie.SecurePolicy = isDevEnvironment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+    options.SlidingExpiration = false;
+});
+
+builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorRememberMeScheme, options =>
+{
+    options.Cookie.Name = "northstar.2fa.remember";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = isDevEnvironment ? SameSiteMode.Lax : SameSiteMode.None;
+    options.Cookie.SecurePolicy = isDevEnvironment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
 });
 
 builder.Services.AddAuthorization();

@@ -8,6 +8,7 @@ import HashScrollManager from './components/HashScrollManager'
 // Public pages — lightweight, keep eager
 import HomePage from './pages/public/HomePage'
 import LoginPage from './pages/public/LoginPage'
+import AccountSecurityPage from './pages/public/AccountSecurityPage'
 
 // Lazy-loaded pages — split into separate chunks
 const DonatePage = lazy(() => import('./pages/public/DonatePage'))
@@ -37,6 +38,14 @@ export default function App() {
         <Route path="/donate" element={<DonatePage />} />
         <Route path="/donations" element={<ProtectedRoute requiredRole="Donor"><DonationsPage /></ProtectedRoute>} />
         <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/account/security"
+          element={
+            <ProtectedRoute>
+              <AccountSecurityPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
         {/* Shared admin workspace */}
