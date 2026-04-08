@@ -10,7 +10,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 # ── Data ──────────────────────────────────────────────────────────────────────
-DATA_DIR = REPO_ROOT / "455-Things" / "lighthouse_csv_v7" / "lighthouse_csv_v7"
+DATA_DIR = REPO_ROOT / "455-Things" / "lighthouse_csv_v7"
 
 # ── Artifacts ─────────────────────────────────────────────────────────────────
 MODELS_DIR = REPO_ROOT / "models"

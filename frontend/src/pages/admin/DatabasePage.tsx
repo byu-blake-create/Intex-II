@@ -189,12 +189,18 @@ export default function DatabasePage() {
     setRows([])
     setRowsError(null)
     setEditorOpen(false)
+    setDeleteOpen(false)
     setSelectedRowId(null)
     setDetailError(null)
     setFormMode('create')
     setFormValues(buildEmptyFormState(activeTable.fields))
     setLookups({})
   }, [activeTable])
+
+  function closeEditor() {
+    setDeleteOpen(false)
+    setEditorOpen(false)
+  }
 
   useEffect(() => {
     if (!activeTable) return
@@ -252,6 +258,7 @@ export default function DatabasePage() {
   async function loadRow(id: string) {
     if (!activeTable) return
 
+    setDeleteOpen(false)
     setEditorOpen(true)
     setSelectedRowId(id)
     setFormMode('edit')
@@ -271,6 +278,7 @@ export default function DatabasePage() {
 
   function startCreateMode() {
     if (!activeTable) return
+    setDeleteOpen(false)
     setEditorOpen(true)
     setFormMode('create')
     setSelectedRowId(null)
@@ -448,7 +456,7 @@ export default function DatabasePage() {
         )}
 
         {editorOpen && activeTable && (
-          <div className="db-modal-overlay" role="presentation" onClick={() => !saving && !detailLoading && setEditorOpen(false)}>
+          <div className="db-modal-overlay" role="presentation" onClick={() => !saving && !detailLoading && closeEditor()}>
             <section
               className="db-modal"
               role="dialog"
@@ -475,7 +483,7 @@ export default function DatabasePage() {
                   <button
                     type="button"
                     className="db-secondary-button"
-                    onClick={() => setEditorOpen(false)}
+                    onClick={closeEditor}
                     disabled={saving || detailLoading}
                   >
                     Close

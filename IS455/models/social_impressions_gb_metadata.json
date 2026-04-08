@@ -1,6 +1,6 @@
 {
   "name": "social_impressions_gb",
-  "trained_at": "2026-04-08T19:12:17+00:00",
+  "trained_at": "2026-04-08T22:36:37+00:00",
   "label_definition": "impressions for a social media post",
   "feature_names": [
     "post_hour",
