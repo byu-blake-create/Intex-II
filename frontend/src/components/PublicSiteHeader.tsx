@@ -17,6 +17,7 @@ export default function PublicSiteHeader({
     : user?.roles.includes('Donor')
       ? { label: 'Donations', to: '/donations' }
       : null
+  const accountLabel = user ? formatAccountLabel(user.firstName, user.lastName, user.displayName, user.email) : null
 
   return (
     <header className="home-nav">
@@ -63,7 +64,7 @@ export default function PublicSiteHeader({
 
         {user ? (
           <div className="home-nav__account">
-            <span className="home-nav__account-email">{user.email}</span>
+            <span className="home-nav__account-email">{accountLabel}</span>
             <button type="button" className="home-nav__logout" onClick={() => void logout()}>
               Sign Out
             </button>
@@ -76,4 +77,15 @@ export default function PublicSiteHeader({
       </div>
     </header>
   )
+}
+
+function formatAccountLabel(firstName: string, lastName: string, displayName: string, email: string) {
+  const trimmedFirstName = firstName.trim()
+  const trimmedLastName = lastName.trim()
+
+  if (trimmedFirstName || trimmedLastName) {
+    return `${trimmedFirstName} ${trimmedLastName}`.trim()
+  }
+
+  return displayName.trim() || email
 }

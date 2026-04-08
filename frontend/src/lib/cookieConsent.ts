@@ -7,6 +7,10 @@ const ANALYTICS_BOOTSTRAP_ID = 'nss-analytics-bootstrap'
 const OPTIONAL_ANALYTICS_COOKIE_PREFIXES = ['_ga', '_gid', '_gat']
 
 export type ConsentDecision = 'accepted' | 'declined'
+export type ConsentEventDetail = {
+  decision: ConsentDecision | null
+  forceOpen?: boolean
+}
 
 function expireCookie(name: string, domain?: string) {
   const domainAttr = domain ? `; Domain=${domain}` : ''
@@ -56,8 +60,8 @@ function clearAnalyticsGlobals() {
   delete analyticsWindow.gtag
 }
 
-function notifyConsentChanged(decision: ConsentDecision | null) {
-  window.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail: { decision } }))
+function notifyConsentChanged(detail: ConsentEventDetail) {
+  window.dispatchEvent(new CustomEvent<ConsentEventDetail>(CONSENT_EVENT, { detail }))
 }
 
 export function getConsentDecision(): ConsentDecision | null {
@@ -145,7 +149,11 @@ export function setConsentDecision(decision: ConsentDecision) {
     clearOptionalAnalyticsCookies()
   }
 
-  notifyConsentChanged(decision)
+  notifyConsentChanged({ decision })
+}
+
+export function openConsentPreferences() {
+  notifyConsentChanged({ decision: getConsentDecision(), forceOpen: true })
 }
 
 export function resetConsentDecision() {
@@ -156,5 +164,5 @@ export function resetConsentDecision() {
   removeAnalyticsScript(ANALYTICS_BOOTSTRAP_ID)
   clearAnalyticsGlobals()
   clearOptionalAnalyticsCookies()
-  notifyConsentChanged(null)
+  notifyConsentChanged({ decision: null })
 }

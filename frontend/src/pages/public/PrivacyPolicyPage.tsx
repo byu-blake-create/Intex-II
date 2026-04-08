@@ -1,6 +1,6 @@
 import PublicSiteFooter from '../../components/PublicSiteFooter'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
-import { resetConsentDecision } from '../../lib/cookieConsent'
+import { openConsentPreferences } from '../../lib/cookieConsent'
 import { usePublicTheme } from '../../lib/usePublicTheme'
 import './PrivacyPolicyPage.css'
 
@@ -8,7 +8,7 @@ export default function PrivacyPolicyPage() {
   const { theme, setTheme } = usePublicTheme()
 
   function handleManageCookies() {
-    resetConsentDecision()
+    openConsentPreferences()
   }
 
   return (
