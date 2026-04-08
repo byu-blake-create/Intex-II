@@ -7,7 +7,7 @@ import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
 import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
 import { fetchSummary } from '../../lib/reportsApi'
 import { apiPost, apiPut } from '../../lib/api'
-import type { Resident, Safehouse, HomeVisitation, ProcessRecording, DashboardSummary } from '../../types/domain'
+import type { Resident, ResidentUpsertInput, Safehouse, HomeVisitation, ProcessRecording, DashboardSummary } from '../../types/domain'
 import './CaseloadPage.css'
 
 const PAGE_SIZE = 30
@@ -45,6 +45,20 @@ function daysUntil(dateStr: string): number {
   return Math.ceil((target - now) / (1000 * 60 * 60 * 24))
 }
 
+function residentToUpsertInput(resident: Resident): ResidentUpsertInput {
+  return {
+    caseControlNo: resident.caseControlNo.trim(),
+    internalCode: resident.internalCode ?? null,
+    safehouseId: resident.safehouseId,
+    caseStatus: resident.caseStatus ?? null,
+    sex: resident.sex ?? null,
+    dateOfBirth: resident.dateOfBirth ?? null,
+    caseCategory: resident.caseCategory ?? null,
+    assignedSocialWorker: resident.assignedSocialWorker ?? null,
+    caseConferenceDate: resident.caseConferenceDate ?? null,
+  }
+}
+
 export default function CaseloadPage() {
   const [residents, setResidents] = useState<Resident[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -79,6 +93,7 @@ export default function CaseloadPage() {
 
   // Status save state
   const [statusSaving, setStatusSaving] = useState(false)
+  const [statusError, setStatusError] = useState<string | null>(null)
 
   // Session note modal state
   const [showNoteModal, setShowNoteModal] = useState(false)
@@ -202,12 +217,13 @@ export default function CaseloadPage() {
         ...(field === 'socialWorker' ? { assignedSocialWorker: editValue || undefined } : {}),
         ...(field === 'conferenceDate' ? { caseConferenceDate: editValue || undefined } : {}),
       }
-      await apiPut(`/api/residents/${selected.residentId}`, updated)
+      await apiPut(`/api/residents/${selected.residentId}`, residentToUpsertInput(updated))
       setSelected(updated)
       setResidents(prev => prev.map(r => r.residentId === updated.residentId ? updated : r))
+      setResidentReloadToken(token => token + 1)
       setEditField(null)
-    } catch {
-      setEditError('Failed to save. Try again.')
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : 'Failed to save. Try again.')
     } finally {
       setEditSaving(false)
     }
@@ -216,13 +232,21 @@ export default function CaseloadPage() {
   async function handleStatusChange(newStatus: string) {
     if (!selected) return
     setStatusSaving(true)
+    setStatusError(null)
     try {
       const updated: Resident = { ...selected, caseStatus: newStatus }
-      await apiPut(`/api/residents/${selected.residentId}`, updated)
-      setSelected(updated)
+      await apiPut(`/api/residents/${selected.residentId}`, residentToUpsertInput(updated))
+      if (statusFilter && statusFilter !== newStatus) {
+        setSelected(null)
+        setVisits([])
+        setSessions([])
+      } else {
+        setSelected(updated)
+      }
       setResidents(prev => prev.map(r => r.residentId === updated.residentId ? updated : r))
-    } catch {
-      // silently fail — could add a toast here
+      setResidentReloadToken(token => token + 1)
+    } catch (err) {
+      setStatusError(err instanceof Error ? err.message : 'Failed to update resident status.')
     } finally {
       setStatusSaving(false)
     }
@@ -350,6 +374,7 @@ export default function CaseloadPage() {
       })
 
       setSelected(created)
+      setStatusError(null)
       setVisits([])
       setSessions([])
       setVisitsLoading(true)
@@ -428,6 +453,7 @@ export default function CaseloadPage() {
                 key={r.residentId}
                 className={`cl-row${selected?.residentId === r.residentId ? ' is-selected' : ''}`}
                 onClick={() => {
+                  setStatusError(null)
                   setSelected(r)
                   setVisits([])
                   setSessions([])
@@ -505,6 +531,7 @@ export default function CaseloadPage() {
                   </button>
                 )}
               </div>
+              {statusError && <p className="admin-error">{statusError}</p>}
 
               {/* Per-Resident Case Conference Countdown */}
               {selected.caseConferenceDate && (() => {
