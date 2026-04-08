@@ -177,7 +177,7 @@
 
 .ss-toggle input:checked + .ss-toggle__track::after {
   transform: translateX(18px);
-  background: var(--adm-accent);
+  background: var(--adm-accent-solid);
 }
 
 /* ─── Result panel ─────────────────────────────────────────── */
@@ -363,7 +363,7 @@
 }
 
 .ss-platform-bar-row--active .ss-platform-bar-fill {
-  background: var(--adm-accent);
+  background: var(--adm-accent-solid);
 }
 
 .ss-platform-bar-row__value {
@@ -711,7 +711,7 @@
   padding: 0.45rem 1.1rem;
   border-radius: 8px;
   border: none;
-  background: var(--adm-accent);
+  background: var(--adm-accent-solid);
   color: #fff;
   font-weight: 700;
   font-size: 0.85rem;
@@ -787,7 +787,7 @@
   padding: 0.45rem 1.2rem;
   border-radius: 8px;
   border: none;
-  background: var(--adm-accent);
+  background: var(--adm-accent-solid);
   color: #fff;
   font-weight: 700;
   font-size: 0.85rem;
@@ -1069,7 +1069,7 @@
 .ss-engagement-bar-fill {
   height: 100%;
   border-radius: 5px;
-  background: var(--adm-accent);
+  background: var(--adm-accent-solid);
   transition: width 0.4s ease;
 }
 

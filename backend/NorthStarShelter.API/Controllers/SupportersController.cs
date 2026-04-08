@@ -66,7 +66,7 @@ public class SupportersController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Supporter>> Create([FromBody] Supporter supporter, CancellationToken cancellationToken)
     {
         _db.Supporters.Add(supporter);
@@ -75,7 +75,7 @@ public class SupportersController : ControllerBase
     }
 
     [HttpPost("{id:int}/contacts")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<SupporterContact>> CreateContact(
         int id,
         [FromBody] CreateSupporterContactRequest request,
@@ -104,7 +104,7 @@ public class SupportersController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] Supporter input, CancellationToken cancellationToken)
     {
         if (id != input.SupporterId) return BadRequest();

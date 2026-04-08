@@ -72,7 +72,7 @@ public class ResidentsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Resident>> Create([FromBody] ResidentUpsertRequest input, CancellationToken cancellationToken)
     {
         var validationResult = ValidateResidentUpsert(input);
@@ -87,7 +87,7 @@ public class ResidentsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] ResidentUpsertRequest input, CancellationToken cancellationToken)
     {
         var validationResult = ValidateResidentUpsert(input);
@@ -101,7 +101,7 @@ public class ResidentsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id, [FromQuery] bool confirm = false, CancellationToken cancellationToken = default)
     {
         if (!confirm) return BadRequest(new { error = "Set confirm=true to delete." });

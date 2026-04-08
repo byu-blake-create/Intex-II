@@ -322,7 +322,12 @@ public class AuthController : ControllerBase
 
     private async Task<AuthUserResponse> BuildAuthResponseAsync(AppUser user)
     {
-        var roles = (await _userManager.GetRolesAsync(user)).ToArray();
+        var roles = (await _userManager.GetRolesAsync(user))
+            .Select(role => string.Equals(role, "Staff", StringComparison.OrdinalIgnoreCase) ? "Admin" : role)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(role => role, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
         return new AuthUserResponse(
             user.Email ?? string.Empty,
             user.DisplayName ?? $"{user.FirstName} {user.LastName}".Trim() ?? user.Email ?? string.Empty,

@@ -115,7 +115,7 @@ public class ReportsController : ControllerBase
     }
 
     [HttpGet("command-center")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     [ResponseCache(Duration = 60)]
     public async Task<ActionResult<CommandCenterDto>> CommandCenter(CancellationToken cancellationToken)
     {

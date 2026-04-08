@@ -128,7 +128,7 @@
 
 .donate-amount-btn--active {
   border-color: var(--page-accent);
-  background: var(--page-accent);
+  background: var(--page-accent-solid);
   color: #fff;
 }
 

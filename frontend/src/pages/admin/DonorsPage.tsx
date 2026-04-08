@@ -204,6 +204,7 @@ export default function DonorsPage() {
             <input
               className="dn-search"
               placeholder="Search donors..."
+              aria-label="Search donors"
               value={search}
               onChange={e => {
                 setSearch(e.target.value)
@@ -212,6 +213,7 @@ export default function DonorsPage() {
             />
             <div className="dn-filters">
               <select
+                aria-label="Filter donors by supporter type"
                 value={typeFilter}
                 onChange={e => {
                   setTypeFilter(e.target.value)
@@ -223,6 +225,7 @@ export default function DonorsPage() {
                 <option value="Organization">Organization</option>
               </select>
               <select
+                aria-label="Filter donors by insight signal"
                 value={signalFilter}
                 onChange={e => setSignalFilter(e.target.value)}
               >
