@@ -22,9 +22,17 @@ jobs:
           dotnet restore backend/NorthStarShelter.API/NorthStarShelter.API.csproj
           dotnet publish backend/NorthStarShelter.API/NorthStarShelter.API.csproj \
             -c Release \
-            -r win-x64 \
-            --self-contained false \
             -o ./publish
+
+      - name: Trim publish artifact for Windows App Service
+        run: |
+          rm -rf ./publish/runtimes/android
+          rm -rf ./publish/runtimes/ios
+          rm -rf ./publish/runtimes/linux-arm64
+          rm -rf ./publish/runtimes/linux-x64
+          rm -rf ./publish/runtimes/osx-arm64
+          rm -rf ./publish/runtimes/unix
+          rm -rf ./publish/runtimes/win-arm64
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
