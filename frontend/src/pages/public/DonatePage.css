@@ -1,4 +1,4 @@
-.donate-page__main {
+.donate-page > .donate-page__main {
   width: min(620px, 100%);
   margin: 0 auto;
   padding: 32px 24px 64px;

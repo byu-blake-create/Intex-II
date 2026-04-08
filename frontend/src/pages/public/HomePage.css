@@ -188,6 +188,10 @@
   color: var(--page-muted);
 }
 
+.home-nav__links--dashboards {
+  flex-shrink: 0;
+}
+
 .home-nav__cta,
 .button {
   display: inline-flex;
@@ -207,6 +211,25 @@
 .home-nav__cta {
   background: var(--page-cta-bg);
   color: var(--page-cta-ink);
+}
+
+.home-nav__donate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.6rem 1.15rem;
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-decoration: none;
+  background: var(--page-accent);
+  color: #fff9f5;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.home-nav__donate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(187, 95, 60, 0.25);
 }
 
 .home-nav__cta:hover,

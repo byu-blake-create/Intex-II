@@ -11,13 +11,9 @@ export default function PublicSiteHeader({
 }) {
   const { user, logout } = useAuth()
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
-  const hasAdminAccess = Boolean(user && (user.roles.includes('Staff') || user.roles.includes('Admin')))
-  const roleLink = hasAdminAccess
-    ? { label: 'Admin', to: '/admin' }
-    : user?.roles.includes('Donor')
-      ? { label: 'Donations', to: '/donations' }
-      : null
   const accountLabel = user ? formatAccountLabel(user.firstName, user.lastName, user.displayName, user.email) : null
+  const showDonations = Boolean(user?.roles.includes('Donor'))
+  const showAdmin = Boolean(user?.roles.includes('Staff') || user?.roles.includes('Admin'))
 
   return (
     <header className="home-nav">
@@ -29,13 +25,16 @@ export default function PublicSiteHeader({
         </span>
       </Link>
 
-      <nav className="home-nav__links" aria-label="Primary">
-        <Link to={{ pathname: '/', hash: '#impact-dashboard' }}>Impact</Link>
-        <Link to={{ pathname: '/', hash: '#services' }}>What We Do</Link>
-        {roleLink && (
-          <Link to={roleLink.to}>{roleLink.label}</Link>
-        )}
-      </nav>
+      {user && (showDonations || showAdmin) && (
+        <nav className="home-nav__links home-nav__links--dashboards" aria-label="Your account">
+          {showDonations && (
+            <Link to="/donations">Donations</Link>
+          )}
+          {showAdmin && (
+            <Link to="/admin">Admin</Link>
+          )}
+        </nav>
+      )}
 
       <div className="home-nav__actions">
         <button
@@ -61,6 +60,10 @@ export default function PublicSiteHeader({
             </span>
           </span>
         </button>
+
+        <Link className="home-nav__donate" to="/donate">
+          Donate
+        </Link>
 
         {user ? (
           <div className="home-nav__account">
