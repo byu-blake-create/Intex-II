@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
 import {
   fetchAllSocialMediaPosts,
@@ -252,34 +252,44 @@ function LearnTab({
 
 // ─── Tab: Plan ────────────────────────────────────────────────────────────────
 
-function PlanCard({ rec, onDraft }: { rec: SocialRecommendation; onDraft: (p: string, t: string) => void }) {
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const DAY_SHORT: Record<string, string> = {
+  Monday: 'Mon', Tuesday: 'Tue', Wednesday: 'Wed',
+  Thursday: 'Thu', Friday: 'Fri', Saturday: 'Sat', Sunday: 'Sun'
+}
+
+function CalCard({ rec, onDraft, detailed = false }: {
+  rec: SocialRecommendation
+  onDraft: (p: string, t: string) => void
+  detailed?: boolean
+}) {
+  const lift = (rec.expectedClicks - rec.platformBaselineClicks).toFixed(0)
   return (
-    <div className="ss-live-card ss-live-card--compact">
-      <div className="ss-card-meta-row">
-        <span className={rec.priority === 'high' ? 'ss-priority-badge ss-priority-badge--high' : 'ss-priority-badge ss-priority-badge--medium'}>{rec.priority}</span>
-        <strong style={{fontSize:'0.88rem'}}>{toLabel(rec.topic)}</strong>
-        <span className={rec.category === 'untapped' ? 'ss-category-tag ss-category-tag--untapped' : 'ss-category-tag ss-category-tag--double-down'}>
-          {rec.category === 'untapped' ? 'Untapped' : 'Double Down'}
+    <div className={`ss-cal-card ss-cal-card--${rec.category}`}>
+      <div className="ss-cal-card__header">
+        <span className={rec.priority === 'high' ? 'ss-priority-badge ss-priority-badge--high' : 'ss-priority-badge ss-priority-badge--medium'}>
+          {rec.priority}
         </span>
+        <span className="ss-cal-card__time">{rec.suggestedHour}</span>
       </div>
-      <div className="ss-card-meta-row">
-        <span className="ss-chip">{rec.suggestedDay}</span>
-        <span className="ss-chip">{rec.suggestedHour}</span>
-        <span style={{color:'var(--adm-muted)'}}>·</span>
-        <span className="ss-chip">{toLabel(rec.bestPostType)}</span>
-        <span className="ss-chip">{toLabel(rec.bestTone)}</span>
+      <div className="ss-cal-card__topic">{toLabel(rec.topic)}</div>
+      <div className="ss-cal-card__chips">
+        <span className="ss-chip ss-chip--xs">{toLabel(rec.bestPostType)}</span>
+        <span className="ss-chip ss-chip--xs">{toLabel(rec.bestTone)}</span>
       </div>
-      <div className="ss-card-meta-row" style={{justifyContent:'space-between'}}>
-        <span style={{fontSize:'0.8rem', color:'var(--adm-muted)'}}>
-          <strong style={{color:'var(--adm-ink)'}}>{rec.expectedClicks.toFixed(0)}</strong> avg clicks vs {rec.platformBaselineClicks.toFixed(0)} baseline
-        </span>
-        <button type="button" className="ss-draft-btn" onClick={() => onDraft(rec.platform, rec.topic)}>→ Draft</button>
-      </div>
+      <div className="ss-cal-card__clicks">+{lift} clicks</div>
+      {detailed && <p className="ss-cal-card__reasoning">{rec.reasoning}</p>}
+      <button type="button" className="ss-cal-card__draft" onClick={() => onDraft(rec.platform, rec.topic)}>
+        Draft →
+      </button>
     </div>
   )
 }
 
-function PlanTab({ onDraftThis, selectedPlatform }: { onDraftThis: (platform: string, topic: string) => void; selectedPlatform: string }) {
+function PlanTab({ onDraftThis, selectedPlatform }: {
+  onDraftThis: (platform: string, topic: string) => void
+  selectedPlatform: string
+}) {
   const [recs, setRecs] = useState<SocialRecommendation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -289,70 +299,101 @@ function PlanTab({ onDraftThis, selectedPlatform }: { onDraftThis: (platform: st
     setLoading(true)
     fetchRecommendations(selectedPlatform || undefined)
       .then(data => { if (mounted) setRecs(data) })
-      .catch(() => { if (mounted) setError(null) }) // graceful empty
+      .catch(() => { if (mounted) setError(null) })
       .finally(() => { if (mounted) setLoading(false) })
     return () => { mounted = false }
   }, [selectedPlatform])
 
-  if (loading) return <div className="ss-tab-content"><div className="inline-loading">Loading recommendations...</div></div>
+  if (loading) return <div className="ss-tab-content"><div className="inline-loading">Loading plan...</div></div>
   if (error) return <div className="ss-tab-content"><p className="admin-error">{error}</p></div>
+  if (recs.length === 0) return (
+    <div className="ss-tab-content">
+      <div className="empty-state">No recommendations yet. Check back after more post data is collected.</div>
+    </div>
+  )
 
-  if (recs.length === 0) {
-    return (
-      <div className="ss-tab-content">
-        <div className="empty-state">
-          No recommendations available yet. Check back after more post data has been collected.
-        </div>
-      </div>
-    )
-  }
-
+  // ── Single platform view ──────────────────────────────────
   if (selectedPlatform) {
     const untapped = recs.filter(r => r.category === 'untapped')
     const doubleDown = recs.filter(r => r.category === 'double_down')
     return (
       <div className="ss-tab-content">
         <p className="section-title">Content Plan — {selectedPlatform}</p>
-        <div className="ss-plan-grid">
-          <div className="ss-plan-section">
-            {untapped.length > 0 && <>
-              <p className="ss-plan-section-title">💡 Untapped Topics</p>
-              <p className="ss-plan-section-desc">High potential topics you're barely posting</p>
-              {untapped.map((rec, i) => <PlanCard key={i} rec={rec} onDraft={onDraftThis} />)}
-            </>}
+        <div className="ss-plan-summary">
+          <div className="ss-plan-summary__box ss-plan-summary__box--untapped">
+            <span className="ss-plan-summary__count">{untapped.length}</span>
+            <span className="ss-plan-summary__label">💡 Untapped Topics</span>
+            <span className="ss-plan-summary__sub">High potential, low posting frequency</span>
           </div>
-          <div className="ss-plan-section">
-            {doubleDown.length > 0 && <>
-              <p className="ss-plan-section-title">🔥 Double Down</p>
-              <p className="ss-plan-section-desc">Already working — post more of these</p>
-              {doubleDown.map((rec, i) => <PlanCard key={i} rec={rec} onDraft={onDraftThis} />)}
-            </>}
+          <div className="ss-plan-summary__box ss-plan-summary__box--double-down">
+            <span className="ss-plan-summary__count">{doubleDown.length}</span>
+            <span className="ss-plan-summary__label">🔥 Double Down</span>
+            <span className="ss-plan-summary__sub">Already working — post more</span>
+          </div>
+        </div>
+        <div className="ss-calendar">
+          <div className="ss-calendar-grid">
+            {/* Header row */}
+            <div className="ss-calendar-header-row">
+              <div className="ss-calendar-header-cell" />
+              {DAYS.map(d => (
+                <div key={d} className="ss-calendar-header-cell">{DAY_SHORT[d]}</div>
+              ))}
+            </div>
+            {/* Single platform row */}
+            <div className="ss-calendar-platform-label">
+              <span className="badge badge--blue" style={{ fontSize: '0.72rem' }}>{selectedPlatform}</span>
+            </div>
+            {DAYS.map(day => {
+              const dayRecs = recs.filter(r => r.suggestedDay === day)
+              return (
+                <div key={day} className="ss-calendar-day-cell">
+                  {dayRecs.map((rec, i) => (
+                    <CalCard key={i} rec={rec} onDraft={onDraftThis} detailed />
+                  ))}
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
     )
   }
 
-  // All platforms: group by platform
-  const byPlatform = recs.reduce<Record<string, SocialRecommendation[]>>((acc, rec) => {
-    if (!acc[rec.platform]) acc[rec.platform] = []
-    acc[rec.platform].push(rec)
-    return acc
-  }, {})
-
+  // ── All platforms view ────────────────────────────────────
+  const platforms = [...new Set(recs.map(r => r.platform))]
   return (
-    <div className="ss-tab-content" style={{display:'flex', flexDirection:'column', gap:'1.5rem'}}>
-      {Object.entries(byPlatform).map(([plt, platformRecs]) => (
-        <div key={plt}>
-          <div className="ss-plan-platform-header">
-            <span className="badge badge--blue">{plt}</span>
-            <span style={{color:'var(--adm-muted)', fontSize:'0.8rem'}}>{platformRecs.length} recommendations</span>
+    <div className="ss-tab-content">
+      <p className="section-title">Content Calendar — All Platforms</p>
+      <div className="ss-calendar">
+        <div className="ss-calendar-grid">
+          {/* Header row */}
+          <div className="ss-calendar-header-row">
+            <div className="ss-calendar-header-cell" />
+            {DAYS.map(d => (
+              <div key={d} className="ss-calendar-header-cell">{DAY_SHORT[d]}</div>
+            ))}
           </div>
-          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem'}}>
-            {platformRecs.map((rec, i) => <PlanCard key={i} rec={rec} onDraft={onDraftThis} />)}
-          </div>
+          {/* One row per platform */}
+          {platforms.map(platform => (
+            <React.Fragment key={platform}>
+              <div className="ss-calendar-platform-label">
+                <span className="badge badge--blue" style={{ fontSize: '0.72rem' }}>{platform}</span>
+              </div>
+              {DAYS.map(day => {
+                const dayRecs = recs.filter(r => r.platform === platform && r.suggestedDay === day)
+                return (
+                  <div key={day} className="ss-calendar-day-cell">
+                    {dayRecs.map((rec, i) => (
+                      <CalCard key={i} rec={rec} onDraft={onDraftThis} />
+                    ))}
+                  </div>
+                )
+              })}
+            </React.Fragment>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   )
 }

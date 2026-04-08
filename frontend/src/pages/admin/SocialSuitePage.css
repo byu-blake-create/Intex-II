@@ -1406,3 +1406,165 @@
 .ss-plan-section-header { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.1rem; }
 .ss-plan-section-title { font-size: 1rem; font-weight: 700; color: var(--adm-ink); margin: 0; }
 .ss-plan-section-desc { font-size: 0.8rem; color: var(--adm-muted); margin: 0 0 0.5rem 0; }
+
+/* ─── Content Calendar ─────────────────────────────────────── */
+.ss-calendar {
+  overflow-x: auto;
+}
+.ss-calendar-grid {
+  display: grid;
+  grid-template-columns: 110px repeat(7, minmax(110px, 1fr));
+  gap: 0;
+  min-width: 800px;
+  border: 1px solid var(--adm-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.ss-calendar-header-row {
+  display: contents;
+}
+.ss-calendar-header-cell {
+  background: var(--adm-surface-alt, var(--adm-card));
+  padding: 0.5rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--adm-muted);
+  border-bottom: 1px solid var(--adm-border);
+  text-align: center;
+}
+.ss-calendar-header-cell:not(:last-child) {
+  border-right: 1px solid var(--adm-border);
+}
+.ss-calendar-platform-label {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--adm-border);
+  border-right: 1px solid var(--adm-border);
+  display: flex;
+  align-items: flex-start;
+  padding-top: 0.75rem;
+}
+.ss-calendar-day-cell {
+  padding: 0.4rem;
+  border-bottom: 1px solid var(--adm-border);
+  border-right: 1px solid var(--adm-border);
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  vertical-align: top;
+}
+.ss-calendar-day-cell:last-child,
+.ss-calendar-platform-label:last-child {
+  border-right: none;
+}
+
+/* ─── Calendar cards ───────────────────────────────────────── */
+.ss-cal-card {
+  border-radius: 6px;
+  padding: 0.45rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border-left: 3px solid transparent;
+  background: var(--adm-card);
+  box-shadow: var(--adm-shadow-soft);
+  font-size: 0.78rem;
+}
+.ss-cal-card--untapped {
+  border-left-color: #3b82f6;
+}
+.ss-cal-card--double_down {
+  border-left-color: #f59e0b;
+}
+.ss-cal-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.3rem;
+}
+.ss-cal-card__time {
+  font-size: 0.72rem;
+  color: var(--adm-muted);
+}
+.ss-cal-card__topic {
+  font-weight: 700;
+  color: var(--adm-ink);
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+.ss-cal-card__chips {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+.ss-chip--xs {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.35rem;
+}
+.ss-cal-card__clicks {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #22c55e;
+}
+.ss-cal-card__draft {
+  background: none;
+  border: none;
+  color: var(--adm-accent, #6366f1);
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 0;
+  text-align: left;
+  font-weight: 600;
+}
+.ss-cal-card__draft:hover { text-decoration: underline; }
+.ss-cal-card__reasoning {
+  font-size: 0.75rem;
+  color: var(--adm-muted);
+  margin: 0.2rem 0 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─── Strategy summary boxes ───────────────────────────────── */
+.ss-plan-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.ss-plan-summary__box {
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border: 1px solid var(--adm-border);
+}
+.ss-plan-summary__box--untapped {
+  background: color-mix(in srgb, #3b82f6 8%, var(--adm-card));
+  border-color: color-mix(in srgb, #3b82f6 30%, transparent);
+}
+.ss-plan-summary__box--double-down {
+  background: color-mix(in srgb, #f59e0b 8%, var(--adm-card));
+  border-color: color-mix(in srgb, #f59e0b 30%, transparent);
+}
+.ss-plan-summary__count {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--adm-ink);
+  line-height: 1;
+}
+.ss-plan-summary__label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--adm-ink);
+}
+.ss-plan-summary__sub {
+  font-size: 0.78rem;
+  color: var(--adm-muted);
+}
