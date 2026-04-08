@@ -1,0 +1,34 @@
+{
+  "name": "social_impressions_gb",
+  "trained_at": "2026-04-08T04:51:01.074825+00:00",
+  "label_definition": "impressions for a social media post",
+  "feature_names": [
+    "post_hour",
+    "num_hashtags",
+    "mentions_count",
+    "caption_length",
+    "has_call_to_action",
+    "features_resident_story",
+    "is_boosted",
+    "boost_budget_php",
+    "follower_count_at_post",
+    "month_num",
+    "is_weekend",
+    "platform",
+    "day_of_week",
+    "post_type",
+    "media_type",
+    "call_to_action_type",
+    "content_topic",
+    "sentiment_tone",
+    "campaign_name"
+  ],
+  "metrics": {
+    "rmse": 4643.1916,
+    "mae": 3013.0132,
+    "r2": 0.4418
+  },
+  "random_seed": 42,
+  "model_path": "C:\\Users\\johne\\Documents\\Coding\\BYU\\Intex-II\\IS455\\models\\social_impressions_gb.pkl",
+  "model_type": "GradientBoostingRegressor"
+}

@@ -46,12 +46,14 @@ public sealed record SocialPlatformInsightDto(
     string TopContentType,
     string TopTone,
     int PostCount,
-    string KeyInsight);
+    string KeyInsight,
+    decimal? AvgClicks = null);
 
 public sealed record SocialContentGapDto(
     string Platform,
     string Topic,
     decimal AvgEngagement,
+    decimal? AvgClicks,
     string PostFrequency,
     string Opportunity,
     string Priority);
@@ -61,6 +63,7 @@ public sealed record SocialTopPostDto(
     string Platform,
     string Caption,
     decimal EngagementRate,
+    int? ClickThroughs,
     string PostType,
     string Tone,
     string MediaType);
@@ -70,3 +73,27 @@ public sealed record SocialSuiteAnalyticsDto(
     IReadOnlyList<SocialContentGapDto> ContentGaps,
     IReadOnlyList<string> StaticInsights,
     IReadOnlyList<SocialTopPostDto> TopPosts);
+
+public sealed record SocialRecommendationDto(
+    string Platform,
+    string Topic,
+    string SuggestedHour,
+    decimal ExpectedEngagement,
+    decimal PlatformBaseline,
+    string Reasoning,
+    string Priority);
+
+public sealed record CaptionGenerateRequest(
+    string Platform,
+    string Topic,
+    string Tone,
+    string? Campaign,
+    string? CtaPhrase,
+    bool IncludeResidentStory,
+    string? AdditionalContext);
+
+public sealed record CaptionGenerateResponse(
+    List<string> Variants,
+    List<string> FactsUsed,
+    string VoiceNotes,
+    string ModelUsed);

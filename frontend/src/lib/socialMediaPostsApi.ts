@@ -32,6 +32,7 @@ export interface SocialContentGap {
   platform: string
   topic: string
   avgEngagement: number
+  avgClicks?: number
   postFrequency: string
   opportunity: string
   priority: 'critical' | 'high' | 'medium'
@@ -42,6 +43,7 @@ export interface SocialTopPost {
   platform: string
   caption: string
   engagementRate: number
+  clickThroughs?: number
   postType: string
   tone: string
   mediaType: string
@@ -54,6 +56,21 @@ export interface SocialMediaInsights {
   topPosts: SocialTopPost[]
 }
 
-export function fetchSocialMediaInsights(): Promise<SocialMediaInsights> {
-  return apiGet<SocialMediaInsights>('/api/socialmediaposts/insights')
+export function fetchSocialMediaInsights(platform?: string): Promise<SocialMediaInsights> {
+  const suffix = platform ? `?platform=${encodeURIComponent(platform)}` : ''
+  return apiGet<SocialMediaInsights>(`/api/socialmediaposts/insights${suffix}`)
+}
+
+export interface SocialRecommendation {
+  platform: string
+  topic: string
+  suggestedHour: string
+  expectedEngagement: number
+  platformBaseline: number
+  reasoning: string
+  priority: 'high' | 'medium'
+}
+
+export function fetchRecommendations(): Promise<SocialRecommendation[]> {
+  return apiGet<SocialRecommendation[]>('/api/socialmediaposts/recommendations')
 }

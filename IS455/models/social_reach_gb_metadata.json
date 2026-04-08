@@ -1,0 +1,34 @@
+{
+  "name": "social_reach_gb",
+  "trained_at": "2026-04-08T04:50:30.811213+00:00",
+  "label_definition": "reach for a social media post",
+  "feature_names": [
+    "post_hour",
+    "num_hashtags",
+    "mentions_count",
+    "caption_length",
+    "has_call_to_action",
+    "features_resident_story",
+    "is_boosted",
+    "boost_budget_php",
+    "follower_count_at_post",
+    "month_num",
+    "is_weekend",
+    "platform",
+    "day_of_week",
+    "post_type",
+    "media_type",
+    "call_to_action_type",
+    "content_topic",
+    "sentiment_tone",
+    "campaign_name"
+  ],
+  "metrics": {
+    "rmse": 2821.104,
+    "mae": 1827.2157,
+    "r2": 0.478
+  },
+  "random_seed": 42,
+  "model_path": "C:\\Users\\johne\\Documents\\Coding\\BYU\\Intex-II\\IS455\\models\\social_reach_gb.pkl",
+  "model_type": "GradientBoostingRegressor"
+}

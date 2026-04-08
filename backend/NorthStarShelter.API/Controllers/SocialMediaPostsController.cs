@@ -43,10 +43,17 @@ public class SocialMediaPostsController : ControllerBase
     }
 
     [HttpGet("insights")]
-    public async Task<ActionResult<SocialSuiteAnalyticsDto>> GetInsights(CancellationToken cancellationToken)
+    public async Task<ActionResult<SocialSuiteAnalyticsDto>> GetInsights(
+        [FromQuery] string? platform = null,
+        CancellationToken cancellationToken = default)
     {
-        var posts = await _db.SocialMediaPosts.AsNoTracking()
-            .Where(p => p.Platform != null)
+        var query = _db.SocialMediaPosts.AsNoTracking()
+            .Where(p => p.Platform != null);
+
+        if (!string.IsNullOrWhiteSpace(platform))
+            query = query.Where(p => p.Platform == platform);
+
+        var posts = await query
             .OrderByDescending(p => p.CreatedAt)
             .Take(500)
             .Select(p => new
@@ -64,6 +71,7 @@ public class SocialMediaPostsController : ControllerBase
                 HasEngagement = p.EngagementRate != null,
                 IsBoosted = p.IsBoosted ?? false,
                 FeaturesResidentStory = p.FeaturesResidentStory ?? false,
+                p.ClickThroughs,
             })
             .ToListAsync(cancellationToken);
 
@@ -103,6 +111,9 @@ public class SocialMediaPostsController : ControllerBase
                     .Select(x => x.Key)
                     .FirstOrDefault() ?? "Unknown";
 
+                var clickRows = g.Where(x => x.ClickThroughs.HasValue).ToList();
+                decimal? avgClicks = clickRows.Count > 0 ? (decimal)clickRows.Average(x => (double)x.ClickThroughs!.Value) : null;
+
                 return new SocialPlatformInsightDto(
                     g.Key,
                     avgEngagement,
@@ -110,9 +121,13 @@ public class SocialMediaPostsController : ControllerBase
                     topContentType,
                     topTone,
                     g.Count(),
-                    $"{g.Key} averages {avgEngagement:P1} engagement across {g.Count()} live posts. Best observed times are {DescribeHours(bestHours)}.");
+                    avgClicks.HasValue
+                        ? $"{g.Key} is the strongest live channel right now with {avgClicks.Value:F1} avg click-throughs per post across {g.Count()} posts."
+                        : $"{g.Key} averages {avgEngagement:P1} engagement across {g.Count()} live posts.",
+                    avgClicks);
             })
-            .OrderByDescending(x => x.AvgEngagement)
+            .OrderByDescending(x => x.AvgClicks ?? 0)
+            .ThenByDescending(x => x.AvgEngagement)
             .ThenByDescending(x => x.PostCount)
             .ToList();
 
@@ -127,23 +142,28 @@ public class SocialMediaPostsController : ControllerBase
                 var priority = count <= 2 && avg >= 0.10m ? "critical"
                     : count <= 4 && avg >= 0.08m ? "high"
                     : "medium";
+                var clicksList = g.Where(x => x.ClickThroughs.HasValue).Select(x => (double)x.ClickThroughs!.Value).ToList();
+                decimal? avgClicks = clicksList.Count > 0 ? (decimal)clicksList.Average() : null;
 
                 return new SocialContentGapDto(
                     g.Key.Platform,
                     g.Key.Topic,
                     avg,
+                    avgClicks,
                     frequency,
                     $"'{g.Key.Topic}' posts on {g.Key.Platform} average {avg:P1} engagement across {count} live posts. Publishing this theme more consistently is the clearest data-backed opportunity.",
                     priority);
             })
             .OrderBy(g => Array.IndexOf(PriorityOrder, g.Priority))
+            .ThenByDescending(g => g.AvgClicks)
             .ThenByDescending(g => g.AvgEngagement)
             .ThenBy(g => g.Platform)
             .Take(8)
             .ToList();
 
-        var topPosts = postsWithEngagement
-            .OrderByDescending(p => p.EngagementRate)
+        var topPosts = posts
+            .Where(p => p.ClickThroughs.HasValue)
+            .OrderByDescending(p => p.ClickThroughs)
             .ThenByDescending(p => p.CreatedAt)
             .Take(5)
             .Select(p => new SocialTopPostDto(
@@ -151,6 +171,7 @@ public class SocialMediaPostsController : ControllerBase
                 p.Platform,
                 p.Caption ?? "No caption recorded.",
                 p.EngagementRate,
+                p.ClickThroughs,
                 p.PostType ?? "Unknown",
                 p.SentimentTone ?? "Unknown",
                 p.MediaType ?? "Unknown"))
@@ -160,7 +181,9 @@ public class SocialMediaPostsController : ControllerBase
         var topPlatform = platformInsights.FirstOrDefault();
         if (topPlatform is not null)
         {
-            insights.Add($"{topPlatform.Platform} is the strongest live channel right now at {topPlatform.AvgEngagement:P1} average engagement.");
+            insights.Add(topPlatform.AvgClicks.HasValue
+                ? $"{topPlatform.Platform} is the strongest live channel right now with {topPlatform.AvgClicks.Value:F1} avg click-throughs per post."
+                : $"{topPlatform.Platform} is the strongest live channel right now at {topPlatform.AvgEngagement:P1} average engagement.");
         }
 
         var bestHour = postsWithEngagement
@@ -202,6 +225,71 @@ public class SocialMediaPostsController : ControllerBase
         }
 
         return Ok(new SocialSuiteAnalyticsDto(platformInsights, contentGaps, insights, topPosts));
+    }
+
+    [HttpGet("recommendations")]
+    public async Task<ActionResult<List<SocialRecommendationDto>>> GetRecommendations(CancellationToken cancellationToken)
+    {
+        var posts = await _db.SocialMediaPosts.AsNoTracking()
+            .Where(p => p.Platform != null && p.EngagementRate != null)
+            .OrderByDescending(p => p.CreatedAt)
+            .Take(500)
+            .Select(p => new
+            {
+                Platform = p.Platform!,
+                Topic = p.ContentTopic ?? "General",
+                p.PostHour,
+                EngagementRate = p.EngagementRate!.Value,
+            })
+            .ToListAsync(cancellationToken);
+
+        if (posts.Count == 0)
+            return Ok(new List<SocialRecommendationDto>());
+
+        // Avg engagement per platform (baseline)
+        var platformBaselines = posts
+            .GroupBy(p => p.Platform)
+            .ToDictionary(g => g.Key, g => g.Average(x => x.EngagementRate));
+
+        // Best posting hour per platform
+        var bestHourByPlatform = posts
+            .Where(p => p.PostHour.HasValue)
+            .GroupBy(p => p.Platform)
+            .ToDictionary(
+                g => g.Key,
+                g => g.GroupBy(x => x.PostHour!.Value)
+                      .OrderByDescending(h => h.Average(y => y.EngagementRate))
+                      .ThenBy(h => h.Key)
+                      .Select(h => h.Key)
+                      .FirstOrDefault(-1));
+
+        // High-opportunity combos: <4 posts but avg engagement > 0.08
+        var recommendations = posts
+            .GroupBy(p => new { p.Platform, p.Topic })
+            .Where(g => g.Count() < 4 && g.Average(x => x.EngagementRate) > 0.08m)
+            .Select(g =>
+            {
+                var avg = g.Average(x => x.EngagementRate);
+                var baseline = platformBaselines.TryGetValue(g.Key.Platform, out var b) ? b : 0m;
+                var bestHour = bestHourByPlatform.TryGetValue(g.Key.Platform, out var h) && h >= 0
+                    ? FormatHour(h)
+                    : "No timing data";
+                var priority = avg >= 0.12m ? "high" : "medium";
+                return new SocialRecommendationDto(
+                    g.Key.Platform,
+                    g.Key.Topic,
+                    bestHour,
+                    avg,
+                    baseline,
+                    $"'{g.Key.Topic}' on {g.Key.Platform} has only {g.Count()} post(s) but averages {avg:P1} engagement — {(avg - baseline):P1} above the platform baseline of {baseline:P1}. Posting more of this topic at {bestHour} is a high-leverage opportunity.",
+                    priority);
+            })
+            .OrderByDescending(r => r.ExpectedEngagement)
+            .ThenBy(r => r.Platform)
+            .Take(5)
+            .ToList();
+
+        return Ok(recommendations);
     }
 
     private static string DescribeHours(IReadOnlyList<string> hours)
