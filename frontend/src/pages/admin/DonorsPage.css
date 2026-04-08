@@ -1,4 +1,4 @@
-.dn-layout { display:grid; grid-template-columns:360px 1fr; gap:0; min-height:calc(100svh - 60px); }
+.dn-layout { display:grid; grid-template-columns:360px 1fr; gap:0; min-height:calc(100svh - 60px); background:var(--adm-card); }
 .dn-sidebar { border-right:1px solid var(--adm-border); display:flex; flex-direction:column; overflow:hidden; }
 .dn-sidebar__header { padding:1.25rem; border-bottom:1px solid var(--adm-border); display:flex; flex-direction:column; gap:0.75rem; flex-shrink:0; }
 .dn-search { width:100%; padding:0.5rem 0.75rem; background:var(--adm-card); border:1px solid var(--adm-border); border-radius:8px; color:var(--adm-ink); font-size:0.9rem; }
