@@ -24,6 +24,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient();
 
 // Local/dev fallback keeps public endpoints and auth-backed pages bootable even when
 // a SQL connection string has not been configured yet.
