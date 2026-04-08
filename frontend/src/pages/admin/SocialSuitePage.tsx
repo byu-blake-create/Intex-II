@@ -76,6 +76,33 @@ function toLabel(value: string | null | undefined): string {
   return ALL_OPTIONS.find(o => o.value === value)?.label ?? value
 }
 
+function buildPostSearchText(post: SocialMediaPost): string {
+  const createdDate = post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ''
+  const numericValues = [post.clickThroughs, post.donationReferrals, post.engagementRate]
+    .filter((value): value is number => value != null)
+    .flatMap(value => [String(value), value.toLocaleString()])
+
+  return [
+    String(post.postId),
+    post.createdAt ?? '',
+    createdDate,
+    post.platform ?? '',
+    post.postType ?? '',
+    toLabel(post.postType),
+    post.mediaType ?? '',
+    toLabel(post.mediaType),
+    post.campaignName ?? '',
+    pct(post.engagementRate),
+    ...numericValues,
+    post.caption ?? '',
+    post.sentimentTone ?? '',
+    toLabel(post.sentimentTone),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+}
+
 // ─── Tab: Learn ───────────────────────────────────────────────────────────────
 
 function LearnTab({
@@ -922,11 +949,7 @@ function PostsTab({ posts }: { posts: SocialMediaPost[] }) {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
-    return posts.filter(post =>
-      !q ||
-      (post.caption ?? '').toLowerCase().includes(q) ||
-      (post.campaignName ?? '').toLowerCase().includes(q)
-    )
+    return posts.filter(post => !q || buildPostSearchText(post).includes(q))
   }, [posts, search])
 
   const sorted = useMemo(() => {
@@ -958,7 +981,7 @@ function PostsTab({ posts }: { posts: SocialMediaPost[] }) {
       <div style={{ marginBottom: '1rem' }}>
         <input
           type="search"
-          placeholder="Search caption or campaign..."
+          placeholder="Search any visible post value..."
           value={search}
           onChange={e => {
             setSearch(e.target.value)

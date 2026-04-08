@@ -369,7 +369,7 @@ export default function DatabasePage() {
                   <span>Search</span>
                   <input
                     type="search"
-                    placeholder={`Search ${activeTable.label.toLowerCase()}...`}
+                    placeholder={`Search any value in ${activeTable.label.toLowerCase()}...`}
                     value={search}
                     onChange={event => {
                       setSearch(event.target.value)
