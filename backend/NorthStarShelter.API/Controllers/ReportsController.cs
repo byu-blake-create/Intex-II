@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NorthStarShelter.API.Data;
+using NorthStarShelter.API.Services;
 
 namespace NorthStarShelter.API.Controllers;
 
@@ -10,10 +11,12 @@ namespace NorthStarShelter.API.Controllers;
 public class ReportsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly MlArtifactsService _mlArtifacts;
 
-    public ReportsController(AppDbContext db)
+    public ReportsController(AppDbContext db, MlArtifactsService mlArtifacts)
     {
         _db = db;
+        _mlArtifacts = mlArtifacts;
     }
 
     public record SummaryDto(
@@ -122,6 +125,18 @@ public class ReportsController : ControllerBase
         var recentVisitSince = today.AddDays(-90);
         var snapshotLabel = $"Data through {today.AddDays(-1):MMM yyyy}";
 
+        var donorRetentionPredictionsTask = _mlArtifacts.GetDonorRetentionPredictionsAsync(cancellationToken);
+        var donationValuePredictionsTask = _mlArtifacts.GetDonationValuePredictionsAsync(cancellationToken);
+        var residentRiskPredictionsTask = _mlArtifacts.GetResidentRiskPredictionsAsync(cancellationToken);
+        var reintegrationPredictionsTask = _mlArtifacts.GetReintegrationPredictionsAsync(cancellationToken);
+        var safehouseForecastPredictionsTask = _mlArtifacts.GetSafehouseForecastPredictionsAsync(cancellationToken);
+        var donorRetentionMetadataTask = _mlArtifacts.GetDonorRetentionMetadataAsync(cancellationToken);
+        var donationValueMetadataTask = _mlArtifacts.GetDonationValueMetadataAsync(cancellationToken);
+        var residentRiskMetadataTask = _mlArtifacts.GetResidentRiskMetadataAsync(cancellationToken);
+        var reintegrationMetadataTask = _mlArtifacts.GetReintegrationMetadataAsync(cancellationToken);
+        var safehouseForecastMetadataTask = _mlArtifacts.GetSafehouseForecastMetadataAsync(cancellationToken);
+        var socialMetadataTask = _mlArtifacts.GetSocialPostPerformanceMetadataAsync(cancellationToken);
+
         var activeResidents = await _db.Residents.AsNoTracking()
             .CountAsync(r => r.CaseStatus == "Active", cancellationToken);
 
@@ -179,112 +194,341 @@ public class ReportsController : ControllerBase
             .FirstOrDefaultAsync(cancellationToken);
 
         var topPlatform = await _db.SocialMediaPosts.AsNoTracking()
-            .Where(p => p.Platform != null && p.EngagementRate != null)
+            .Where(p => p.Platform != null && p.ClickThroughs != null && p.Reach != null && p.Reach > 0)
             .GroupBy(p => p.Platform!)
             .Select(g => new
             {
                 Platform = g.Key,
-                AverageRate = g.Average(p => p.EngagementRate ?? 0),
+                AverageRate = g.Average(p => (double)p.ClickThroughs!.Value / p.Reach!.Value),
                 PostCount = g.Count()
             })
             .OrderByDescending(g => g.AverageRate)
             .FirstOrDefaultAsync(cancellationToken);
+
+        await Task.WhenAll(
+            donorRetentionPredictionsTask,
+            donationValuePredictionsTask,
+            residentRiskPredictionsTask,
+            reintegrationPredictionsTask,
+            safehouseForecastPredictionsTask,
+            donorRetentionMetadataTask,
+            donationValueMetadataTask,
+            residentRiskMetadataTask,
+            reintegrationMetadataTask,
+            safehouseForecastMetadataTask,
+            socialMetadataTask);
+
+        var donorRetentionPredictions = donorRetentionPredictionsTask.Result;
+        var donationValuePredictions = donationValuePredictionsTask.Result;
+        var residentRiskPredictions = residentRiskPredictionsTask.Result;
+        var reintegrationPredictions = reintegrationPredictionsTask.Result;
+        var safehouseForecastPredictions = safehouseForecastPredictionsTask.Result;
+        var donorRetentionMetadata = donorRetentionMetadataTask.Result;
+        var donationValueMetadata = donationValueMetadataTask.Result;
+        var residentRiskMetadata = residentRiskMetadataTask.Result;
+        var reintegrationMetadata = reintegrationMetadataTask.Result;
+        var safehouseForecastMetadata = safehouseForecastMetadataTask.Result;
+        var socialMetadata = socialMetadataTask.Result;
+
+        var donorLookupIds = donorRetentionPredictions
+            .OrderByDescending(p => p.ChurnProbability)
+            .Take(12)
+            .Select(p => p.SupporterId)
+            .Concat(donationValuePredictions
+                .OrderByDescending(p => p.HighValueProbability)
+                .Take(12)
+                .Select(p => p.SupporterId))
+            .Distinct()
+            .ToArray();
+
+        var donorLookup = donorLookupIds.Length == 0
+            ? new Dictionary<int, (string DisplayName, string? Email)>()
+            : (await _db.Supporters.AsNoTracking()
+                .Where(s => donorLookupIds.Contains(s.SupporterId))
+                .Select(s => new
+                {
+                    s.SupporterId,
+                    s.DisplayName,
+                    s.Email
+                })
+                .ToDictionaryAsync(
+                    s => s.SupporterId,
+                    s => (s.DisplayName, s.Email),
+                    cancellationToken));
+
+        var residentLookupIds = residentRiskPredictions
+            .OrderByDescending(p => p.ConcernProbability)
+            .Take(12)
+            .Select(p => p.ResidentId)
+            .Concat(reintegrationPredictions
+                .OrderByDescending(p => p.FavorableProbability)
+                .Take(12)
+                .Select(p => p.ResidentId))
+            .Distinct()
+            .ToArray();
+
+        var residentLookup = residentLookupIds.Length == 0
+            ? new Dictionary<int, (string CaseControlNo, int SafehouseId)>()
+            : (await _db.Residents.AsNoTracking()
+                .Where(r => residentLookupIds.Contains(r.ResidentId))
+                .Select(r => new
+                {
+                    r.ResidentId,
+                    r.CaseControlNo,
+                    r.SafehouseId
+                })
+                .ToDictionaryAsync(
+                    r => r.ResidentId,
+                    r => (r.CaseControlNo, r.SafehouseId),
+                    cancellationToken));
+
+        var nextForecastMonth = safehouseForecastPredictions
+            .Select(p => p.Month)
+            .Where(m => !string.IsNullOrWhiteSpace(m))
+            .OrderBy(m => m)
+            .FirstOrDefault();
+
+        var nextSafehouseForecasts = safehouseForecastPredictions
+            .Where(p => string.Equals(p.Month, nextForecastMonth, StringComparison.Ordinal))
+            .ToArray();
+
+        var safehouseLookupIds = residentLookup.Values.Select(v => v.SafehouseId)
+            .Concat(nextSafehouseForecasts.Select(p => p.SafehouseId))
+            .Distinct()
+            .ToArray();
+
+        var safehouseLookup = safehouseLookupIds.Length == 0
+            ? new Dictionary<int, (string Name, int? CapacityGirls)>()
+            : (await _db.Safehouses.AsNoTracking()
+                .Where(s => safehouseLookupIds.Contains(s.SafehouseId))
+                .Select(s => new
+                {
+                    s.SafehouseId,
+                    s.Name,
+                    s.CapacityGirls
+                })
+                .ToDictionaryAsync(
+                    s => s.SafehouseId,
+                    s => (s.Name, s.CapacityGirls),
+                    cancellationToken));
+
+        var donorWatchlistCount = donorRetentionPredictions.Count(p => p.ChurnProbability >= 0.75);
+        var topDonorPrediction = donorRetentionPredictions
+            .OrderByDescending(p => p.ChurnProbability)
+            .FirstOrDefault();
+
+        var topOpportunityPrediction = donationValuePredictions
+            .OrderByDescending(p => p.HighValueProbability)
+            .FirstOrDefault();
+        var topOpportunityCount = donationValuePredictions.Count(p =>
+            string.Equals(p.PredictedTier, "High Opportunity", StringComparison.OrdinalIgnoreCase) ||
+            p.HighValueProbability >= 0.6);
+
+        var highRiskResidentCount = residentRiskPredictions.Count(p =>
+            string.Equals(p.RiskLevel, "High", StringComparison.OrdinalIgnoreCase) ||
+            p.ConcernProbability >= 0.25);
+        var topResidentPrediction = residentRiskPredictions
+            .OrderByDescending(p => p.ConcernProbability)
+            .FirstOrDefault();
+
+        var reintegrationReadyCount = reintegrationPredictions.Count(p =>
+            string.Equals(p.RiskLevel, "High", StringComparison.OrdinalIgnoreCase) ||
+            p.FavorableProbability >= 0.6);
+        var topReintegrationPrediction = reintegrationPredictions
+            .OrderByDescending(p => p.FavorableProbability)
+            .FirstOrDefault();
+
+        var topSafehouseForecast = nextSafehouseForecasts
+            .Select(p =>
+            {
+                safehouseLookup.TryGetValue(p.SafehouseId, out var safehouse);
+                var utilization = safehouse.CapacityGirls is > 0
+                    ? p.PredictedActiveResidents / safehouse.CapacityGirls.Value
+                    : 0;
+                return new
+                {
+                    Forecast = p,
+                    SafehouseName = safehouse.Name ?? $"Safehouse {p.SafehouseId}",
+                    safehouse.CapacityGirls,
+                    Utilization = utilization
+                };
+            })
+            .OrderByDescending(x => x.Utilization)
+            .ThenByDescending(x => x.Forecast.PredictedActiveResidents)
+            .FirstOrDefault();
+
+        var safehouseAttentionCount = nextSafehouseForecasts.Count(p =>
+        {
+            safehouseLookup.TryGetValue(p.SafehouseId, out var safehouse);
+            return safehouse.CapacityGirls is > 0 &&
+                   p.PredictedActiveResidents / safehouse.CapacityGirls.Value >= 0.85;
+        });
 
         var cards = new List<CommandCenterCardDto>
         {
             new(
                 "donor-watchlist",
                 "alert",
-                "Supporters due for outreach",
-                outreachQueue.ToString(),
-                "Active supporters have not recorded a donation in the last 90 days.",
-                topRecentDonor is null
-                    ? "No recent donation activity has been recorded yet."
-                    : $"{topRecentDonor.DisplayName} currently leads recent giving with ${topRecentDonor.Total:N0} in the last 30 days.",
+                "Supporters flagged for churn review",
+                donorRetentionPredictions.Count > 0 ? donorWatchlistCount.ToString() : outreachQueue.ToString(),
+                donorRetentionPredictions.Count > 0
+                    ? "The donor retention pipeline predicts these supporters are most likely to lapse in the next 90 days."
+                    : "Active supporters have not recorded a donation in the last 90 days.",
+                donorRetentionPredictions.Count > 0 && topDonorPrediction is not null
+                    ? $"{donorLookup.GetValueOrDefault(topDonorPrediction.SupporterId).DisplayName ?? $"Supporter {topDonorPrediction.SupporterId}"} is the highest-risk donor at {topDonorPrediction.ChurnProbability:P0}; top driver: {HumanizeFeature(topDonorPrediction.TopFeature)}."
+                    : topRecentDonor is null
+                        ? "No recent donation activity has been recorded yet."
+                        : $"{topRecentDonor.DisplayName} currently leads recent giving with ${topRecentDonor.Total:N0} in the last 30 days.",
                 "/admin/donors",
                 "Open donor workbench",
-                new CommandCenterModelDto("Live donor activity", "db-live", snapshotLabel, "Window", "90 days", "Based on the last recorded donation date per supporter.")),
+                BuildModelInfo(
+                    donorRetentionMetadata,
+                    "Donor retention model",
+                    donorRetentionPredictions.Count > 0 ? "artifact-backed" : "db-live",
+                    snapshotLabel,
+                    "Window",
+                    "90 days",
+                    topDonorPrediction is not null ? $"Top factor: {HumanizeFeature(topDonorPrediction.TopFeature)}" : "Based on the last recorded donation date per supporter.")),
             new(
                 "top-opportunities",
                 "opportunity",
-                "Recent donor activity",
-                recentDonorActivity.ToString(),
-                "Unique supporters gave in the last 30 days.",
-                topRecentDonor is null
-                    ? "Recent donor activity will appear here once new donations are recorded."
-                    : $"{topRecentDonor.DisplayName} is the top donor in the current 30-day window.",
+                "High-value donor opportunities",
+                donationValuePredictions.Count > 0 ? topOpportunityCount.ToString() : recentDonorActivity.ToString(),
+                donationValuePredictions.Count > 0
+                    ? "The donation value pipeline highlights donors most likely to give at or above the modeled 90-day threshold."
+                    : "Unique supporters gave in the last 30 days.",
+                donationValuePredictions.Count > 0 && topOpportunityPrediction is not null
+                    ? $"{donorLookup.GetValueOrDefault(topOpportunityPrediction.SupporterId).DisplayName ?? $"Supporter {topOpportunityPrediction.SupporterId}"} leads the opportunity list at {topOpportunityPrediction.HighValueProbability:P0} for a high-value gift."
+                    : topRecentDonor is null
+                        ? "Recent donor activity will appear here once new donations are recorded."
+                        : $"{topRecentDonor.DisplayName} is the top donor in the current 30-day window.",
                 "/admin/donors",
                 "Review recent donors",
-                new CommandCenterModelDto("Recent gifts", "db-live", snapshotLabel, "Window", "30 days", "Counts supporters with at least one recent donation.")),
+                BuildModelInfo(
+                    donationValueMetadata,
+                    "Donation value model",
+                    donationValuePredictions.Count > 0 ? "artifact-backed" : "db-live",
+                    snapshotLabel,
+                    "Window",
+                    "30 days",
+                    topOpportunityPrediction is not null ? $"Opportunity tier: {topOpportunityPrediction.PredictedTier ?? "Standard"}" : "Counts supporters with at least one recent donation.")),
             new(
                 "resident-triage",
                 "care",
-                "Open incident follow-up",
-                unresolvedIncidentCount.ToString(),
-                "Incident reports still need review or an explicit resolution.",
-                latestIncident is null
-                    ? "No unresolved incident reports are currently open."
-                    : $"Resident {latestIncident.ResidentId} is the latest open case ({latestIncident.Severity ?? "severity unspecified"}) from {latestIncident.IncidentDate:yyyy-MM-dd}.",
+                "Residents flagged for extra support",
+                residentRiskPredictions.Count > 0 ? highRiskResidentCount.ToString() : unresolvedIncidentCount.ToString(),
+                residentRiskPredictions.Count > 0
+                    ? "The resident risk pipeline flags residents whose recent patterns align with higher support need."
+                    : "Incident reports still need review or an explicit resolution.",
+                residentRiskPredictions.Count > 0 && topResidentPrediction is not null
+                    ? $"{residentLookup.GetValueOrDefault(topResidentPrediction.ResidentId).CaseControlNo ?? $"Resident {topResidentPrediction.ResidentId}"} is the highest-risk case at {topResidentPrediction.ConcernProbability:P0}; top driver: {HumanizeFeature(topResidentPrediction.TopFactor)}."
+                    : latestIncident is null
+                        ? "No unresolved incident reports are currently open."
+                        : $"Resident {latestIncident.ResidentId} is the latest open case ({latestIncident.Severity ?? "severity unspecified"}) from {latestIncident.IncidentDate:yyyy-MM-dd}.",
                 "/admin/caseload",
                 "Open caseload",
-                new CommandCenterModelDto("Incident backlog", "db-live", snapshotLabel, "Status", "Unresolved", "Derived from incident records flagged unresolved or follow-up required.")),
+                BuildModelInfo(
+                    residentRiskMetadata,
+                    "Resident risk model",
+                    residentRiskPredictions.Count > 0 ? "artifact-backed" : "db-live",
+                    snapshotLabel,
+                    "Status",
+                    "Unresolved",
+                    topResidentPrediction is not null ? $"Top factor: {HumanizeFeature(topResidentPrediction.TopFactor)}" : "Derived from incident records flagged unresolved or follow-up required.")),
             new(
                 "reintegration-ready",
                 "progress",
-                "Positive visit outcomes",
-                positiveVisitCount.ToString(),
-                "Positive home visitation outcomes were recorded in the last 90 days.",
-                topResidentVisitCount is null
-                    ? "No positive visit outcomes are available in the current lookback window."
-                    : $"Resident {topResidentVisitCount.ResidentId} has the highest count of recent positive visit outcomes ({topResidentVisitCount.Count}).",
+                "Residents ready for reintegration review",
+                reintegrationPredictions.Count > 0 ? reintegrationReadyCount.ToString() : positiveVisitCount.ToString(),
+                reintegrationPredictions.Count > 0
+                    ? "The reintegration readiness pipeline highlights residents most likely to sustain a favorable visitation outcome."
+                    : "Positive home visitation outcomes were recorded in the last 90 days.",
+                reintegrationPredictions.Count > 0 && topReintegrationPrediction is not null
+                    ? $"{residentLookup.GetValueOrDefault(topReintegrationPrediction.ResidentId).CaseControlNo ?? $"Resident {topReintegrationPrediction.ResidentId}"} leads the readiness list at {topReintegrationPrediction.FavorableProbability:P0}; top driver: {HumanizeFeature(topReintegrationPrediction.TopFactor)}."
+                    : topResidentVisitCount is null
+                        ? "No positive visit outcomes are available in the current lookback window."
+                        : $"Resident {topResidentVisitCount.ResidentId} has the highest count of recent positive visit outcomes ({topResidentVisitCount.Count}).",
                 "/admin/visitations",
                 "Open visitation planning",
-                new CommandCenterModelDto("Visit outcomes", "db-live", snapshotLabel, "Window", "90 days", "Counts positive home visitation outcomes.")),
+                BuildModelInfo(
+                    reintegrationMetadata,
+                    "Reintegration readiness model",
+                    reintegrationPredictions.Count > 0 ? "artifact-backed" : "db-live",
+                    snapshotLabel,
+                    "Window",
+                    "90 days",
+                    topReintegrationPrediction is not null ? $"Top factor: {HumanizeFeature(topReintegrationPrediction.TopFactor)}" : "Counts positive home visitation outcomes.")),
             new(
                 "safehouse-forecast",
                 "forecast",
-                "Highest active caseload",
-                (safehouseLoad?.ActiveResidents ?? 0).ToString(),
-                $"{safehouseLoad?.Name ?? "No safehouse data"} currently has the highest active resident count.",
-                safehouseLoad is null
-                    ? "No safehouse occupancy data is available."
-                    : "Active resident counts are derived directly from the current resident roster.",
+                "Safehouses nearing capacity",
+                nextSafehouseForecasts.Length > 0 ? safehouseAttentionCount.ToString() : (safehouseLoad?.ActiveResidents ?? 0).ToString(),
+                nextSafehouseForecasts.Length > 0
+                    ? $"The safehouse forecast projects capacity pressure for {nextForecastMonth ?? "the next cycle"}."
+                    : $"{safehouseLoad?.Name ?? "No safehouse data"} currently has the highest active resident count.",
+                nextSafehouseForecasts.Length > 0 && topSafehouseForecast is not null
+                    ? $"{topSafehouseForecast.SafehouseName} leads the forecast at {topSafehouseForecast.Forecast.PredictedActiveResidents:N1} residents ({topSafehouseForecast.Utilization:P0} of capacity)."
+                    : safehouseLoad is null
+                        ? "No safehouse occupancy data is available."
+                        : "Active resident counts are derived directly from the current resident roster.",
                 "/admin/reports",
                 "Open operational reports",
-                new CommandCenterModelDto("Current occupancy", "db-live", snapshotLabel, "Scope", "Active residents", "Calculated from the live Residents table.")),
+                BuildModelInfo(
+                    safehouseForecastMetadata,
+                    "Safehouse forecast model",
+                    nextSafehouseForecasts.Length > 0 ? "artifact-backed" : "db-live",
+                    snapshotLabel,
+                    "Scope",
+                    "Active residents",
+                    topSafehouseForecast is not null ? $"Forecast month: {nextForecastMonth}" : "Calculated from the live Residents table.")),
             new(
                 "outreach-highlight",
                 "outreach",
-                "Top engagement platform",
+                "Top click-through platform",
                 topPlatform is null ? "0.0%" : $"{topPlatform.AverageRate:P1}",
                 topPlatform is null
-                    ? "No social engagement data is available yet."
-                    : $"{topPlatform.Platform} currently leads average engagement across recorded posts.",
+                    ? "No social click-through data is available yet."
+                    : $"{topPlatform.Platform} currently leads average click-through rate across recorded posts.",
                 topPlatform is null
-                    ? "Populate the SocialMediaPosts table to unlock outreach analytics."
-                    : $"{topPlatform.PostCount} posts contributed to the current average engagement rate.",
+                    ? "Launch the Social Suite to score a draft post with the live prediction service."
+                    : $"{topPlatform.PostCount} posts contributed to the current average click-through rate.",
                 "/admin/social",
                 "Open social workspace",
-                new CommandCenterModelDto("Social engagement", "db-live", snapshotLabel, "Posts sampled", topPlatform?.PostCount.ToString() ?? "0", "Averages the stored engagement rate by platform.")),
+                BuildModelInfo(
+                    socialMetadata,
+                    "Social suite models",
+                    "artifact-backed",
+                    snapshotLabel,
+                    "Posts sampled",
+                    topPlatform?.PostCount.ToString() ?? "0",
+                    topPlatform is null ? "Draft post scoring is ready for live use." : $"Observed CTR leader: {topPlatform.Platform}")),
         };
 
         var priorities = new List<CommandCenterPriorityDto>
         {
             new(
                 "Work the outreach queue",
-                "Start with supporters who have gone 90 days without a recorded gift, then review the recent-donor list while activity is fresh.",
+                donorRetentionPredictions.Count > 0
+                    ? "Start with the churn watchlist, then pair those donors with the top-opportunity list for higher-value asks."
+                    : "Start with supporters who have gone 90 days without a recorded gift, then review the recent-donor list while activity is fresh.",
                 "/admin/donors",
                 "Open donor workbench"),
             new(
                 "Clear open incident follow-up",
-                unresolvedIncidentCount == 0
-                    ? "There are no unresolved incident reports right now."
-                    : "Review unresolved incident reports before opening new resident work.",
+                residentRiskPredictions.Count > 0
+                    ? (highRiskResidentCount == 0
+                        ? "No residents are currently flagged high-risk by the latest model run."
+                        : "Review residents at the top of the risk watchlist before opening lower-priority case work.")
+                    : (unresolvedIncidentCount == 0
+                        ? "There are no unresolved incident reports right now."
+                        : "Review unresolved incident reports before opening new resident work."),
                 "/admin/caseload",
                 "Open caseload"),
             new(
                 "Use recent visit outcomes for reintegration review",
-                "Positive visit history is the clearest live signal available for reintegration conversations today.",
+                reintegrationPredictions.Count > 0
+                    ? "Use the reintegration readiness list to focus visitation prep on residents with the strongest modeled outlook."
+                    : "Positive visit history is the clearest live signal available for reintegration conversations today.",
                 "/admin/visitations",
                 "Open visitations"),
         };
@@ -299,21 +543,35 @@ public class ReportsController : ControllerBase
 
         var heroChips = new List<string>
         {
-            $"{outreachQueue} supporters need outreach review",
-            $"{unresolvedIncidentCount} incident follow-ups are open",
-            $"{positiveVisitCount} positive visits logged in 90 days",
-            $"{activeResidents} active residents currently recorded",
+            donorRetentionPredictions.Count > 0
+                ? $"{donorWatchlistCount} donors flagged for churn review"
+                : $"{outreachQueue} supporters need outreach review",
+            residentRiskPredictions.Count > 0
+                ? $"{highRiskResidentCount} residents flagged high-risk"
+                : $"{unresolvedIncidentCount} incident follow-ups are open",
+            reintegrationPredictions.Count > 0
+                ? $"{reintegrationReadyCount} residents ready for reintegration review"
+                : $"{positiveVisitCount} positive visits logged in 90 days",
+            nextSafehouseForecasts.Length > 0
+                ? $"{safehouseAttentionCount} safehouses forecast near capacity"
+                : $"{activeResidents} active residents currently recorded",
         };
 
         var summary = string.Join(" ",
-            $"{outreachQueue} supporters are currently outside the 90-day donation window.",
-            $"{unresolvedIncidentCount} incident follow-ups remain open.",
-            $"{positiveVisitCount} positive visit outcomes were recorded in the last 90 days.");
+            donorRetentionPredictions.Count > 0
+                ? $"{donorWatchlistCount} supporters are currently on the churn watchlist."
+                : $"{outreachQueue} supporters are currently outside the 90-day donation window.",
+            residentRiskPredictions.Count > 0
+                ? $"{highRiskResidentCount} residents are flagged for extra support."
+                : $"{unresolvedIncidentCount} incident follow-ups remain open.",
+            reintegrationPredictions.Count > 0
+                ? $"{reintegrationReadyCount} residents are strong reintegration-review candidates."
+                : $"{positiveVisitCount} positive visit outcomes were recorded in the last 90 days.");
 
         var dto = new CommandCenterDto(
             snapshotLabel,
             summary,
-            "These signals come from the live SQL database and should be reviewed alongside the full resident and donor record before action is taken.",
+            "These signals combine deployed IS455 model artifacts with live SQL records and should still be reviewed alongside the full resident and donor record before action is taken.",
             heroChips,
             cards,
             priorities,
@@ -365,6 +623,87 @@ public class ReportsController : ControllerBase
             .Select(g => new { g.Key, Count = g.Count() })
             .ToListAsync(cancellationToken);
         return Ok(data.ToDictionary(x => x.Key, x => x.Count));
+    }
+
+    private static CommandCenterModelDto BuildModelInfo(
+        ModelMetadata? metadata,
+        string fallbackName,
+        string fallbackVersion,
+        string fallbackTrainedAt,
+        string fallbackMetricLabel,
+        string fallbackMetricValue,
+        string? topFactor)
+    {
+        if (metadata is null)
+        {
+            return new CommandCenterModelDto(
+                fallbackName,
+                fallbackVersion,
+                fallbackTrainedAt,
+                fallbackMetricLabel,
+                fallbackMetricValue,
+                topFactor);
+        }
+
+        var (metricLabel, metricValue) = PickPrimaryMetric(metadata);
+        return new CommandCenterModelDto(
+            HumanizeFeature(metadata.Name) ?? fallbackName,
+            metadata.ModelType ?? fallbackVersion,
+            FormatTimestamp(metadata.TrainedAt) ?? fallbackTrainedAt,
+            metricLabel,
+            metricValue,
+            topFactor);
+    }
+
+    private static (string Label, string Value) PickPrimaryMetric(ModelMetadata metadata)
+    {
+        if (metadata.Metrics is null || metadata.Metrics.Count == 0)
+        {
+            return ("Metric", "n/a");
+        }
+
+        var preferredOrder = new[] { "f1", "roc_auc", "rmse", "mae", "r2", "accuracy", "precision", "recall" };
+        foreach (var key in preferredOrder)
+        {
+            if (metadata.Metrics.TryGetValue(key, out var metric))
+            {
+                return (FormatMetricLabel(key), metric.ToString("0.###"));
+            }
+        }
+
+        var first = metadata.Metrics.First();
+        return (FormatMetricLabel(first.Key), first.Value.ToString("0.###"));
+    }
+
+    private static string FormatMetricLabel(string key) =>
+        key.ToUpperInvariant().Replace("_", "-");
+
+    private static string? HumanizeFeature(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return null;
+        }
+
+        return string.Join(' ',
+            raw.Replace("_", " ", StringComparison.Ordinal)
+               .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+               .Select(part => char.ToUpperInvariant(part[0]) + part[1..]));
+    }
+
+    private static string? FormatTimestamp(string? timestamp)
+    {
+        if (string.IsNullOrWhiteSpace(timestamp))
+        {
+            return null;
+        }
+
+        if (DateTimeOffset.TryParse(timestamp, out var parsed))
+        {
+            return parsed.ToString("yyyy-MM-dd");
+        }
+
+        return timestamp;
     }
 
     private sealed class SummaryRow

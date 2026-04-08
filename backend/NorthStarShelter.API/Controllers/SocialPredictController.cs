@@ -87,6 +87,25 @@ public class SocialPredictController : ControllerBase
 
     [HttpPost]
     public async Task<ActionResult> Predict([FromBody] SocialPredictRequest req, CancellationToken cancellationToken)
+        => await PredictCore(req, cancellationToken);
+
+    [HttpPost("/api/ml/social-post-performance")]
+    public async Task<ActionResult> PredictSocialPostPerformance([FromBody] SocialPredictRequest req, CancellationToken cancellationToken)
+        => await PredictCore(req, cancellationToken);
+
+    [HttpPost("/api/ml/social-click-throughs")]
+    public async Task<ActionResult> PredictSocialClickThroughs([FromBody] SocialPredictRequest req, CancellationToken cancellationToken)
+        => await PredictCore(req, cancellationToken);
+
+    [HttpPost("/api/ml/social-reach")]
+    public async Task<ActionResult> PredictSocialReach([FromBody] SocialPredictRequest req, CancellationToken cancellationToken)
+        => await PredictCore(req, cancellationToken);
+
+    [HttpPost("/api/ml/social-impressions")]
+    public async Task<ActionResult> PredictSocialImpressions([FromBody] SocialPredictRequest req, CancellationToken cancellationToken)
+        => await PredictCore(req, cancellationToken);
+
+    private async Task<ActionResult> PredictCore(SocialPredictRequest req, CancellationToken cancellationToken)
     {
         if (!string.IsNullOrWhiteSpace(_predictServiceBaseUrl))
         {

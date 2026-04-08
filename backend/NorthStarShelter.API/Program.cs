@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using NorthStarShelter.API.Data;
 using NorthStarShelter.API.Helpers;
 using NorthStarShelter.API.Models;
+using NorthStarShelter.API.Services;
 
 DotEnvLoader.LoadIfPresent(
     Path.Combine(Directory.GetCurrentDirectory(), ".env"),
@@ -25,6 +27,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<MlArtifactsService>();
 
 // Local/dev fallback keeps public endpoints and auth-backed pages bootable even when
 // a SQL connection string has not been configured yet.
@@ -57,6 +60,15 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services
+    .AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? string.Empty;
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? string.Empty;
+        options.SignInScheme = IdentityConstants.ExternalScheme;
+    });
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

@@ -8,6 +8,7 @@ type Props = {
   search: string
   safehouseFilter: string
   statusFilter: string
+  signalFilter: string
   listLoading: boolean
   listError: string | null
   pageNum: number
@@ -17,6 +18,7 @@ type Props = {
   onSearchChange: (value: string) => void
   onSafehouseFilterChange: (value: string) => void
   onStatusFilterChange: (value: string) => void
+  onSignalFilterChange: (value: string) => void
   onSelectResident: (resident: Resident) => void
   onPrevPage: () => void
   onNextPage: () => void
@@ -29,6 +31,7 @@ export default function CaseloadSidebar({
   search,
   safehouseFilter,
   statusFilter,
+  signalFilter,
   listLoading,
   listError,
   pageNum,
@@ -38,6 +41,7 @@ export default function CaseloadSidebar({
   onSearchChange,
   onSafehouseFilterChange,
   onStatusFilterChange,
+  onSignalFilterChange,
   onSelectResident,
   onPrevPage,
   onNextPage,
@@ -66,11 +70,26 @@ export default function CaseloadSidebar({
               </option>
             ))}
           </select>
-          <select value={statusFilter} onChange={event => onStatusFilterChange(event.target.value)}>
-            <option value="">All statuses</option>
-            <option value="Active">Active</option>
-            <option value="Closed">Closed</option>
-          </select>
+          <div className="cl-filters__row">
+            <select value={statusFilter} onChange={event => onStatusFilterChange(event.target.value)}>
+              <option value="">All statuses</option>
+              <option value="Active">Active</option>
+              <option value="Closed">Closed</option>
+            </select>
+            <select value={signalFilter} onChange={event => onSignalFilterChange(event.target.value)}>
+              <option value="">All signals</option>
+              <optgroup label="Support Need">
+                <option value="risk-high">High support need</option>
+                <option value="risk-medium">Medium support need</option>
+                <option value="risk-low">Low support need</option>
+              </optgroup>
+              <optgroup label="Reintegration">
+                <option value="reint-high">High readiness</option>
+                <option value="reint-medium">Medium readiness</option>
+                <option value="reint-low">Low readiness</option>
+              </optgroup>
+            </select>
+          </div>
         </div>
       </div>
       <div className="cl-list">

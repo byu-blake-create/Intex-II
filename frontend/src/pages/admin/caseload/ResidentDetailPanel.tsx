@@ -1,6 +1,6 @@
 import type { AdminDashboardCard } from '../../../lib/adminDashboardApi'
 import type { DashboardSummary, HomeVisitation, ProcessRecording, Resident } from '../../../types/domain'
-import type { DetailTab, OverdueInfo, ResidentEditField } from './caseloadTypes'
+import type { DetailTab, InsightLevel, OverdueInfo, ResidentEditField } from './caseloadTypes'
 import { daysUntil, statusBadge } from './caseloadUtils'
 
 type Props = {
@@ -8,6 +8,8 @@ type Props = {
   summary: DashboardSummary | null
   triageCard: AdminDashboardCard | null
   safehouseMap: Map<number, string>
+  residentRiskLevel: InsightLevel | null
+  readinessLevel: InsightLevel | null
   statusSaving: boolean
   statusError: string | null
   onRequestStatusChange: (newStatus: 'Active' | 'Closed') => void
@@ -42,6 +44,8 @@ export default function ResidentDetailPanel({
   summary,
   triageCard,
   safehouseMap,
+  residentRiskLevel,
+  readinessLevel,
   statusSaving,
   statusError,
   onRequestStatusChange,
@@ -113,6 +117,35 @@ export default function ResidentDetailPanel({
             )}
           </div>
           {statusError && <p className="admin-error">{statusError}</p>}
+
+          {(residentRiskLevel || readinessLevel) && (
+            <div className="cl-signal-row">
+              {residentRiskLevel && (
+                <div className="cl-signal-strip">
+                  <span className="cl-signal-strip__label">Resident Signal</span>
+                  <span
+                    className="cl-signal-strip__info"
+                    data-tip="Likelihood this resident needs increased care or intervention. Low = routine check-ins, Medium = monitor closely, High = proactive support recommended."
+                    aria-label="About resident signal"
+                    tabIndex={0}
+                  >ⓘ</span>
+                  <span className={`cl-ml-pill cl-ml-pill--${residentRiskLevel.tone}`}>{residentRiskLevel.label}</span>
+                </div>
+              )}
+              {readinessLevel && (
+                <div className="cl-signal-strip">
+                  <span className="cl-signal-strip__label">Reintegration</span>
+                  <span
+                    className="cl-signal-strip__info"
+                    data-tip="How ready this resident is to transition out of the shelter. Low = not yet ready, Medium = approaching readiness, High = recommend scheduling a reintegration review."
+                    aria-label="About reintegration signal"
+                    tabIndex={0}
+                  >ⓘ</span>
+                  <span className={`cl-ml-pill cl-ml-pill--${readinessLevel.tone}`}>{readinessLevel.label}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {selected.caseConferenceDate && (() => {
             const days = daysUntil(selected.caseConferenceDate)

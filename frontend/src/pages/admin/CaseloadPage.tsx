@@ -4,6 +4,7 @@ import ConfirmDeleteModal from '../../components/ConfirmDeleteModal'
 import SavedToast from '../../components/SavedToast'
 import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
 import { apiPost, apiPut } from '../../lib/api'
+import { fetchResidentWatchlist, type ResidentInsight, fetchReintegrationPredictions, type ReintegrationInsight } from '../../lib/mlApi'
 import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
 import { fetchSummary } from '../../lib/reportsApi'
 import { fetchResidents } from '../../lib/residentsApi'
@@ -19,7 +20,7 @@ import type {
   Safehouse,
 } from '../../types/domain'
 import CaseloadSidebar from './caseload/CaseloadSidebar'
-import type { DetailTab, ResidentEditField } from './caseload/caseloadTypes'
+import type { DetailTab, InsightLevel, ResidentEditField } from './caseload/caseloadTypes'
 import { daysSince, residentToUpsertInput, todayStr } from './caseload/caseloadUtils'
 import NewResidentModal from './caseload/NewResidentModal'
 import ResidentDetailPanel from './caseload/ResidentDetailPanel'
@@ -40,6 +41,20 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced
 }
 
+function getRiskLevel(level: string | null | undefined, probability: number): InsightLevel {
+  const normalized = level?.toLowerCase()
+  if (normalized === 'high' || probability >= 0.75) return { label: 'High', tone: 'high' }
+  if (normalized === 'medium' || probability >= 0.4) return { label: 'Medium', tone: 'medium' }
+  return { label: 'Low', tone: 'low' }
+}
+
+function getReadinessLevel(level: string | null | undefined, probability: number): InsightLevel {
+  const normalized = level?.toLowerCase()
+  if (normalized === 'high' || probability >= 0.75) return { label: 'High', tone: 'high' }
+  if (normalized === 'medium' || probability >= 0.4) return { label: 'Medium', tone: 'medium' }
+  return { label: 'Low', tone: 'low' }
+}
+
 export default function CaseloadPage() {
   const [residents, setResidents] = useState<Resident[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -47,6 +62,7 @@ export default function CaseloadPage() {
   const [search, setSearch] = useState('')
   const [safehouseFilter, setSafehouseFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [signalFilter, setSignalFilter] = useState('')
   const [safehouses, setSafehouses] = useState<Safehouse[]>([])
   const [selected, setSelected] = useState<Resident | null>(null)
   const [visits, setVisits] = useState<HomeVisitation[]>([])
@@ -56,6 +72,8 @@ export default function CaseloadPage() {
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
   const [triageCard, setTriageCard] = useState<AdminDashboardCard | null>(null)
+  const [residentInsights, setResidentInsights] = useState<Record<number, ResidentInsight>>({})
+  const [reintegrationInsights, setReintegrationInsights] = useState<Record<number, ReintegrationInsight>>({})
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [residentReloadToken, setResidentReloadToken] = useState(0)
   const [savedMessage, setSavedMessage] = useState<string | null>(null)
@@ -112,11 +130,18 @@ export default function CaseloadPage() {
       const card = data.cards.find(item => item.id === 'resident-triage') ?? null
       setTriageCard(card)
     }).catch(() => {})
+    fetchResidentWatchlist()
+      .then(items => setResidentInsights(Object.fromEntries(items.map(item => [item.residentId, item]))))
+      .catch(() => {})
+    fetchReintegrationPredictions()
+      .then(items => setReintegrationInsights(Object.fromEntries(items.map(item => [item.residentId, item]))))
+      .catch(() => {})
     fetchSummary().then(data => setSummary(data)).catch(() => {})
   }, [])
 
   useEffect(() => {
     let mounted = true
+
     fetchResidents({
       pageNum,
       pageSize: PAGE_SIZE,
@@ -159,6 +184,38 @@ export default function CaseloadPage() {
   }, [selected])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+
+  const filteredResidents = useMemo(() => {
+    if (!signalFilter) return residents
+
+    return residents.filter(resident => {
+      if (signalFilter.startsWith('risk-')) {
+        const level = signalFilter.slice(5)
+        const insight = residentInsights[resident.residentId]
+        if (!insight) return false
+        return getRiskLevel(insight.riskLevel, insight.concernProbability).label.toLowerCase() === level
+      }
+
+      if (signalFilter.startsWith('reint-')) {
+        const level = signalFilter.slice(6)
+        const insight = reintegrationInsights[resident.residentId]
+        if (!insight) return false
+        return getReadinessLevel(insight.readinessLevel, insight.favorableProbability).label.toLowerCase() === level
+      }
+
+      return true
+    })
+  }, [reintegrationInsights, residentInsights, residents, signalFilter])
+
+  const selectedResidentInsight = selected ? residentInsights[selected.residentId] : undefined
+  const residentRiskLevel = selectedResidentInsight
+    ? getRiskLevel(selectedResidentInsight.riskLevel, selectedResidentInsight.concernProbability)
+    : null
+
+  const selectedReintegrationInsight = selected ? reintegrationInsights[selected.residentId] : undefined
+  const readinessLevel = selectedReintegrationInsight
+    ? getReadinessLevel(selectedReintegrationInsight.readinessLevel, selectedReintegrationInsight.favorableProbability)
+    : null
 
   const safehouseMap = useMemo(() => {
     const map = new Map<number, string>()
@@ -427,12 +484,13 @@ export default function CaseloadPage() {
     <AdminLayout>
       <div className="cl-layout">
         <CaseloadSidebar
-          residents={residents}
+          residents={filteredResidents}
           safehouses={safehouses}
           selectedResidentId={selected?.residentId ?? null}
           search={search}
           safehouseFilter={safehouseFilter}
           statusFilter={statusFilter}
+          signalFilter={signalFilter}
           listLoading={listLoading}
           listError={listError}
           pageNum={pageNum}
@@ -457,6 +515,7 @@ export default function CaseloadPage() {
             setListLoading(true)
             setListError(null)
           }}
+          onSignalFilterChange={setSignalFilter}
           onSelectResident={resident => prepareResidentView(resident)}
           onPrevPage={() => {
             setPageNum(previous => previous - 1)
@@ -475,6 +534,8 @@ export default function CaseloadPage() {
           summary={summary}
           triageCard={triageCard}
           safehouseMap={safehouseMap}
+          residentRiskLevel={residentRiskLevel}
+          readinessLevel={readinessLevel}
           statusSaving={statusSaving}
           statusError={statusError}
           onRequestStatusChange={newStatus => setPendingStatusChange(newStatus)}

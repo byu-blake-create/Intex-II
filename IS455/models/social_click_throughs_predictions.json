@@ -1,0 +1,808 @@
+{
+  "generated_at": "2026-04-08T19:11:50+00:00",
+  "model_version": "social_click_throughs_gb_v1",
+  "predictions": [
+    {
+      "post_id": 36,
+      "platform": "Facebook",
+      "created_at": "2025-10-29 13:24:00",
+      "actual_click_throughs": 55,
+      "predicted_click_throughs": 48.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 442,
+      "platform": "TikTok",
+      "created_at": "2025-10-30 08:07:00",
+      "actual_click_throughs": 86,
+      "predicted_click_throughs": 124.4,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 58,
+      "platform": "WhatsApp",
+      "created_at": "2025-10-30 18:54:00",
+      "actual_click_throughs": 97,
+      "predicted_click_throughs": 108.4,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 459,
+      "platform": "WhatsApp",
+      "created_at": "2025-10-31 05:58:00",
+      "actual_click_throughs": 15,
+      "predicted_click_throughs": -2.4,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 544,
+      "platform": "Facebook",
+      "created_at": "2025-11-03 17:05:00",
+      "actual_click_throughs": 371,
+      "predicted_click_throughs": 263.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 394,
+      "platform": "Twitter",
+      "created_at": "2025-11-04 17:41:00",
+      "actual_click_throughs": 47,
+      "predicted_click_throughs": 91.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 267,
+      "platform": "YouTube",
+      "created_at": "2025-11-06 05:47:00",
+      "actual_click_throughs": 43,
+      "predicted_click_throughs": 86.6,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 668,
+      "platform": "Instagram",
+      "created_at": "2025-11-07 02:13:00",
+      "actual_click_throughs": 30,
+      "predicted_click_throughs": 46.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 307,
+      "platform": "Facebook",
+      "created_at": "2025-11-07 19:53:00",
+      "actual_click_throughs": 13,
+      "predicted_click_throughs": 50.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 347,
+      "platform": "Instagram",
+      "created_at": "2025-11-08 09:09:00",
+      "actual_click_throughs": 22,
+      "predicted_click_throughs": 67.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 740,
+      "platform": "WhatsApp",
+      "created_at": "2025-11-08 11:03:00",
+      "actual_click_throughs": 14,
+      "predicted_click_throughs": 48.3,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 67,
+      "platform": "Facebook",
+      "created_at": "2025-11-08 20:30:00",
+      "actual_click_throughs": 374,
+      "predicted_click_throughs": 165.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 27,
+      "platform": "Instagram",
+      "created_at": "2025-11-09 10:42:00",
+      "actual_click_throughs": 162,
+      "predicted_click_throughs": 113.6,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 601,
+      "platform": "Twitter",
+      "created_at": "2025-11-10 04:14:00",
+      "actual_click_throughs": 36,
+      "predicted_click_throughs": 43.3,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 698,
+      "platform": "WhatsApp",
+      "created_at": "2025-11-10 07:37:00",
+      "actual_click_throughs": 8,
+      "predicted_click_throughs": 1.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 725,
+      "platform": "Facebook",
+      "created_at": "2025-11-12 21:46:00",
+      "actual_click_throughs": 66,
+      "predicted_click_throughs": 88.8,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 120,
+      "platform": "TikTok",
+      "created_at": "2025-11-13 07:12:00",
+      "actual_click_throughs": 91,
+      "predicted_click_throughs": 113.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 686,
+      "platform": "Facebook",
+      "created_at": "2025-11-14 08:20:00",
+      "actual_click_throughs": 82,
+      "predicted_click_throughs": 137.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 591,
+      "platform": "Instagram",
+      "created_at": "2025-11-14 20:34:00",
+      "actual_click_throughs": 25,
+      "predicted_click_throughs": 26.6,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 113,
+      "platform": "TikTok",
+      "created_at": "2025-11-15 03:55:00",
+      "actual_click_throughs": 55,
+      "predicted_click_throughs": 154.6,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 200,
+      "platform": "Facebook",
+      "created_at": "2025-11-17 15:43:00",
+      "actual_click_throughs": 156,
+      "predicted_click_throughs": 67.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 47,
+      "platform": "Facebook",
+      "created_at": "2025-11-20 13:22:00",
+      "actual_click_throughs": 129,
+      "predicted_click_throughs": 130.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 271,
+      "platform": "Twitter",
+      "created_at": "2025-11-24 18:13:00",
+      "actual_click_throughs": 142,
+      "predicted_click_throughs": 144.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 653,
+      "platform": "YouTube",
+      "created_at": "2025-11-25 01:03:00",
+      "actual_click_throughs": 91,
+      "predicted_click_throughs": 180.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 348,
+      "platform": "YouTube",
+      "created_at": "2025-11-27 21:58:00",
+      "actual_click_throughs": 14,
+      "predicted_click_throughs": 134.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 774,
+      "platform": "Facebook",
+      "created_at": "2025-11-28 21:59:00",
+      "actual_click_throughs": 47,
+      "predicted_click_throughs": 50.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 398,
+      "platform": "WhatsApp",
+      "created_at": "2025-11-29 08:49:00",
+      "actual_click_throughs": 15,
+      "predicted_click_throughs": 90.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 624,
+      "platform": "Facebook",
+      "created_at": "2025-12-01 01:18:00",
+      "actual_click_throughs": 38,
+      "predicted_click_throughs": 46.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 39,
+      "platform": "Instagram",
+      "created_at": "2025-12-01 11:13:00",
+      "actual_click_throughs": 60,
+      "predicted_click_throughs": 143.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 183,
+      "platform": "Facebook",
+      "created_at": "2025-12-02 22:17:00",
+      "actual_click_throughs": 399,
+      "predicted_click_throughs": 264.8,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 44,
+      "platform": "YouTube",
+      "created_at": "2025-12-03 09:29:00",
+      "actual_click_throughs": 215,
+      "predicted_click_throughs": 205.8,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 399,
+      "platform": "Twitter",
+      "created_at": "2025-12-05 13:02:00",
+      "actual_click_throughs": 139,
+      "predicted_click_throughs": 292.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 497,
+      "platform": "WhatsApp",
+      "created_at": "2025-12-08 21:28:00",
+      "actual_click_throughs": 178,
+      "predicted_click_throughs": 262.6,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 77,
+      "platform": "LinkedIn",
+      "created_at": "2025-12-10 10:26:00",
+      "actual_click_throughs": 128,
+      "predicted_click_throughs": 114.4,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 369,
+      "platform": "Facebook",
+      "created_at": "2025-12-11 04:12:00",
+      "actual_click_throughs": 128,
+      "predicted_click_throughs": 174.8,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 289,
+      "platform": "TikTok",
+      "created_at": "2025-12-11 11:22:00",
+      "actual_click_throughs": 333,
+      "predicted_click_throughs": 219.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 439,
+      "platform": "LinkedIn",
+      "created_at": "2025-12-12 07:56:00",
+      "actual_click_throughs": 42,
+      "predicted_click_throughs": 33.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 569,
+      "platform": "TikTok",
+      "created_at": "2025-12-13 01:23:00",
+      "actual_click_throughs": 15,
+      "predicted_click_throughs": 60.4,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 629,
+      "platform": "Facebook",
+      "created_at": "2025-12-15 13:03:00",
+      "actual_click_throughs": 61,
+      "predicted_click_throughs": 104.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 228,
+      "platform": "Facebook",
+      "created_at": "2025-12-15 18:45:00",
+      "actual_click_throughs": 99,
+      "predicted_click_throughs": 67.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 89,
+      "platform": "LinkedIn",
+      "created_at": "2025-12-16 12:30:00",
+      "actual_click_throughs": 32,
+      "predicted_click_throughs": 84.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 310,
+      "platform": "Facebook",
+      "created_at": "2025-12-17 14:43:00",
+      "actual_click_throughs": 59,
+      "predicted_click_throughs": 113.6,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 232,
+      "platform": "Twitter",
+      "created_at": "2025-12-21 16:49:00",
+      "actual_click_throughs": 56,
+      "predicted_click_throughs": 90.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 187,
+      "platform": "TikTok",
+      "created_at": "2025-12-21 19:16:00",
+      "actual_click_throughs": 191,
+      "predicted_click_throughs": 175.1,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 766,
+      "platform": "Facebook",
+      "created_at": "2025-12-25 22:18:00",
+      "actual_click_throughs": 18,
+      "predicted_click_throughs": 127.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 281,
+      "platform": "TikTok",
+      "created_at": "2025-12-27 12:27:00",
+      "actual_click_throughs": 80,
+      "predicted_click_throughs": 91.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 676,
+      "platform": "Facebook",
+      "created_at": "2025-12-29 14:14:00",
+      "actual_click_throughs": 35,
+      "predicted_click_throughs": 87.8,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 41,
+      "platform": "Facebook",
+      "created_at": "2025-12-29 19:52:00",
+      "actual_click_throughs": 58,
+      "predicted_click_throughs": 50.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 219,
+      "platform": "LinkedIn",
+      "created_at": "2026-01-02 10:22:00",
+      "actual_click_throughs": 162,
+      "predicted_click_throughs": 271.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 633,
+      "platform": "Facebook",
+      "created_at": "2026-01-02 17:08:00",
+      "actual_click_throughs": 19,
+      "predicted_click_throughs": 47.8,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 422,
+      "platform": "YouTube",
+      "created_at": "2026-01-04 13:35:00",
+      "actual_click_throughs": 1130,
+      "predicted_click_throughs": 334.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 450,
+      "platform": "Instagram",
+      "created_at": "2026-01-06 19:24:00",
+      "actual_click_throughs": 87,
+      "predicted_click_throughs": 114.8,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 107,
+      "platform": "TikTok",
+      "created_at": "2026-01-08 09:50:00",
+      "actual_click_throughs": 164,
+      "predicted_click_throughs": 244.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 456,
+      "platform": "Instagram",
+      "created_at": "2026-01-08 14:21:00",
+      "actual_click_throughs": 58,
+      "predicted_click_throughs": 48.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 20,
+      "platform": "Instagram",
+      "created_at": "2026-01-10 15:08:00",
+      "actual_click_throughs": 181,
+      "predicted_click_throughs": 125.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 217,
+      "platform": "Facebook",
+      "created_at": "2026-01-11 11:55:00",
+      "actual_click_throughs": 51,
+      "predicted_click_throughs": 67.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 707,
+      "platform": "Twitter",
+      "created_at": "2026-01-11 17:55:00",
+      "actual_click_throughs": 18,
+      "predicted_click_throughs": 20.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 396,
+      "platform": "Facebook",
+      "created_at": "2026-01-13 04:24:00",
+      "actual_click_throughs": 46,
+      "predicted_click_throughs": 108.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 325,
+      "platform": "Facebook",
+      "created_at": "2026-01-15 21:34:00",
+      "actual_click_throughs": 60,
+      "predicted_click_throughs": 42.9,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 782,
+      "platform": "Twitter",
+      "created_at": "2026-01-17 09:46:00",
+      "actual_click_throughs": 120,
+      "predicted_click_throughs": 83.1,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 651,
+      "platform": "YouTube",
+      "created_at": "2026-01-17 17:00:00",
+      "actual_click_throughs": 144,
+      "predicted_click_throughs": 296.6,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 375,
+      "platform": "Instagram",
+      "created_at": "2026-01-18 01:06:00",
+      "actual_click_throughs": 21,
+      "predicted_click_throughs": 53.9,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 596,
+      "platform": "LinkedIn",
+      "created_at": "2026-01-18 11:22:00",
+      "actual_click_throughs": 17,
+      "predicted_click_throughs": 81.8,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 239,
+      "platform": "Twitter",
+      "created_at": "2026-01-21 04:43:00",
+      "actual_click_throughs": 32,
+      "predicted_click_throughs": 50.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 526,
+      "platform": "Facebook",
+      "created_at": "2026-01-21 14:34:00",
+      "actual_click_throughs": 69,
+      "predicted_click_throughs": 125.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 685,
+      "platform": "Twitter",
+      "created_at": "2026-01-22 10:09:00",
+      "actual_click_throughs": 138,
+      "predicted_click_throughs": 100.8,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 785,
+      "platform": "WhatsApp",
+      "created_at": "2026-01-22 21:33:00",
+      "actual_click_throughs": 50,
+      "predicted_click_throughs": 84.4,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 55,
+      "platform": "Twitter",
+      "created_at": "2026-01-24 07:25:00",
+      "actual_click_throughs": 146,
+      "predicted_click_throughs": 62.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 745,
+      "platform": "Instagram",
+      "created_at": "2026-01-24 07:31:00",
+      "actual_click_throughs": 31,
+      "predicted_click_throughs": 28.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 138,
+      "platform": "Facebook",
+      "created_at": "2026-01-24 09:33:00",
+      "actual_click_throughs": 353,
+      "predicted_click_throughs": 262.3,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 167,
+      "platform": "Twitter",
+      "created_at": "2026-01-25 03:27:00",
+      "actual_click_throughs": 5,
+      "predicted_click_throughs": 14.9,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 541,
+      "platform": "WhatsApp",
+      "created_at": "2026-01-27 15:10:00",
+      "actual_click_throughs": 6,
+      "predicted_click_throughs": 66.4,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 479,
+      "platform": "Instagram",
+      "created_at": "2026-01-29 00:24:00",
+      "actual_click_throughs": 23,
+      "predicted_click_throughs": 7.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 769,
+      "platform": "Facebook",
+      "created_at": "2026-01-29 19:03:00",
+      "actual_click_throughs": 97,
+      "predicted_click_throughs": 50.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 59,
+      "platform": "Facebook",
+      "created_at": "2026-01-30 04:11:00",
+      "actual_click_throughs": 210,
+      "predicted_click_throughs": 258.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 528,
+      "platform": "WhatsApp",
+      "created_at": "2026-01-31 06:57:00",
+      "actual_click_throughs": 57,
+      "predicted_click_throughs": 66.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 484,
+      "platform": "Facebook",
+      "created_at": "2026-02-01 10:50:00",
+      "actual_click_throughs": 89,
+      "predicted_click_throughs": 116.4,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 24,
+      "platform": "WhatsApp",
+      "created_at": "2026-02-01 17:06:00",
+      "actual_click_throughs": 99,
+      "predicted_click_throughs": 116.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 551,
+      "platform": "Facebook",
+      "created_at": "2026-02-02 13:39:00",
+      "actual_click_throughs": 201,
+      "predicted_click_throughs": 130.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 474,
+      "platform": "LinkedIn",
+      "created_at": "2026-02-03 02:34:00",
+      "actual_click_throughs": 22,
+      "predicted_click_throughs": 42.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 299,
+      "platform": "WhatsApp",
+      "created_at": "2026-02-04 10:08:00",
+      "actual_click_throughs": 433,
+      "predicted_click_throughs": 235.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 45,
+      "platform": "LinkedIn",
+      "created_at": "2026-02-05 13:36:00",
+      "actual_click_throughs": 65,
+      "predicted_click_throughs": 107.4,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 171,
+      "platform": "Twitter",
+      "created_at": "2026-02-07 09:05:00",
+      "actual_click_throughs": 77,
+      "predicted_click_throughs": 96.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 338,
+      "platform": "Facebook",
+      "created_at": "2026-02-07 10:25:00",
+      "actual_click_throughs": 556,
+      "predicted_click_throughs": 143.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 93,
+      "platform": "TikTok",
+      "created_at": "2026-02-07 21:14:00",
+      "actual_click_throughs": 415,
+      "predicted_click_throughs": 251.9,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 186,
+      "platform": "TikTok",
+      "created_at": "2026-02-08 12:52:00",
+      "actual_click_throughs": 64,
+      "predicted_click_throughs": 120.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 520,
+      "platform": "Instagram",
+      "created_at": "2026-02-08 14:50:00",
+      "actual_click_throughs": 191,
+      "predicted_click_throughs": 123.3,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 51,
+      "platform": "Twitter",
+      "created_at": "2026-02-08 23:13:00",
+      "actual_click_throughs": 32,
+      "predicted_click_throughs": 71.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 444,
+      "platform": "TikTok",
+      "created_at": "2026-02-09 17:25:00",
+      "actual_click_throughs": 560,
+      "predicted_click_throughs": 267.4,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 429,
+      "platform": "Facebook",
+      "created_at": "2026-02-10 06:10:00",
+      "actual_click_throughs": 139,
+      "predicted_click_throughs": 64.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 280,
+      "platform": "Twitter",
+      "created_at": "2026-02-13 11:42:00",
+      "actual_click_throughs": 91,
+      "predicted_click_throughs": 122.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 112,
+      "platform": "LinkedIn",
+      "created_at": "2026-02-18 09:13:00",
+      "actual_click_throughs": 49,
+      "predicted_click_throughs": 87.3,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 328,
+      "platform": "WhatsApp",
+      "created_at": "2026-02-18 17:25:00",
+      "actual_click_throughs": 43,
+      "predicted_click_throughs": 48.3,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 639,
+      "platform": "Facebook",
+      "created_at": "2026-02-20 18:20:00",
+      "actual_click_throughs": 172,
+      "predicted_click_throughs": 165.2,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 498,
+      "platform": "LinkedIn",
+      "created_at": "2026-02-21 09:54:00",
+      "actual_click_throughs": 165,
+      "predicted_click_throughs": 123.9,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 245,
+      "platform": "Facebook",
+      "created_at": "2026-02-21 23:46:00",
+      "actual_click_throughs": 19,
+      "predicted_click_throughs": 50.7,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 214,
+      "platform": "Facebook",
+      "created_at": "2026-02-22 00:38:00",
+      "actual_click_throughs": 106,
+      "predicted_click_throughs": 233.6,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 491,
+      "platform": "TikTok",
+      "created_at": "2026-02-23 11:05:00",
+      "actual_click_throughs": 46,
+      "predicted_click_throughs": 120.5,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 251,
+      "platform": "YouTube",
+      "created_at": "2026-02-23 17:53:00",
+      "actual_click_throughs": 549,
+      "predicted_click_throughs": 207.0,
+      "top_factor": "is_boosted"
+    },
+    {
+      "post_id": 581,
+      "platform": "Facebook",
+      "created_at": "2026-02-26 21:56:00",
+      "actual_click_throughs": 245,
+      "predicted_click_throughs": 107.9,
+      "top_factor": "is_boosted"
+    }
+  ],
+  "target": "click_throughs",
+  "prediction_scope": "latest_100_posts"
+}
