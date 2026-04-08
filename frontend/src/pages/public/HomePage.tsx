@@ -67,9 +67,6 @@ export default function HomePage() {
   const impactDashboard = buildImpactDashboardModel(snapshots)
   const latestMetrics = impactDashboard?.latest.metrics
   const previousMetrics = impactDashboard?.previous?.metrics
-  const latestMonthLabel = impactDashboard
-    ? formatImpactMonth(latestMetrics?.month ?? impactDashboard.latest.snapshot.snapshotDate)
-    : null
   const previousMonthLabel = impactDashboard?.previous
     ? formatImpactMonth(previousMetrics?.month ?? impactDashboard.previous.snapshot.snapshotDate)
     : null
