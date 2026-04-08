@@ -291,18 +291,23 @@ function PlanTab({ onDraftThis, selectedPlatform }: {
   selectedPlatform: string
 }) {
   const [recs, setRecs] = useState<SocialRecommendation[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadedPlatform, setLoadedPlatform] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
-    setLoading(true)
     fetchRecommendations(selectedPlatform || undefined)
-      .then(data => { if (mounted) setRecs(data) })
+      .then(data => {
+        if (mounted) {
+          setRecs(data)
+          setLoadedPlatform(selectedPlatform)
+        }
+      })
       .catch(() => { if (mounted) setError(null) })
-      .finally(() => { if (mounted) setLoading(false) })
     return () => { mounted = false }
   }, [selectedPlatform])
+
+  const loading = loadedPlatform !== selectedPlatform
 
   if (loading) return <div className="ss-tab-content"><div className="inline-loading">Loading plan...</div></div>
   if (error) return <div className="ss-tab-content"><p className="admin-error">{error}</p></div>
@@ -735,66 +740,73 @@ function DraftTab({ prefill }: { prefill: { platform?: string; topic?: string } 
   return (
     <div className="ss-tab-content">
       <div className="ss-captions-layout">
-        <form className="ss-form" onSubmit={e => void handleGenerate(e)}>
-          <div className="ss-form-section">
-            <p className="ss-form-section__title">Caption Setup</p>
-            <div className="ss-field">
-              <label>Platform</label>
-              <select value={form.platform} onChange={e => setField('platform', e.target.value)}>
-                {PLATFORMS.map(p => <option key={p}>{p}</option>)}
-              </select>
+        <div className="ss-captions-layout__form">
+          <form className="ss-form" onSubmit={e => void handleGenerate(e)}>
+            <div className="ss-form-section">
+              <p className="ss-form-section__title">Caption Setup</p>
+              <div className="ss-field">
+                <label>Platform</label>
+                <select value={form.platform} onChange={e => setField('platform', e.target.value)}>
+                  {PLATFORMS.map(p => <option key={p}>{p}</option>)}
+                </select>
+              </div>
+              <div className="ss-field">
+                <label>Topic</label>
+                <select value={form.topic} onChange={e => setField('topic', e.target.value)}>
+                  {CONTENT_TOPICS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                </select>
+              </div>
+              <div className="ss-field">
+                <label>Tone</label>
+                <select value={form.tone} onChange={e => setField('tone', e.target.value)}>
+                  {SENTIMENT_TONES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                </select>
+              </div>
+              <div className="ss-field">
+                <label>Campaign (optional)</label>
+                <input type="text" value={form.campaign ?? ''} onChange={e => setField('campaign', e.target.value)} placeholder="e.g. Spring 2025" />
+              </div>
+              <div className="ss-field">
+                <label>Call to Action phrase (optional)</label>
+                <input type="text" value={form.ctaPhrase ?? ''} onChange={e => setField('ctaPhrase', e.target.value)} placeholder="e.g. Donate today" />
+              </div>
+              <div className="ss-toggle-row">
+                <label>Include resident story</label>
+                <label className="ss-toggle">
+                  <input type="checkbox" checked={form.includeResidentStory} onChange={e => setField('includeResidentStory', e.target.checked)} />
+                  <span className="ss-toggle__track" />
+                </label>
+              </div>
+              <div className="ss-field">
+                <label>Additional context (optional)</label>
+                <textarea
+                  value={form.additionalContext ?? ''}
+                  onChange={e => setField('additionalContext', e.target.value)}
+                  placeholder="Any extra guidance for the AI..."
+                  rows={4}
+                  style={{ padding: '0.4rem 0.55rem', borderRadius: '8px', border: '1px solid var(--adm-border)', background: 'var(--adm-card)', color: 'var(--adm-ink)', fontSize: '0.88rem', resize: 'vertical' }}
+                />
+              </div>
             </div>
-            <div className="ss-field">
-              <label>Topic</label>
-              <select value={form.topic} onChange={e => setField('topic', e.target.value)}>
-                {CONTENT_TOPICS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-              </select>
-            </div>
-            <div className="ss-field">
-              <label>Tone</label>
-              <select value={form.tone} onChange={e => setField('tone', e.target.value)}>
-                {SENTIMENT_TONES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-              </select>
-            </div>
-            <div className="ss-field">
-              <label>Campaign (optional)</label>
-              <input type="text" value={form.campaign ?? ''} onChange={e => setField('campaign', e.target.value)} placeholder="e.g. Spring 2025" />
-            </div>
-            <div className="ss-field">
-              <label>Call to Action phrase (optional)</label>
-              <input type="text" value={form.ctaPhrase ?? ''} onChange={e => setField('ctaPhrase', e.target.value)} placeholder="e.g. Donate today" />
-            </div>
-            <div className="ss-toggle-row">
-              <label>Include resident story</label>
-              <label className="ss-toggle">
-                <input type="checkbox" checked={form.includeResidentStory} onChange={e => setField('includeResidentStory', e.target.checked)} />
-                <span className="ss-toggle__track" />
-              </label>
-            </div>
-            <div className="ss-field">
-              <label>Additional context (optional)</label>
-              <textarea
-                value={form.additionalContext ?? ''}
-                onChange={e => setField('additionalContext', e.target.value)}
-                placeholder="Any extra guidance for the AI..."
-                rows={3}
-                style={{ padding: '0.4rem 0.55rem', borderRadius: '8px', border: '1px solid var(--adm-border)', background: 'var(--adm-card)', color: 'var(--adm-ink)', fontSize: '0.88rem', resize: 'vertical' }}
-              />
-            </div>
-          </div>
 
-          <button type="submit" className="ss-generate-btn" disabled={loading}>
-            {loading ? (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span className="ss-spinner" /> Generating...
-              </span>
-            ) : 'Generate Captions'}
-          </button>
-          {error && <p className="admin-error">{error}</p>}
-        </form>
+            <button type="submit" className="ss-generate-btn" disabled={loading}>
+              {loading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="ss-spinner" /> Generating...
+                </span>
+              ) : 'Generate Captions'}
+            </button>
+            {error && <p className="admin-error">{error}</p>}
+          </form>
+        </div>
 
-        {result && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="ss-captions-layout__results">
+          {result ? (
+            <>
+              <div className="ss-results-header">
+                <p className="ss-form-section__title">Generated Variants</p>
+                <span className="ss-results-header__count">{result.variants.length} options</span>
+              </div>
             {result.variants.map((variant, i) => (
               <div key={i} className="ss-caption-variant">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
@@ -848,8 +860,17 @@ function DraftTab({ prefill }: { prefill: { platform?: string; topic?: string } 
             >
               Regenerate
             </button>
-          </div>
-        )}
+            </>
+          ) : (
+            <div className="ss-caption-placeholder">
+              <p className="ss-form-section__title">Generated Variants</p>
+              <h3>Caption variants will appear here.</h3>
+              <p>
+                Choose your setup on the left, then generate captions to compare multiple options side by side.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

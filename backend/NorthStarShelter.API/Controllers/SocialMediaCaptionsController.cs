@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
@@ -97,7 +98,7 @@ public class SocialMediaCaptionsController : ControllerBase
         try
         {
             var client = _httpClientFactory.CreateClient();
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={apiKey}";
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={apiKey}";
             var requestBody = JsonSerializer.Serialize(new
             {
                 contents = new[]
@@ -112,7 +113,10 @@ public class SocialMediaCaptionsController : ControllerBase
 
             var response = await client.SendAsync(httpRequest, cancellationToken);
             if (!response.IsSuccessStatusCode)
-                return StatusCode(502, "Caption generation unavailable");
+            {
+                var errBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                return StatusCode(502, $"Gemini {(int)response.StatusCode}: {errBody[..Math.Min(300, errBody.Length)]}");
+            }
 
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
             using var doc = JsonDocument.Parse(responseJson);
@@ -123,13 +127,14 @@ public class SocialMediaCaptionsController : ControllerBase
                 .GetProperty("text")
                 .GetString() ?? string.Empty;
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(502, "Caption generation unavailable");
+            return StatusCode(502, $"Caption error: {ex.GetType().Name}: {ex.Message}");
         }
 
         var variants = rawText
             .Split("---VARIANT---", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(NormalizeVariant)
             .Where(v => !string.IsNullOrWhiteSpace(v))
             .ToList();
 
@@ -146,6 +151,18 @@ public class SocialMediaCaptionsController : ControllerBase
             variants,
             factsUsed,
             $"Written in a {request.Tone.ToLower()} voice for {request.Platform}, community-focused and shelter-appropriate.",
-            "gemini-2.0-flash-lite"));
+            "gemini-2.5-flash-lite"));
+    }
+
+    private static string NormalizeVariant(string variant)
+    {
+        var cleaned = variant.Trim();
+        cleaned = Regex.Replace(
+            cleaned,
+            @"^\s*Here are\s+\d+\s+caption variants\s+for\s+.*?:\s*",
+            string.Empty,
+            RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+        return cleaned.Trim();
     }
 }
