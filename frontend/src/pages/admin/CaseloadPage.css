@@ -35,6 +35,9 @@
 .cl-timeline-card__text { font-size:0.85rem; color:var(--adm-muted); line-height:1.55; margin:0; }
 .cl-conference-notice { display:block; background:rgba(217,158,30,0.12); border:1px solid rgba(217,158,30,0.35); border-radius:8px; padding:0.65rem 1rem; font-size:0.85rem; color:#b8860b; font-weight:600; text-decoration:none; line-height:1.4; }
 .cl-conference-notice:hover { background:rgba(217,158,30,0.18); }
+.cl-conference-banner { padding:0.65rem 1rem; border-radius:8px; font-size:0.88rem; font-weight:600; line-height:1.4; }
+.cl-conference-banner--urgent { background:var(--adm-danger-bg); border:1px solid var(--adm-danger-border); color:var(--adm-danger-ink); }
+.cl-conference-banner--soon { background:rgba(212,150,10,0.08); border:1px solid rgba(212,150,10,0.25); color:#d4960a; }
 .cl-overdue-banner { background:var(--adm-danger-bg); border:1px solid var(--adm-danger-border); border-radius:8px; padding:0.65rem 1rem; font-size:0.85rem; color:var(--adm-danger-ink); font-weight:600; line-height:1.4; }
 .cl-concern-callout { background:rgba(217,158,30,0.1); border:1px solid rgba(217,158,30,0.3); border-radius:8px; padding:0.6rem 1rem; font-size:0.83rem; color:#b8860b; font-weight:600; line-height:1.4; }
 .cl-section-header { display:flex; justify-content:space-between; align-items:center; }

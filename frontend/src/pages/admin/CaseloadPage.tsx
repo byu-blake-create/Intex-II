@@ -39,6 +39,12 @@ function daysSince(dateStr: string): number {
   return Math.floor((now - then) / (1000 * 60 * 60 * 24))
 }
 
+function daysUntil(dateStr: string): number {
+  const target = new Date(dateStr).getTime()
+  const now = Date.now()
+  return Math.ceil((target - now) / (1000 * 60 * 60 * 24))
+}
+
 export default function CaseloadPage() {
   const [residents, setResidents] = useState<Resident[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -288,6 +294,22 @@ export default function CaseloadPage() {
                 </span>
               </div>
 
+              {/* Per-Resident Case Conference Countdown */}
+              {selected.caseConferenceDate && (() => {
+                const d = daysUntil(selected.caseConferenceDate)
+                if (d <= 0) return (
+                  <div className="cl-conference-banner cl-conference-banner--urgent">
+                    ⚑ Case conference was {Math.abs(d)} day{Math.abs(d) !== 1 ? 's' : ''} ago — update records immediately.
+                  </div>
+                )
+                if (d <= 7) return (
+                  <div className="cl-conference-banner cl-conference-banner--soon">
+                    ⚑ Case conference in {d} day{d !== 1 ? 's' : ''} — {selected.caseConferenceDate}. Prepare documentation.
+                  </div>
+                )
+                return null
+              })()}
+
               {/* Overdue Visit Warning */}
               {!visitsLoading && overdueInfo?.overdue && (
                 <div className="cl-overdue-banner">
@@ -304,6 +326,7 @@ export default function CaseloadPage() {
                 <div className="cl-field"><dt>Social Worker</dt><dd>{selected.assignedSocialWorker ?? '\u2014'}</dd></div>
                 <div className="cl-field"><dt>Internal Code</dt><dd>{selected.internalCode ?? '\u2014'}</dd></div>
                 <div className="cl-field"><dt>Safehouse</dt><dd>{safehouseMap.get(selected.safehouseId) ?? String(selected.safehouseId)}</dd></div>
+                <div className="cl-field"><dt>Case Conference</dt><dd>{selected.caseConferenceDate ?? '\u2014'}</dd></div>
               </dl>
 
               <p className="section-title">Visit History</p>
