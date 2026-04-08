@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using NorthStarShelter.API.Data;
 using NorthStarShelter.API.Models;
 
@@ -14,15 +17,21 @@ public class AuthController : ControllerBase
     private readonly AppDbContext _db;
     private readonly SignInManager<AppUser> _signInManager;
     private readonly UserManager<AppUser> _userManager;
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
 
     public AuthController(
         AppDbContext db,
         SignInManager<AppUser> signInManager,
-        UserManager<AppUser> userManager)
+        UserManager<AppUser> userManager,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
         _db = db;
         _signInManager = signInManager;
         _userManager = userManager;
+        _configuration = configuration;
+        _environment = environment;
     }
 
     public record LoginRequest(string Email, string Password);
@@ -34,6 +43,104 @@ public class AuthController : ControllerBase
         string LastName,
         int? SupporterId,
         string[] Roles);
+
+    [HttpGet("google/login")]
+    public IActionResult GoogleLogin([FromQuery] string? returnUrl = "/")
+    {
+        var callbackUrl = Url.Action(
+            nameof(GoogleCallback),
+            values: new { returnUrl = NormalizeReturnUrl(returnUrl) });
+
+        if (string.IsNullOrWhiteSpace(callbackUrl))
+        {
+            return BadRequest(new { message = "Could not start Google login flow." });
+        }
+
+        var properties = _signInManager.ConfigureExternalAuthenticationProperties(
+            GoogleDefaults.AuthenticationScheme,
+            callbackUrl);
+
+        return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+    }
+
+    [HttpGet("google/callback")]
+    public async Task<IActionResult> GoogleCallback([FromQuery] string? returnUrl = "/", [FromQuery] string? remoteError = null)
+    {
+        if (!string.IsNullOrWhiteSpace(remoteError))
+        {
+            return Redirect(BuildFrontendRedirectUri(returnUrl, $"Google authentication failed: {remoteError}"));
+        }
+
+        var info = await _signInManager.GetExternalLoginInfoAsync();
+        if (info is null)
+        {
+            return Redirect(BuildFrontendRedirectUri(returnUrl, "Google authentication failed. Please try again."));
+        }
+
+        var externalSignIn = await _signInManager.ExternalLoginSignInAsync(
+            info.LoginProvider,
+            info.ProviderKey,
+            isPersistent: true,
+            bypassTwoFactor: true);
+
+        AppUser? user;
+        if (externalSignIn.Succeeded)
+        {
+            user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+        }
+        else
+        {
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return Redirect(BuildFrontendRedirectUri(returnUrl, "Google account email was not provided."));
+            }
+
+            user = await _userManager.FindByEmailAsync(email);
+            if (user is null)
+            {
+                var firstName = info.Principal.FindFirstValue(ClaimTypes.GivenName) ?? string.Empty;
+                var lastName = info.Principal.FindFirstValue(ClaimTypes.Surname) ?? string.Empty;
+                var displayName = info.Principal.FindFirstValue(ClaimTypes.Name) ?? $"{firstName} {lastName}".Trim();
+
+                user = new AppUser
+                {
+                    UserName = email,
+                    Email = email,
+                    EmailConfirmed = true,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    DisplayName = string.IsNullOrWhiteSpace(displayName) ? email : displayName,
+                };
+
+                var create = await _userManager.CreateAsync(user);
+                if (!create.Succeeded)
+                {
+                    var message = string.Join(" ", create.Errors.Select(error => error.Description));
+                    return Redirect(BuildFrontendRedirectUri(returnUrl, message));
+                }
+
+                await _userManager.AddToRoleAsync(user, "Donor");
+            }
+
+            var addLogin = await _userManager.AddLoginAsync(user, info);
+            if (!addLogin.Succeeded)
+            {
+                var message = string.Join(" ", addLogin.Errors.Select(error => error.Description));
+                return Redirect(BuildFrontendRedirectUri(returnUrl, message));
+            }
+
+            await _signInManager.SignInAsync(user, isPersistent: true);
+        }
+
+        if (user is null)
+        {
+            return Redirect(BuildFrontendRedirectUri(returnUrl, "Google authentication failed. Please try again."));
+        }
+
+        await EnsureSupporterLinkAsync(user);
+        return Redirect(BuildFrontendRedirectUri(returnUrl, null));
+    }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest req)
@@ -213,5 +320,61 @@ public class AuthController : ControllerBase
             user.LastName ?? string.Empty,
             user.SupporterId,
             roles);
+    }
+
+    private static string NormalizeReturnUrl(string? returnUrl)
+    {
+        if (string.IsNullOrWhiteSpace(returnUrl)) return "/";
+        if (!returnUrl.StartsWith('/')) return "/";
+        if (returnUrl.StartsWith("//")) return "/";
+        return returnUrl;
+    }
+
+    private string BuildFrontendRedirectUri(string? returnUrl, string? error)
+    {
+        var normalizedReturnUrl = NormalizeReturnUrl(returnUrl);
+        var frontendBase = GetFrontendBaseUrl();
+
+        if (string.IsNullOrWhiteSpace(frontendBase))
+        {
+            return string.IsNullOrWhiteSpace(error)
+                ? normalizedReturnUrl
+                : $"{normalizedReturnUrl}?error={Uri.EscapeDataString(error)}";
+        }
+
+        var destination = new Uri(new Uri(frontendBase.TrimEnd('/')), normalizedReturnUrl);
+        var builder = new UriBuilder(destination);
+        if (!string.IsNullOrWhiteSpace(error))
+        {
+            var query = $"error={Uri.EscapeDataString(error)}";
+            builder.Query = string.IsNullOrWhiteSpace(builder.Query)
+                ? query
+                : $"{builder.Query.TrimStart('?')}&{query}";
+        }
+
+        return builder.Uri.ToString();
+    }
+
+    private string? GetFrontendBaseUrl()
+    {
+        var configured = _configuration["FrontendUrls"] ?? _configuration["FrontendUrl"];
+        var origins = (configured ?? string.Empty)
+            .Split([';', ',', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(origin => !string.IsNullOrWhiteSpace(origin))
+            .Select(origin => origin.Trim().TrimEnd('/'))
+            .ToArray();
+
+        // In development we want Google callback redirects to land back on local frontend,
+        // not a deployed site that may also be listed in FrontendUrls.
+        if (_environment.IsDevelopment())
+        {
+            return origins.FirstOrDefault(origin =>
+                       origin.StartsWith("http://localhost", StringComparison.OrdinalIgnoreCase)
+                       || origin.StartsWith("https://localhost", StringComparison.OrdinalIgnoreCase))
+                   ?? origins.FirstOrDefault();
+        }
+
+        return origins.FirstOrDefault(origin => origin.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+               ?? origins.FirstOrDefault();
     }
 }
