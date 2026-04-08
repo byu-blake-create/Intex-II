@@ -50,6 +50,21 @@ public class SupportersController : ControllerBase
         return s == null ? NotFound() : Ok(s);
     }
 
+    [HttpGet("{id:int}/contacts")]
+    public async Task<ActionResult<IEnumerable<SupporterContact>>> GetContacts(
+        int id, CancellationToken cancellationToken)
+    {
+        var exists = await _db.Supporters.AsNoTracking()
+            .AnyAsync(s => s.SupporterId == id, cancellationToken);
+        if (!exists) return NotFound();
+
+        var contacts = await _db.SupporterContacts.AsNoTracking()
+            .Where(c => c.SupporterId == id)
+            .OrderByDescending(c => c.ContactDate)
+            .ToListAsync(cancellationToken);
+        return Ok(contacts);
+    }
+
     [HttpPost]
     [Authorize(Roles = "Admin,Staff")]
     public async Task<ActionResult<Supporter>> Create([FromBody] Supporter supporter, CancellationToken cancellationToken)

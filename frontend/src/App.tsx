@@ -18,6 +18,7 @@ const DonorsPage = lazy(() => import('./pages/admin/DonorsPage'))
 const CaseloadPage = lazy(() => import('./pages/admin/CaseloadPage'))
 const ProcessRecordingPage = lazy(() => import('./pages/admin/ProcessRecordingPage'))
 const VisitationsPage = lazy(() => import('./pages/admin/VisitationsPage'))
+const SafehousesPage = lazy(() => import('./pages/admin/SafehousesPage'))
 const ReportsPage = lazy(() => import('./pages/admin/ReportsPage'))
 const SocialSuitePage = lazy(() => import('./pages/admin/SocialSuitePage'))
 const DatabasePage = lazy(() => import('./pages/admin/DatabasePage'))
@@ -42,8 +43,9 @@ export default function App() {
         <Route path="/admin" element={<ProtectedRoute requiredRole="Staff"><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/donors" element={<ProtectedRoute requiredRole="Staff"><DonorsPage /></ProtectedRoute>} />
         <Route path="/admin/caseload" element={<ProtectedRoute requiredRole="Staff"><CaseloadPage /></ProtectedRoute>} />
-        <Route path="/admin/process-recording" element={<ProtectedRoute requiredRole="Staff"><ProcessRecordingPage /></ProtectedRoute>} />
-        <Route path="/admin/visitations" element={<ProtectedRoute requiredRole="Staff"><VisitationsPage /></ProtectedRoute>} />
+        <Route path="/admin/safehouses" element={<ProtectedRoute requiredRole="Staff"><SafehousesPage /></ProtectedRoute>} />
+        <Route path="/admin/process-recording" element={<Navigate to="/admin/caseload" replace />} />
+        <Route path="/admin/visitations" element={<Navigate to="/admin/caseload" replace />} />
         <Route path="/admin/reports" element={<ProtectedRoute requiredRole="Staff"><ReportsPage /></ProtectedRoute>} />
         <Route path="/admin/social" element={<ProtectedRoute requiredRole="Staff"><SocialSuitePage /></ProtectedRoute>} />
         <Route path="/admin/database" element={<ProtectedRoute requiredRole="Admin"><DatabasePage /></ProtectedRoute>} />

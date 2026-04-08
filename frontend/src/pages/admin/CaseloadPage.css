@@ -58,3 +58,7 @@
 .cl-modal__cancel { background:var(--adm-card); color:var(--adm-ink); border:1px solid var(--adm-border); border-radius:7px; padding:0.45rem 1.1rem; font-size:0.88rem; font-weight:600; cursor:pointer; }
 .cl-modal__cancel:hover { background:rgba(255,255,255,0.05); }
 @media (max-width:900px) { .cl-layout { grid-template-columns:1fr; } .cl-sidebar { border-right:none; border-bottom:1px solid var(--adm-border); max-height:40svh; } }
+.cl-detail-tabs { display:flex; gap:0; border:1px solid var(--adm-border); border-radius:8px; overflow:hidden; width:fit-content; }
+.cl-detail-tab { background:none; border:none; padding:0.45rem 1.1rem; font-size:0.85rem; font-weight:700; color:var(--adm-muted); cursor:pointer; transition:background 0.12s, color 0.12s; }
+.cl-detail-tab.is-active { background:var(--adm-accent); color:#fff; }
+.cl-detail-tab:not(.is-active):hover { background:var(--adm-accent-dim); color:var(--adm-ink); }

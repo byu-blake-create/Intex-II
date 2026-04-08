@@ -5,9 +5,8 @@ import './AdminLayout.css'
 
 const WORKBENCH_ROUTES = [
   { to: '/admin/donors', label: 'Donors' },
-  { to: '/admin/caseload', label: 'Caseload' },
-  { to: '/admin/process-recording', label: 'Process Recording' },
-  { to: '/admin/visitations', label: 'Visitations' },
+  { to: '/admin/caseload', label: 'Residents' },
+  { to: '/admin/safehouses', label: 'Safehouses' },
 ]
 
 const WORKBENCH_PATHS = WORKBENCH_ROUTES.map(r => r.to)

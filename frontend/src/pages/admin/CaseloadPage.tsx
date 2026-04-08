@@ -63,6 +63,9 @@ export default function CaseloadPage() {
   const [triageCard, setTriageCard] = useState<AdminDashboardCard | null>(null)
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
 
+  // Detail tab state
+  const [detailTab, setDetailTab] = useState<'visits' | 'notes'>('visits')
+
   // Session note modal state
   const [showNoteModal, setShowNoteModal] = useState(false)
   const [noteDate, setNoteDate] = useState(todayStr())
@@ -72,6 +75,16 @@ export default function CaseloadPage() {
   const [noteRestricted, setNoteRestricted] = useState(false)
   const [noteSaving, setNoteSaving] = useState(false)
   const [noteError, setNoteError] = useState<string | null>(null)
+
+  // Visit modal state
+  const [showVisitModal, setShowVisitModal] = useState(false)
+  const [visitDate, setVisitDate] = useState(todayStr())
+  const [visitType, setVisitType] = useState('Home Visit')
+  const [visitSocialWorker, setVisitSocialWorker] = useState('')
+  const [visitObservations, setVisitObservations] = useState('')
+  const [visitOutcome, setVisitOutcome] = useState('Positive')
+  const [visitSaving, setVisitSaving] = useState(false)
+  const [visitError, setVisitError] = useState<string | null>(null)
 
   // Debounce text input to avoid an API call per keystroke
   const debouncedSearch = useDebounce(search, 350)
@@ -177,6 +190,45 @@ export default function CaseloadPage() {
     setShowNoteModal(true)
   }
 
+  function openVisitModal() {
+    setVisitDate(todayStr())
+    setVisitType('Home Visit')
+    setVisitSocialWorker('')
+    setVisitObservations('')
+    setVisitOutcome('Positive')
+    setVisitError(null)
+    setShowVisitModal(true)
+  }
+
+  async function handleSaveVisit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selected) return
+    setVisitSaving(true)
+    setVisitError(null)
+    try {
+      await apiPost('/api/homevisitations', {
+        residentId: selected.residentId,
+        visitDate: visitDate,
+        visitType,
+        socialWorker: visitSocialWorker,
+        observations: visitObservations,
+        visitOutcome,
+      })
+      const r = await fetchVisitations(selected.residentId)
+      setVisits(r.items)
+      setShowVisitModal(false)
+      setVisitDate(todayStr())
+      setVisitType('Home Visit')
+      setVisitSocialWorker('')
+      setVisitObservations('')
+      setVisitOutcome('Positive')
+    } catch (err) {
+      setVisitError(err instanceof Error ? err.message : 'Failed to save visit.')
+    } finally {
+      setVisitSaving(false)
+    }
+  }
+
   return (
     <AdminLayout>
       <div className="cl-layout">
@@ -235,6 +287,7 @@ export default function CaseloadPage() {
                   setSessions([])
                   setVisitsLoading(true)
                   setSessionsLoading(true)
+                  setDetailTab('visits')
                 }}
               >
                 <span className="cl-row__id">{r.caseControlNo}</span>
@@ -329,50 +382,72 @@ export default function CaseloadPage() {
                 <div className="cl-field"><dt>Case Conference</dt><dd>{selected.caseConferenceDate ?? '\u2014'}</dd></div>
               </dl>
 
-              <p className="section-title">Visit History</p>
-              {visitsLoading && <div className="inline-loading">Loading visits...</div>}
-              {!visitsLoading && concernVisits.length > 0 && (
-                <div className="cl-concern-callout">
-                  &#9888; {concernVisits.length} visit{concernVisits.length !== 1 ? 's' : ''} flagged with Concern outcome — review observations below.
-                </div>
-              )}
-              {!visitsLoading && visits.length === 0 && <div className="empty-state">No visit history</div>}
-              {!visitsLoading && visits.length > 0 && (
-                <div className="cl-timeline">
-                  {visits.map(v => (
-                    <div key={v.visitationId} className={`cl-timeline-card${v.visitOutcome?.toLowerCase() === 'concern' ? ' cl-timeline-card--concern' : ''}`}>
-                      <div className="cl-timeline-card__header">
-                        <span className="cl-timeline-card__date">{v.visitDate ?? 'No date'}</span>
-                        {v.visitType && <span className="badge badge--blue">{v.visitType}</span>}
-                        {v.visitOutcome && <span className={`badge ${v.visitOutcome.toLowerCase() === 'positive' ? 'badge--green' : v.visitOutcome.toLowerCase() === 'concern' ? 'badge--red' : 'badge--gray'}`}>{v.visitOutcome}</span>}
-                        <span className="cl-timeline-card__worker">{v.socialWorker}</span>
-                      </div>
-                      {v.observations && <p className="cl-timeline-card__text">{v.observations}</p>}
+              <div className="cl-detail-tabs">
+                <button
+                  className={`cl-detail-tab${detailTab === 'visits' ? ' is-active' : ''}`}
+                  onClick={() => setDetailTab('visits')}
+                >Visit History</button>
+                <button
+                  className={`cl-detail-tab${detailTab === 'notes' ? ' is-active' : ''}`}
+                  onClick={() => setDetailTab('notes')}
+                >Session Notes</button>
+              </div>
+
+              {detailTab === 'visits' && (
+                <>
+                  <div className="cl-section-header">
+                    <p className="section-title" style={{ margin: 0 }}>Visit History</p>
+                    <button className="cl-add-note-btn" onClick={openVisitModal}>+ Log Visit</button>
+                  </div>
+                  {visitsLoading && <div className="inline-loading">Loading visits...</div>}
+                  {!visitsLoading && concernVisits.length > 0 && (
+                    <div className="cl-concern-callout">
+                      &#9888; {concernVisits.length} visit{concernVisits.length !== 1 ? 's' : ''} flagged with Concern outcome — review observations below.
                     </div>
-                  ))}
-                </div>
+                  )}
+                  {!visitsLoading && visits.length === 0 && <div className="empty-state">No visit history</div>}
+                  {!visitsLoading && visits.length > 0 && (
+                    <div className="cl-timeline">
+                      {visits.map(v => (
+                        <div key={v.visitationId} className={`cl-timeline-card${v.visitOutcome?.toLowerCase() === 'concern' ? ' cl-timeline-card--concern' : ''}`}>
+                          <div className="cl-timeline-card__header">
+                            <span className="cl-timeline-card__date">{v.visitDate ?? 'No date'}</span>
+                            {v.visitType && <span className="badge badge--blue">{v.visitType}</span>}
+                            {v.visitOutcome && <span className={`badge ${v.visitOutcome.toLowerCase() === 'positive' ? 'badge--green' : v.visitOutcome.toLowerCase() === 'concern' ? 'badge--red' : 'badge--gray'}`}>{v.visitOutcome}</span>}
+                            <span className="cl-timeline-card__worker">{v.socialWorker}</span>
+                          </div>
+                          {v.observations && <p className="cl-timeline-card__text">{v.observations}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
 
-              <div className="cl-section-header">
-                <p className="section-title" style={{ margin: 0 }}>Session Notes</p>
-                <button className="cl-add-note-btn" onClick={openNoteModal}>+ Add Note</button>
-              </div>
-              {sessionsLoading && <div className="inline-loading">Loading sessions...</div>}
-              {!sessionsLoading && sessions.length === 0 && <div className="empty-state">No session notes</div>}
-              {!sessionsLoading && sessions.length > 0 && (
-                <div className="cl-timeline">
-                  {sessions.map(s => (
-                    <div key={s.recordingId} className="cl-timeline-card">
-                      <div className="cl-timeline-card__header">
-                        <span className="cl-timeline-card__date">{s.sessionDate ?? 'No date'}</span>
-                        {s.sessionType && <span className="badge badge--purple">{s.sessionType}</span>}
-                        {s.notesRestricted === 'Y' && <span className="badge badge--red">Restricted</span>}
-                        <span className="cl-timeline-card__worker">{s.socialWorker}</span>
-                      </div>
-                      <p className="cl-timeline-card__text">{s.sessionNarrative || <em>No narrative recorded</em>}</p>
+              {detailTab === 'notes' && (
+                <>
+                  <div className="cl-section-header">
+                    <p className="section-title" style={{ margin: 0 }}>Session Notes</p>
+                    <button className="cl-add-note-btn" onClick={openNoteModal}>+ Add Note</button>
+                  </div>
+                  {sessionsLoading && <div className="inline-loading">Loading sessions...</div>}
+                  {!sessionsLoading && sessions.length === 0 && <div className="empty-state">No session notes</div>}
+                  {!sessionsLoading && sessions.length > 0 && (
+                    <div className="cl-timeline">
+                      {sessions.map(s => (
+                        <div key={s.recordingId} className="cl-timeline-card">
+                          <div className="cl-timeline-card__header">
+                            <span className="cl-timeline-card__date">{s.sessionDate ?? 'No date'}</span>
+                            {s.sessionType && <span className="badge badge--purple">{s.sessionType}</span>}
+                            {s.notesRestricted === 'Y' && <span className="badge badge--red">Restricted</span>}
+                            <span className="cl-timeline-card__worker">{s.socialWorker}</span>
+                          </div>
+                          <p className="cl-timeline-card__text">{s.sessionNarrative || <em>No narrative recorded</em>}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </>
           )}
@@ -416,6 +491,50 @@ export default function CaseloadPage() {
               <div className="cl-modal__actions">
                 <button type="submit" className="cl-modal__save" disabled={noteSaving}>{noteSaving ? 'Saving…' : 'Save Note'}</button>
                 <button type="button" className="cl-modal__cancel" onClick={() => setShowNoteModal(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Log Visit Modal */}
+      {showVisitModal && (
+        <div className="cl-modal-overlay" onClick={() => setShowVisitModal(false)}>
+          <div className="cl-modal" onClick={e => e.stopPropagation()}>
+            <p className="cl-modal__title">Log Visit</p>
+            <form onSubmit={handleSaveVisit} className="cl-modal__form">
+              <label className="cl-modal__label">
+                Date
+                <input type="date" value={visitDate} onChange={e => setVisitDate(e.target.value)} required className="cl-modal__input" />
+              </label>
+              <label className="cl-modal__label">
+                Visit Type
+                <select value={visitType} onChange={e => setVisitType(e.target.value)} className="cl-modal__input">
+                  <option>Home Visit</option>
+                  <option>Follow-up</option>
+                  <option>Initial</option>
+                </select>
+              </label>
+              <label className="cl-modal__label">
+                Social Worker
+                <input type="text" value={visitSocialWorker} onChange={e => setVisitSocialWorker(e.target.value)} placeholder="Social worker name" className="cl-modal__input" />
+              </label>
+              <label className="cl-modal__label">
+                Observations
+                <textarea rows={4} value={visitObservations} onChange={e => setVisitObservations(e.target.value)} placeholder="Observations..." className="cl-modal__input cl-modal__textarea" />
+              </label>
+              <label className="cl-modal__label">
+                Outcome
+                <select value={visitOutcome} onChange={e => setVisitOutcome(e.target.value)} className="cl-modal__input">
+                  <option>Positive</option>
+                  <option>Concern</option>
+                  <option>Neutral</option>
+                </select>
+              </label>
+              {visitError && <p className="cl-modal__error">{visitError}</p>}
+              <div className="cl-modal__actions">
+                <button type="submit" className="cl-modal__save" disabled={visitSaving}>{visitSaving ? 'Saving…' : 'Save Visit'}</button>
+                <button type="button" className="cl-modal__cancel" onClick={() => setShowVisitModal(false)}>Cancel</button>
               </div>
             </form>
           </div>
