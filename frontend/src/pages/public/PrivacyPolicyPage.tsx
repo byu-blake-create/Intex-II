@@ -2,6 +2,7 @@ import PublicSiteFooter from '../../components/PublicSiteFooter'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
 import { openConsentPreferences } from '../../lib/cookieConsent'
 import { usePublicTheme } from '../../lib/usePublicTheme'
+import './HomePage.css'
 import './PrivacyPolicyPage.css'
 
 export default function PrivacyPolicyPage() {
@@ -48,12 +49,17 @@ export default function PrivacyPolicyPage() {
 
         <section>
           <h2>Cookies we use</h2>
-          <p>
-            You can update your cookie preferences at any time during this session.
-          </p>
-          <button type="button" onClick={handleManageCookies}>
-            Manage Cookies
-          </button>
+          <div className="privacy-page__cookie-prefs privacy-page__panel">
+            <p className="privacy-page__cookie-prefs-text">
+              You can update your cookie preferences at any time during this session. This reopens the same banner you saw
+              when you first arrived, so you can accept or decline non-essential cookies.
+            </p>
+            <div className="privacy-page__actions privacy-page__actions--cookie">
+              <button type="button" className="privacy-page__cookie-button" onClick={handleManageCookies}>
+                Manage Cookies
+              </button>
+            </div>
+          </div>
           <ul>
             <li>
               <strong>northstar.auth:</strong> an essential HttpOnly cookie set after staff sign-in to keep authenticated
@@ -122,7 +128,7 @@ export default function PrivacyPolicyPage() {
           <h2>Your rights</h2>
           <p>
             Depending on your location, you may have rights to access, rectify, erase, restrict processing, object, or
-            port your data, and to lodge a complaint with a supervisory authority. To exercise rights, contact us at
+            port your data, and to lodge a complaint with a supervisory authority. To exercise rights, contact us at{' '}
             <a href="mailto:privacy@northstarshelter.org">privacy@northstarshelter.org</a>. We may need to verify your
             identity before responding.
           </p>
@@ -139,7 +145,7 @@ export default function PrivacyPolicyPage() {
         <section>
           <h2>Contact</h2>
           <p>
-            For privacy questions or requests, contact our privacy team at
+            For privacy questions or requests, contact our privacy team at{' '}
             <a href="mailto:privacy@northstarshelter.org">privacy@northstarshelter.org</a>.
           </p>
         </section>
