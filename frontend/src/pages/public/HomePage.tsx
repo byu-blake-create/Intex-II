@@ -92,6 +92,13 @@ export default function HomePage() {
 
       <main id="top">
         <section className="hero-section">
+          <img
+            className="hero-bg"
+            src="/GirlSunsetExtended.png"
+            alt=""
+            aria-hidden="true"
+          />
+          <div className="hero-overlay" />
           <div className="hero-copy">
             <p className="eyebrow">North Star Shelter</p>
             <h1>Providing safety, healing, and hope to girls in need.</h1>
@@ -107,48 +114,6 @@ export default function HomePage() {
                 See Our Impact
               </a>
             </div>
-          </div>
-
-          <div className="hero-impact-card">
-            <p className="hero-impact-card__eyebrow">Your impact</p>
-            <div className="hero-impact-card__hero-number">
-              <strong>{formatImpactNumber(latestMetrics?.totalResidents ?? 0)}+</strong>
-              <span>girls safe and supported</span>
-            </div>
-
-            <div className="hero-impact-card__metrics">
-              <div className="hero-impact-metric">
-                <span className="hero-impact-metric__value">{formatImpactNumber(latestMetrics?.avgHealthScore ?? 0, 1)}/5</span>
-                <span className="hero-impact-metric__label">Wellbeing score</span>
-              </div>
-              <div className="hero-impact-metric">
-                <span className="hero-impact-metric__value">{formatImpactNumber(latestMetrics?.avgEducationProgress ?? 0, 0)}%</span>
-                <span className="hero-impact-metric__label">Education engagement</span>
-              </div>
-            </div>
-
-            {impactDashboard && (
-              <div className="hero-impact-card__bar">
-                <div className="hero-impact-card__bar-track">
-                  <span
-                    className="hero-impact-card__bar-fill hero-impact-card__bar-fill--edu"
-                    style={{ width: `${Math.min(latestMetrics?.avgEducationProgress ?? 0, 100)}%` }}
-                  />
-                  <span
-                    className="hero-impact-card__bar-fill hero-impact-card__bar-fill--health"
-                    style={{ width: `${((latestMetrics?.avgHealthScore ?? 0) / 5) * 100}%` }}
-                  />
-                </div>
-                <div className="hero-impact-card__bar-legend">
-                  <span><i className="hero-impact-card__dot hero-impact-card__dot--edu" /> Education</span>
-                  <span><i className="hero-impact-card__dot hero-impact-card__dot--health" /> Wellbeing</span>
-                </div>
-              </div>
-            )}
-
-            <a className="hero-impact-card__link" href="#impact-dashboard">
-              See full impact report &rarr;
-            </a>
           </div>
         </section>
 
@@ -296,18 +261,26 @@ export default function HomePage() {
         </section>
 
         <section className="systems-section" id="services">
-          <div className="systems-section__heading">
-            <p className="eyebrow">Where your support goes</p>
-            <h2>Every donation directly funds protection, restoration, and a future beyond crisis.</h2>
-          </div>
+          <div className="systems-section__body">
+            <div className="systems-section__image">
+              <img src="/Girl-Sunlight.jpg" alt="A young woman silhouetted against golden sunlight" />
+            </div>
 
-          <div className="systems-grid">
-            {services.map((item, i) => (
-              <article className="system-card" key={item.title} data-accent={i}>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </article>
-            ))}
+            <div className="systems-section__content">
+              <div className="systems-section__heading">
+                <p className="eyebrow">Where your support goes</p>
+                <h2>Every donation directly funds protection, restoration, and a future beyond crisis.</h2>
+              </div>
+
+              <div className="systems-grid">
+                {services.map((item, i) => (
+                  <article className="system-card" key={item.title} data-accent={i}>
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
