@@ -51,7 +51,7 @@
 
 .privacy-page__primary {
   border: none;
-  background: #bb5f3c;
+  background: var(--page-accent-solid, #944627);
   color: #fff;
 }
 
@@ -86,7 +86,7 @@
   cursor: pointer;
   font: inherit;
   border: none;
-  background: var(--page-accent, #bb5f3c);
+  background: var(--page-accent-solid, #944627);
   color: var(--page-cta-ink, #fff8f1);
   box-shadow: 0 6px 22px rgba(187, 95, 60, 0.32);
   transition:
@@ -115,6 +115,6 @@
 }
 
 .privacy-page__cookie-button:focus-visible {
-  outline: 2px solid var(--page-accent, #bb5f3c);
+  outline: 2px solid var(--page-accent-solid, #944627);
   outline-offset: 3px;
 }

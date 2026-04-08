@@ -30,6 +30,7 @@
   --adm-ink: #e6ddd6;
   --adm-muted: #8b8480;
   --adm-accent: #e07048;
+  --adm-accent-solid: #b45431;
   --adm-accent-dim: rgba(224, 112, 72, 0.12);
   --adm-header-bg: rgba(22, 27, 34, 0.88);
   --adm-hover-bg: rgba(255, 255, 255, 0.04);
@@ -53,6 +54,7 @@
   --adm-ink: #211814;
   --adm-muted: #66554a;
   --adm-accent: #bb5f3c;
+  --adm-accent-solid: #944627;
   --adm-accent-dim: rgba(187, 95, 60, 0.12);
   --adm-header-bg: rgba(252, 247, 241, 0.84);
   --adm-shadow-soft: 0 18px 60px rgba(61, 36, 20, 0.08);

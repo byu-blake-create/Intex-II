@@ -31,7 +31,7 @@ public class EducationRecordsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<EducationRecord>> Create([FromBody] EducationRecord record, CancellationToken cancellationToken)
     {
         _db.EducationRecords.Add(record);
@@ -40,7 +40,7 @@ public class EducationRecordsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] EducationRecord input, CancellationToken cancellationToken)
     {
         if (id != input.EducationRecordId) return BadRequest();

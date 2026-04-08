@@ -30,7 +30,7 @@ public class PublicImpactSnapshotsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<PaginatedList<PublicImpactSnapshot>>> GetAll(
         [FromQuery] int pageNum = 1,
         [FromQuery] int pageSize = 20,

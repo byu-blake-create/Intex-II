@@ -36,6 +36,8 @@
   --page-signal-glow-b: rgba(194, 120, 89, 0.26);
   --page-nav-shadow: 0 10px 30px rgba(61, 36, 20, 0.08);
   --page-accent: #bb5f3c;
+  --page-accent-solid: #944627;
+  --page-accent-ink: #fff8f1;
   --page-accent-deep: #7f3d26;
   --page-shadow: 0 22px 70px rgba(61, 36, 20, 0.13);
   --page-bg:
@@ -75,6 +77,8 @@
   --page-signal-glow-b: rgba(95, 127, 194, 0.14);
   --page-nav-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
   --page-accent: #e07048;
+  --page-accent-solid: #b45431;
+  --page-accent-ink: #fff8f1;
   --page-accent-deep: #f0a17b;
   --page-shadow: 0 22px 70px rgba(0, 0, 0, 0.3);
   --page-bg:
@@ -222,8 +226,8 @@
   font-weight: 700;
   font-size: 0.88rem;
   text-decoration: none;
-  background: var(--page-accent);
-  color: #fff9f5;
+  background: var(--page-accent-solid);
+  color: var(--page-accent-ink);
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
@@ -613,8 +617,8 @@
 }
 
 .button--primary {
-  background: var(--page-accent);
-  color: #fff9f5;
+  background: var(--page-accent-solid);
+  color: var(--page-accent-ink);
   box-shadow: 0 16px 30px rgba(187, 95, 60, 0.24);
 }
 

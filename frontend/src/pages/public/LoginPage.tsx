@@ -21,7 +21,7 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false)
 
   function destinationFor(user: AuthUser) {
-    if (user.roles.includes('Staff') || user.roles.includes('Admin')) return '/admin'
+    if (user.roles.includes('Admin')) return '/admin'
     if (user.roles.includes('Donor')) return '/donations'
     return '/'
   }
@@ -111,7 +111,7 @@ export default function LoginPage() {
             <p style={{ margin: 0, lineHeight: 1.8 }}>
               {mode === 'register'
                 ? 'New accounts are created in the live database and automatically receive the donor role.'
-                : 'This sign-in now uses the production database account store. Staff and admin users unlock the staff workspace after authentication.'}
+                : 'This sign-in now uses the production database account store. Admin users unlock the admin workspace after authentication.'}
             </p>
 
             <div

@@ -13,11 +13,11 @@ export default function PublicSiteHeader({
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   const accountLabel = user ? formatAccountLabel(user.firstName, user.lastName, user.displayName, user.email) : null
   const showDonations = Boolean(user?.roles.includes('Donor'))
-  const showAdmin = Boolean(user?.roles.includes('Staff') || user?.roles.includes('Admin'))
+  const showAdmin = Boolean(user?.roles.includes('Admin'))
 
   return (
     <header className="home-nav">
-      <Link className="home-brand" to="/" aria-label="North Star Shelter home">
+      <Link className="home-brand" to="/">
         <img src="/logo.png" alt="" className="home-brand__mark" aria-hidden="true" />
         <span>
           <strong>North Star Shelter</strong>

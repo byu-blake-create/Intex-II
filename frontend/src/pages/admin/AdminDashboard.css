@@ -61,7 +61,7 @@
 .dash__btn:hover { opacity: 0.82; }
 
 .dash__btn--primary {
-  background: var(--adm-accent);
+  background: var(--adm-accent-solid);
   color: #fff;
 }
 

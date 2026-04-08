@@ -44,7 +44,7 @@
 .sh-modal__impact-note { margin:0; font-size:0.83rem; line-height:1.5; color:var(--adm-muted); background:rgba(255,255,255,0.03); border:1px solid var(--adm-border); border-radius:8px; padding:0.65rem 0.75rem; }
 .sh-modal__error { margin:0; font-size:0.83rem; color:var(--adm-danger-ink); background:var(--adm-danger-bg); border:1px solid var(--adm-danger-border); border-radius:6px; padding:0.45rem 0.7rem; }
 .sh-modal__actions { display:flex; gap:0.75rem; justify-content:flex-end; }
-.sh-modal__save { background:var(--adm-accent); color:#fff; border:none; border-radius:7px; padding:0.45rem 1rem; font-size:0.88rem; font-weight:700; cursor:pointer; }
+.sh-modal__save { background:var(--adm-accent-solid); color:#fff; border:none; border-radius:7px; padding:0.45rem 1rem; font-size:0.88rem; font-weight:700; cursor:pointer; }
 .sh-modal__save:disabled { opacity:0.5; cursor:default; }
 .sh-modal__cancel { background:transparent; color:var(--adm-ink); border:1px solid var(--adm-border); border-radius:7px; padding:0.45rem 1rem; font-size:0.88rem; font-weight:600; cursor:pointer; }
 .sh-modal__cancel:disabled { opacity:0.5; cursor:default; }

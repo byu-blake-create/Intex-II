@@ -8,7 +8,7 @@ namespace NorthStarShelter.API.Controllers;
 
 [ApiController]
 [Route("api/ml")]
-[Authorize(Roles = "Admin,Staff")]
+[Authorize(Roles = "Admin")]
 public class MlController : ControllerBase
 {
     private readonly AppDbContext _db;

@@ -31,7 +31,7 @@ public class InterventionPlansController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<InterventionPlan>> Create([FromBody] InterventionPlan plan, CancellationToken cancellationToken)
     {
         _db.InterventionPlans.Add(plan);
@@ -40,7 +40,7 @@ public class InterventionPlansController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] InterventionPlan input, CancellationToken cancellationToken)
     {
         if (id != input.PlanId) return BadRequest();
