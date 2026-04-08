@@ -4,7 +4,6 @@ import { fetchResidents } from '../../lib/residentsApi'
 import { fetchSafehouses } from '../../lib/safehousesApi'
 import { fetchVisitations } from '../../lib/visitationsApi'
 import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
-import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
 import { fetchSummary } from '../../lib/reportsApi'
 import { apiPost, apiPut } from '../../lib/api'
 import { fetchResidentWatchlist, type ResidentInsight, fetchReintegrationPredictions, type ReintegrationInsight } from '../../lib/mlApi'
@@ -90,7 +89,6 @@ export default function CaseloadPage() {
   const [sessionsLoading, setSessionsLoading] = useState(false)
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
-  const [triageCard, setTriageCard] = useState<AdminDashboardCard | null>(null)
   const [residentInsights, setResidentInsights] = useState<Record<number, ResidentInsight>>({})
   const [reintegrationInsights, setReintegrationInsights] = useState<Record<number, ReintegrationInsight>>({})
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
@@ -152,10 +150,6 @@ export default function CaseloadPage() {
 
   useEffect(() => {
     fetchSafehouses().then(r => setSafehouses(r.items)).catch(() => {})
-    fetchAdminDashboard().then(d => {
-      const c = d.cards.find(card => card.id === 'resident-triage') ?? null
-      setTriageCard(c)
-    }).catch(() => {})
     fetchResidentWatchlist()
       .then(items => setResidentInsights(Object.fromEntries(items.map(item => [item.residentId, item]))))
       .catch(() => {})

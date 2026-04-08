@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import AdminLayout from '../../components/AdminLayout'
 import { fetchSupporters } from '../../lib/supportersApi'
 import { fetchDonations } from '../../lib/donationsApi'
-import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
 import { apiPost } from '../../lib/api'
 import { fetchSupporterContacts, type SupporterContact } from '../../lib/supporterContactsApi'
 import { fetchDonorWatchlist, fetchTopOpportunities, type DonorInsight } from '../../lib/mlApi'
@@ -51,7 +50,6 @@ export default function DonorsPage() {
   const [donLoading, setDonLoading] = useState(false)
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
-  const [watchlistCard, setWatchlistCard] = useState<AdminDashboardCard | null>(null)
   const [donorInsights, setDonorInsights] = useState<Record<number, DonorInsight>>({})
   const [opportunityInsights, setOpportunityInsights] = useState<Record<number, DonorInsight>>({})
 
@@ -71,9 +69,6 @@ export default function DonorsPage() {
   const [contactsLoading, setContactsLoading] = useState(false)
 
   useEffect(() => {
-    fetchAdminDashboard().then(d => {
-      setWatchlistCard(d.cards.find(c => c.id === 'donor-watchlist') ?? null)
-    }).catch(() => {})
     fetchDonorWatchlist()
       .then(items => setDonorInsights(Object.fromEntries(items.map(item => [item.supporterId, item]))))
       .catch(() => {})
