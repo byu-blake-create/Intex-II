@@ -6,7 +6,7 @@ import { fetchVisitations } from '../../lib/visitationsApi'
 import { fetchProcessRecordings } from '../../lib/processRecordingsApi'
 import { fetchAdminDashboard, type AdminDashboardCard } from '../../lib/adminDashboardApi'
 import { fetchSummary } from '../../lib/reportsApi'
-import { apiPost } from '../../lib/api'
+import { apiPost, apiPut } from '../../lib/api'
 import type { Resident, Safehouse, HomeVisitation, ProcessRecording, DashboardSummary } from '../../types/domain'
 import './CaseloadPage.css'
 
@@ -65,6 +65,19 @@ export default function CaseloadPage() {
 
   // Detail tab state
   const [detailTab, setDetailTab] = useState<'visits' | 'notes'>('visits')
+
+  // Show more state
+  const [visitsShowAll, setVisitsShowAll] = useState(false)
+  const [sessionsShowAll, setSessionsShowAll] = useState(false)
+
+  // Inline edit state
+  const [editField, setEditField] = useState<'socialWorker' | 'conferenceDate' | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
+
+  // Status save state
+  const [statusSaving, setStatusSaving] = useState(false)
 
   // Session note modal state
   const [showNoteModal, setShowNoteModal] = useState(false)
@@ -150,6 +163,55 @@ export default function CaseloadPage() {
     () => visits.filter(v => v.visitOutcome?.toLowerCase() === 'concern'),
     [visits]
   )
+
+  // Sorted visits and sessions for display
+  const sortedVisits = useMemo(
+    () => [...visits].sort((a, b) => (b.visitDate ?? '').localeCompare(a.visitDate ?? '')),
+    [visits]
+  )
+  const displayedVisits = visitsShowAll ? sortedVisits : sortedVisits.slice(0, 10)
+
+  const sortedSessions = useMemo(
+    () => [...sessions].sort((a, b) => (b.sessionDate ?? '').localeCompare(a.sessionDate ?? '')),
+    [sessions]
+  )
+  const displayedSessions = sessionsShowAll ? sortedSessions : sortedSessions.slice(0, 10)
+
+  async function handleSaveField(field: 'socialWorker' | 'conferenceDate') {
+    if (!selected) return
+    setEditSaving(true)
+    setEditError(null)
+    try {
+      const updated: Resident = {
+        ...selected,
+        ...(field === 'socialWorker' ? { assignedSocialWorker: editValue || undefined } : {}),
+        ...(field === 'conferenceDate' ? { caseConferenceDate: editValue || undefined } : {}),
+      }
+      await apiPut(`/api/residents/${selected.residentId}`, updated)
+      setSelected(updated)
+      setResidents(prev => prev.map(r => r.residentId === updated.residentId ? updated : r))
+      setEditField(null)
+    } catch {
+      setEditError('Failed to save. Try again.')
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
+  async function handleStatusChange(newStatus: string) {
+    if (!selected) return
+    setStatusSaving(true)
+    try {
+      const updated: Resident = { ...selected, caseStatus: newStatus }
+      await apiPut(`/api/residents/${selected.residentId}`, updated)
+      setSelected(updated)
+      setResidents(prev => prev.map(r => r.residentId === updated.residentId ? updated : r))
+    } catch {
+      // silently fail — could add a toast here
+    } finally {
+      setStatusSaving(false)
+    }
+  }
 
   async function handleSaveNote(e: React.FormEvent) {
     e.preventDefault()
@@ -288,6 +350,9 @@ export default function CaseloadPage() {
                   setVisitsLoading(true)
                   setSessionsLoading(true)
                   setDetailTab('visits')
+                  setVisitsShowAll(false)
+                  setSessionsShowAll(false)
+                  setEditField(null)
                 }}
               >
                 <span className="cl-row__id">{r.caseControlNo}</span>
@@ -345,6 +410,16 @@ export default function CaseloadPage() {
                 <span style={{ fontSize: '0.85rem', color: 'var(--adm-muted)' }}>
                   {safehouseMap.get(selected.safehouseId) ?? `Safehouse ${selected.safehouseId}`}
                 </span>
+                {selected.caseStatus?.toLowerCase() === 'active' && (
+                  <button className="cl-status-btn cl-status-btn--close" onClick={() => handleStatusChange('Closed')} disabled={statusSaving}>
+                    {statusSaving ? 'Saving\u2026' : 'Close Case'}
+                  </button>
+                )}
+                {selected.caseStatus?.toLowerCase() === 'closed' && (
+                  <button className="cl-status-btn cl-status-btn--reopen" onClick={() => handleStatusChange('Active')} disabled={statusSaving}>
+                    {statusSaving ? 'Saving\u2026' : 'Reopen Case'}
+                  </button>
+                )}
               </div>
 
               {/* Per-Resident Case Conference Countdown */}
@@ -376,10 +451,44 @@ export default function CaseloadPage() {
                 <div className="cl-field"><dt>Date of Birth</dt><dd>{selected.dateOfBirth ?? '\u2014'}</dd></div>
                 <div className="cl-field"><dt>Sex</dt><dd>{selected.sex ?? '\u2014'}</dd></div>
                 <div className="cl-field"><dt>Case Category</dt><dd>{selected.caseCategory ?? '\u2014'}</dd></div>
-                <div className="cl-field"><dt>Social Worker</dt><dd>{selected.assignedSocialWorker ?? '\u2014'}</dd></div>
+                <div className="cl-field">
+                  <dt>Social Worker</dt>
+                  {editField === 'socialWorker' ? (
+                    <dd>
+                      <div className="cl-field__edit-row">
+                        <input className="cl-field__edit-input" value={editValue} onChange={e => setEditValue(e.target.value)} autoFocus />
+                        <button className="cl-field__edit-save" onClick={() => handleSaveField('socialWorker')} disabled={editSaving}>&#10003;</button>
+                        <button className="cl-field__edit-cancel" onClick={() => setEditField(null)}>&#10005;</button>
+                      </div>
+                      {editError && <span className="cl-field__edit-error">{editError}</span>}
+                    </dd>
+                  ) : (
+                    <dd className="cl-field__editable">
+                      {selected.assignedSocialWorker ?? '\u2014'}
+                      <button className="cl-field__edit-btn" onClick={() => { setEditField('socialWorker'); setEditValue(selected.assignedSocialWorker ?? ''); setEditError(null) }}>&#9998;</button>
+                    </dd>
+                  )}
+                </div>
                 <div className="cl-field"><dt>Internal Code</dt><dd>{selected.internalCode ?? '\u2014'}</dd></div>
                 <div className="cl-field"><dt>Safehouse</dt><dd>{safehouseMap.get(selected.safehouseId) ?? String(selected.safehouseId)}</dd></div>
-                <div className="cl-field"><dt>Case Conference</dt><dd>{selected.caseConferenceDate ?? '\u2014'}</dd></div>
+                <div className="cl-field">
+                  <dt>Case Conference</dt>
+                  {editField === 'conferenceDate' ? (
+                    <dd>
+                      <div className="cl-field__edit-row">
+                        <input type="date" className="cl-field__edit-input" value={editValue} onChange={e => setEditValue(e.target.value)} autoFocus />
+                        <button className="cl-field__edit-save" onClick={() => handleSaveField('conferenceDate')} disabled={editSaving}>&#10003;</button>
+                        <button className="cl-field__edit-cancel" onClick={() => setEditField(null)}>&#10005;</button>
+                      </div>
+                      {editError && <span className="cl-field__edit-error">{editError}</span>}
+                    </dd>
+                  ) : (
+                    <dd className="cl-field__editable">
+                      {selected.caseConferenceDate ?? '\u2014'}
+                      <button className="cl-field__edit-btn" onClick={() => { setEditField('conferenceDate'); setEditValue(selected.caseConferenceDate ?? ''); setEditError(null) }}>&#9998;</button>
+                    </dd>
+                  )}
+                </div>
               </dl>
 
               <div className="cl-detail-tabs">
@@ -405,21 +514,28 @@ export default function CaseloadPage() {
                       &#9888; {concernVisits.length} visit{concernVisits.length !== 1 ? 's' : ''} flagged with Concern outcome — review observations below.
                     </div>
                   )}
-                  {!visitsLoading && visits.length === 0 && <div className="empty-state">No visit history</div>}
-                  {!visitsLoading && visits.length > 0 && (
-                    <div className="cl-timeline">
-                      {visits.map(v => (
-                        <div key={v.visitationId} className={`cl-timeline-card${v.visitOutcome?.toLowerCase() === 'concern' ? ' cl-timeline-card--concern' : ''}`}>
-                          <div className="cl-timeline-card__header">
-                            <span className="cl-timeline-card__date">{v.visitDate ?? 'No date'}</span>
-                            {v.visitType && <span className="badge badge--blue">{v.visitType}</span>}
-                            {v.visitOutcome && <span className={`badge ${v.visitOutcome.toLowerCase() === 'positive' ? 'badge--green' : v.visitOutcome.toLowerCase() === 'concern' ? 'badge--red' : 'badge--gray'}`}>{v.visitOutcome}</span>}
-                            <span className="cl-timeline-card__worker">{v.socialWorker}</span>
+                  {!visitsLoading && sortedVisits.length === 0 && <div className="empty-state">No visit history</div>}
+                  {!visitsLoading && sortedVisits.length > 0 && (
+                    <>
+                      <div className="cl-timeline">
+                        {displayedVisits.map(v => (
+                          <div key={v.visitationId} className={`cl-timeline-card${v.visitOutcome?.toLowerCase() === 'concern' ? ' cl-timeline-card--concern' : ''}`}>
+                            <div className="cl-timeline-card__header">
+                              <span className="cl-timeline-card__date">{v.visitDate ?? 'No date'}</span>
+                              {v.visitType && <span className="badge badge--blue">{v.visitType}</span>}
+                              {v.visitOutcome && <span className={`badge ${v.visitOutcome.toLowerCase() === 'positive' ? 'badge--green' : v.visitOutcome.toLowerCase() === 'concern' ? 'badge--red' : 'badge--gray'}`}>{v.visitOutcome}</span>}
+                              <span className="cl-timeline-card__worker">{v.socialWorker}</span>
+                            </div>
+                            {v.observations && <p className="cl-timeline-card__text">{v.observations}</p>}
                           </div>
-                          {v.observations && <p className="cl-timeline-card__text">{v.observations}</p>}
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                      {sortedVisits.length > 10 && (
+                        !visitsShowAll
+                          ? <button className="cl-show-more" onClick={() => setVisitsShowAll(true)}>Show {sortedVisits.length - 10} more visits</button>
+                          : <button className="cl-show-more" onClick={() => setVisitsShowAll(false)}>Show less</button>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -431,21 +547,28 @@ export default function CaseloadPage() {
                     <button className="cl-add-note-btn" onClick={openNoteModal}>+ Add Note</button>
                   </div>
                   {sessionsLoading && <div className="inline-loading">Loading sessions...</div>}
-                  {!sessionsLoading && sessions.length === 0 && <div className="empty-state">No session notes</div>}
-                  {!sessionsLoading && sessions.length > 0 && (
-                    <div className="cl-timeline">
-                      {sessions.map(s => (
-                        <div key={s.recordingId} className="cl-timeline-card">
-                          <div className="cl-timeline-card__header">
-                            <span className="cl-timeline-card__date">{s.sessionDate ?? 'No date'}</span>
-                            {s.sessionType && <span className="badge badge--purple">{s.sessionType}</span>}
-                            {s.notesRestricted === 'Y' && <span className="badge badge--red">Restricted</span>}
-                            <span className="cl-timeline-card__worker">{s.socialWorker}</span>
+                  {!sessionsLoading && sortedSessions.length === 0 && <div className="empty-state">No session notes</div>}
+                  {!sessionsLoading && sortedSessions.length > 0 && (
+                    <>
+                      <div className="cl-timeline">
+                        {displayedSessions.map(s => (
+                          <div key={s.recordingId} className="cl-timeline-card">
+                            <div className="cl-timeline-card__header">
+                              <span className="cl-timeline-card__date">{s.sessionDate ?? 'No date'}</span>
+                              {s.sessionType && <span className="badge badge--purple">{s.sessionType}</span>}
+                              {s.notesRestricted === 'Y' && <span className="badge badge--red">Restricted</span>}
+                              <span className="cl-timeline-card__worker">{s.socialWorker}</span>
+                            </div>
+                            <p className="cl-timeline-card__text">{s.sessionNarrative || <em>No narrative recorded</em>}</p>
                           </div>
-                          <p className="cl-timeline-card__text">{s.sessionNarrative || <em>No narrative recorded</em>}</p>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                      {sortedSessions.length > 10 && (
+                        !sessionsShowAll
+                          ? <button className="cl-show-more" onClick={() => setSessionsShowAll(true)}>Show {sortedSessions.length - 10} more sessions</button>
+                          : <button className="cl-show-more" onClick={() => setSessionsShowAll(false)}>Show less</button>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -489,7 +612,7 @@ export default function CaseloadPage() {
               </label>
               {noteError && <p className="cl-modal__error">{noteError}</p>}
               <div className="cl-modal__actions">
-                <button type="submit" className="cl-modal__save" disabled={noteSaving}>{noteSaving ? 'Saving…' : 'Save Note'}</button>
+                <button type="submit" className="cl-modal__save" disabled={noteSaving}>{noteSaving ? 'Saving\u2026' : 'Save Note'}</button>
                 <button type="button" className="cl-modal__cancel" onClick={() => setShowNoteModal(false)}>Cancel</button>
               </div>
             </form>
@@ -533,7 +656,7 @@ export default function CaseloadPage() {
               </label>
               {visitError && <p className="cl-modal__error">{visitError}</p>}
               <div className="cl-modal__actions">
-                <button type="submit" className="cl-modal__save" disabled={visitSaving}>{visitSaving ? 'Saving…' : 'Save Visit'}</button>
+                <button type="submit" className="cl-modal__save" disabled={visitSaving}>{visitSaving ? 'Saving\u2026' : 'Save Visit'}</button>
                 <button type="button" className="cl-modal__cancel" onClick={() => setShowVisitModal(false)}>Cancel</button>
               </div>
             </form>
