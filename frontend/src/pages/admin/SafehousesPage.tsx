@@ -294,7 +294,7 @@ export default function SafehousesPage() {
         </div>
       </div>
 
-      {reassignResident && (
+      {reassignResident && !confirmReassignOpen && (
         <div className="sh-modal-overlay" onClick={closeReassignModal}>
           <div className="sh-modal" onClick={e => e.stopPropagation()}>
             <p className="sh-modal__title">Reassign Resident</p>

@@ -4,7 +4,7 @@
   background: rgba(34, 24, 19, 0.45);
   display: grid;
   place-items: center;
-  z-index: 100;
+  z-index: 300;
   padding: 1rem;
 }
 
