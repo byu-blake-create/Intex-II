@@ -105,7 +105,7 @@ export default function HomePage() {
             </p>
 
             <div className="hero-actions">
-              <a className="button button--primary" href="/login">
+              <a className="button button--primary" href="/donate">
                 Donate Now
               </a>
               <a className="button button--ghost" href="#impact-dashboard">
@@ -288,7 +288,7 @@ export default function HomePage() {
             <h2>Your donation provides safety, healing, and new beginnings.</h2>
           </div>
           <div className="cta-section__actions">
-            <a className="button button--primary" href="/login">
+            <a className="button button--primary" href="/donate">
               Donate Now
             </a>
             <a className="button button--ghost" href="#impact-dashboard">
