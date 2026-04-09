@@ -17,7 +17,7 @@ const contactChannels = [
     label: 'Donations & Giving',
     value: 'giving@northstarshelter.org',
     href: 'mailto:giving@northstarshelter.org',
-    description: 'Learn about ways to support our mission financially or through in-kind gifts.',
+    description: 'Learn about ways to support our mission financially or through volunteer contributions.',
     icon: <HeartIcon />,
   },
   {
