@@ -15,6 +15,7 @@ const DonatePage = lazy(() => import('./pages/public/DonatePage'))
 const ImpactPage = lazy(() => import('./pages/public/ImpactPage'))
 const DonationsPage = lazy(() => import('./pages/public/DonationsPage'))
 const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage'))
+const ContactPage = lazy(() => import('./pages/public/ContactPage'))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const DonorsPage = lazy(() => import('./pages/admin/DonorsPage'))
 const CaseloadPage = lazy(() => import('./pages/admin/CaseloadPage'))
@@ -47,6 +48,7 @@ export default function App() {
           }
         />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/contact" element={<ContactPage />} />
 
         {/* Shared admin workspace */}
         <Route path="/admin" element={<ProtectedRoute requiredRole="Admin"><AdminDashboard /></ProtectedRoute>} />
