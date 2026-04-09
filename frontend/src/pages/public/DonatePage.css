@@ -132,6 +132,12 @@
   color: var(--page-accent-ink);
 }
 
+.public-site[data-theme="dark"] .donate-amount-btn--active {
+  border-color: #f0a17b;
+  background: #f0a17b;
+  color: #1d140f;
+}
+
 .donate-amount-custom {
   position: relative;
   flex: 1 1 auto;
