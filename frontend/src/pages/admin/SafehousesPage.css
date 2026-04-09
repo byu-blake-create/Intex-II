@@ -17,6 +17,10 @@
 .sh-header h2 { margin:0; font-size:1.5rem; color:var(--adm-ink); }
 .sh-header__code { font-family:monospace; }
 .sh-header__location { font-size:0.88rem; color:var(--adm-muted); }
+.sh-meta-row { display:flex; align-items:flex-start; gap:1.75rem; flex-wrap:wrap; margin:0; }
+.sh-meta-item { display:flex; align-items:baseline; gap:0.45rem; margin:0; }
+.sh-meta-item dt { font-size:0.82rem; font-weight:700; color:var(--adm-muted); margin:0; }
+.sh-meta-item dd { font-size:0.92rem; font-weight:700; color:var(--adm-ink); margin:0; }
 .sh-resident-list { display:flex; flex-direction:column; gap:0.5rem; }
 .sh-resident-row { background:var(--adm-card); border:1px solid var(--adm-border); border-radius:9px; padding:0.75rem 1rem; display:flex; flex-direction:column; gap:0.3rem; }
 .sh-resident-row__top { display:flex; align-items:center; justify-content:space-between; gap:0.75rem; }
@@ -70,4 +74,5 @@
   .sh-layout[data-detail-open="true"] .sh-sidebar { display: none; }
   .sh-layout[data-detail-open="true"] .sh-detail { display: flex; }
   .sh-back-btn { display: inline-flex; }
+  .sh-meta-row { gap: 0.85rem 1.25rem; }
 }

@@ -230,10 +230,10 @@ export default function SafehousesPage() {
                 )}
               </div>
 
-              <dl className="cl-fields">
-                <div className="cl-field"><dt>Code</dt><dd style={{ fontFamily: 'monospace' }}>{selected.safehouseCode}</dd></div>
-                <div className="cl-field"><dt>Region</dt><dd>{selected.region ?? '\u2014'}</dd></div>
-                <div className="cl-field"><dt>City</dt><dd>{selected.city ?? '\u2014'}</dd></div>
+              <dl className="sh-meta-row">
+                <div className="sh-meta-item"><dt>Code</dt><dd style={{ fontFamily: 'monospace' }}>{selected.safehouseCode}</dd></div>
+                <div className="sh-meta-item"><dt>Region</dt><dd>{selected.region ?? '\u2014'}</dd></div>
+                <div className="sh-meta-item"><dt>City</dt><dd>{selected.city ?? '\u2014'}</dd></div>
               </dl>
 
               <div>
