@@ -1,6 +1,71 @@
 export const CONSENT_COOKIE = 'nss_cookie_consent'
 export const CONSENT_EVENT = 'nss:cookie-consent'
 const CONSENT_SESSION_KEY = 'nss_cookie_consent_session'
+/** Mirrors choice in localStorage so consent survives new tabs / deploy (sessionStorage is tab-scoped). */
+const CONSENT_LOCAL_KEY = 'nss_cookie_consent_choice'
+const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365
+
+/**
+ * Survives React remounts / Strict Mode so "Manage cookies" can reopen the banner after a choice exists.
+ * (useState init would otherwise reset visible to false whenever the component remounts.)
+ */
+let preferencesPanelRequested = false
+
+export function isPreferencesPanelRequested(): boolean {
+  return preferencesPanelRequested
+}
+
+function clearPreferencesPanelRequest() {
+  preferencesPanelRequested = false
+}
+
+function safeSessionGet(key: string): string | null {
+  try {
+    return window.sessionStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function safeSessionSet(key: string, value: string) {
+  try {
+    window.sessionStorage.setItem(key, value)
+  } catch {
+    /* private mode / blocked storage */
+  }
+}
+
+function safeSessionRemove(key: string) {
+  try {
+    window.sessionStorage.removeItem(key)
+  } catch {
+    /* ignore */
+  }
+}
+
+function safeLocalGet(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function safeLocalSet(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value)
+  } catch {
+    /* ignore */
+  }
+}
+
+function safeLocalRemove(key: string) {
+  try {
+    window.localStorage.removeItem(key)
+  } catch {
+    /* ignore */
+  }
+}
 
 const ANALYTICS_SCRIPT_ID = 'nss-analytics-script'
 const ANALYTICS_BOOTSTRAP_ID = 'nss-analytics-bootstrap'
@@ -66,9 +131,57 @@ function notifyConsentChanged(detail: ConsentEventDetail) {
   )
 }
 
+function readConsentCookie(): ConsentDecision | null {
+  if (typeof document === 'undefined') return null
+  const prefix = `${CONSENT_COOKIE}=`
+  for (const part of document.cookie.split(';')) {
+    const trimmed = part.trim()
+    if (!trimmed.startsWith(prefix)) continue
+    const raw = trimmed.slice(prefix.length)
+    let value: string
+    try {
+      value = decodeURIComponent(raw)
+    } catch {
+      value = raw
+    }
+    if (value === 'accepted' || value === 'declined') return value
+  }
+  return null
+}
+
+/** Write consent to sessionStorage, localStorage, and a first-party cookie (privacy list + deploy reliability). */
+function persistConsentStores(decision: ConsentDecision) {
+  safeSessionSet(CONSENT_SESSION_KEY, decision)
+  safeLocalSet(CONSENT_LOCAL_KEY, decision)
+  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+  try {
+    document.cookie = `${CONSENT_COOKIE}=${encodeURIComponent(decision)}; Path=/; Max-Age=${CONSENT_MAX_AGE_SECONDS}; SameSite=Lax${secure}`
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearConsentStores() {
+  safeSessionRemove(CONSENT_SESSION_KEY)
+  safeLocalRemove(CONSENT_LOCAL_KEY)
+  deleteCookieEverywhere(CONSENT_COOKIE)
+}
+
 export function getConsentDecision(): ConsentDecision | null {
-  const value = window.sessionStorage.getItem(CONSENT_SESSION_KEY)
-  if (value === 'accepted' || value === 'declined') return value
+  const session = safeSessionGet(CONSENT_SESSION_KEY)
+  if (session === 'accepted' || session === 'declined') return session
+
+  const local = safeLocalGet(CONSENT_LOCAL_KEY)
+  if (local === 'accepted' || local === 'declined') return local
+
+  const fromCookie = readConsentCookie()
+  if (fromCookie) {
+    // One-time-style sync so older deployments that only set the cookie still work everywhere.
+    safeLocalSet(CONSENT_LOCAL_KEY, fromCookie)
+    safeSessionSet(CONSENT_SESSION_KEY, fromCookie)
+    return fromCookie
+  }
+
   return null
 }
 
@@ -136,10 +249,8 @@ export function syncOptionalAnalytics() {
 }
 
 export function setConsentDecision(decision: ConsentDecision) {
-  // Keep consent to the current browser session only.
-  window.sessionStorage.setItem(CONSENT_SESSION_KEY, decision)
-  // Clear legacy persisted cookie values so older decisions do not suppress the popup.
-  deleteCookieEverywhere(CONSENT_COOKIE)
+  clearPreferencesPanelRequest()
+  persistConsentStores(decision)
 
   if (decision === 'accepted') {
     loadAnalyticsIfConfigured()
@@ -151,16 +262,18 @@ export function setConsentDecision(decision: ConsentDecision) {
     clearOptionalAnalyticsCookies()
   }
 
-  notifyConsentChanged({ decision })
+  // Explicit forceOpen: false so listeners never treat a post-choice update as "re-open banner".
+  notifyConsentChanged({ decision, forceOpen: false })
 }
 
 export function openConsentPreferences() {
+  preferencesPanelRequested = true
   notifyConsentChanged({ decision: getConsentDecision(), forceOpen: true })
 }
 
 export function resetConsentDecision() {
-  window.sessionStorage.removeItem(CONSENT_SESSION_KEY)
-  deleteCookieEverywhere(CONSENT_COOKIE)
+  clearPreferencesPanelRequest()
+  clearConsentStores()
   setAnalyticsDisabled(true)
   removeAnalyticsScript(ANALYTICS_SCRIPT_ID)
   removeAnalyticsScript(ANALYTICS_BOOTSTRAP_ID)

@@ -1398,8 +1398,8 @@
   content: attr(data-tip);
   position: absolute;
   bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  transform: none;
   background: var(--adm-ink);
   color: var(--adm-surface);
   font-size: 0.75rem;
@@ -1408,12 +1408,13 @@
   padding: 0.45rem 0.65rem;
   border-radius: 6px;
   white-space: normal;
-  width: 220px;
+  width: 240px;
+  max-width: min(300px, calc(100vw - 40px));
   text-align: left;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
-  z-index: 100;
+  z-index: 1000;
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
 .ss-kpi-info:hover::after,

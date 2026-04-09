@@ -49,10 +49,17 @@ export default function PrivacyPolicyPage() {
 
         <section>
           <h2>Cookies we use</h2>
+          <p>
+            This site uses a <strong>fully functional</strong> cookie consent banner (not cosmetic only): when it appears,
+            you can <strong>accept</strong> or <strong>decline</strong> optional analytics cookies. Your choice is stored in
+            this browser (cookie and local storage) so we can respect it on later visits. You may <strong>change your mind
+            at any time</strong> using <strong>Cookie preferences</strong> in the footer or <strong>Manage Cookies</strong>{' '}
+            below — the same banner reopens and a new choice replaces the previous one.
+          </p>
           <div className="privacy-page__cookie-prefs privacy-page__panel">
             <p className="privacy-page__cookie-prefs-text">
-              You can update your cookie preferences at any time during this session. This reopens the same banner you saw
-              when you first arrived, so you can accept or decline non-essential cookies.
+              Reopen the cookie banner to accept or decline non-essential cookies again. Your updated choice is saved in
+              this browser.
             </p>
             <div className="privacy-page__actions privacy-page__actions--cookie">
               <button type="button" className="privacy-page__cookie-button" onClick={handleManageCookies}>
@@ -96,8 +103,9 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               <strong>Consent</strong> for non-essential cookies and optional analytics on public pages. You may withdraw
-              consent at any time by selecting <strong>Manage Cookies</strong> in the site footer to reopen the cookie
-              preference banner.
+              or change consent at any time using <strong>Cookie preferences</strong> in the site footer or{' '}
+              <strong>Manage Cookies</strong> on this page, which reopens the same banner so you can accept or decline
+              again.
             </li>
           </ul>
         </section>
