@@ -25,7 +25,10 @@ var allowedFrontendOrigins = ParseAllowedOrigins(
     "https://intex-ii-iota.vercel.app");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add(new InputSanitizationFilter());
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
