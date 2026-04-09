@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   LineChart,
   Line,
@@ -6,6 +6,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ResponsiveContainer,
 } from 'recharts'
 import AdminLayout from '../../components/AdminLayout'
 import { fetchSummary, fetchDonationsByMonth } from '../../lib/reportsApi'
@@ -30,8 +31,6 @@ export default function ReportsPage() {
   const [dashData, setDashData] = useState<AdminDashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const chartRef = useRef<HTMLDivElement>(null)
-  const [chartWidth, setChartWidth] = useState(0)
 
   useEffect(() => {
     let mounted = true
@@ -42,21 +41,6 @@ export default function ReportsPage() {
       .catch(() => { if (mounted) setError('Failed to load reports data.') })
       .finally(() => { if (mounted) setLoading(false) })
     return () => { mounted = false }
-  }, [])
-
-  useEffect(() => {
-    const node = chartRef.current
-    if (!node) return
-
-    const observer = new ResizeObserver(entries => {
-      const entry = entries[0]
-      if (!entry) return
-      const nextWidth = Math.max(Math.floor(entry.contentRect.width), 0)
-      setChartWidth(current => (current === nextWidth ? current : nextWidth))
-    })
-
-    observer.observe(node)
-    return () => observer.disconnect()
   }, [])
 
   const statCards = summary
@@ -95,16 +79,16 @@ export default function ReportsPage() {
           <>
             <p className="section-title">Donation Trends &mdash; Last 12 Months</p>
             <div className="rp__chart-wrap">
-              <div className="rp__chart-inner" ref={chartRef}>
-                {chartWidth > 0 && (
-                  <LineChart width={chartWidth} height={320} data={series} margin={{ top: 8, right: 24, left: 0, bottom: 0 }}>
+              <div className="rp__chart-inner">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={series} margin={{ top: 8, right: 24, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                     <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#8b8480' }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: '#8b8480' }} axisLine={false} tickLine={false} />
                     <Tooltip contentStyle={{ background: '#1c2130', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: '#e6ddd6' }} />
                     <Line type="monotone" dataKey="total" stroke="#e07048" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#e07048' }} />
                   </LineChart>
-                )}
+                </ResponsiveContainer>
               </div>
             </div>
           </>
