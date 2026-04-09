@@ -3,6 +3,7 @@ import { apiPost, apiUrl } from '../lib/api'
 import { AuthContext, normalizeAuthUser, type AuthUser, type LoginResult } from './auth'
 
 const SESSION_AUTH_STORAGE_KEY = 'session-auth-user'
+const LOGOUT_MIN_DELAY_MS = 450
 
 function readSessionUser(): AuthUser | null {
   if (typeof window === 'undefined') return null
@@ -136,14 +137,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
-    setUser(null)
-    writeSessionUser(null)
-    setLoading(false)
+    const startedAt = Date.now()
     try {
       await fetch(apiUrl('/api/auth/logout'), { method: 'POST', credentials: 'include' })
     } catch {
-      // Keep client-side sign-out responsive even if network is flaky.
+      // Ignore network failures and still complete client-side sign-out.
+    } finally {
+      const elapsed = Date.now() - startedAt
+      const remaining = LOGOUT_MIN_DELAY_MS - elapsed
+      if (remaining > 0) {
+        await new Promise(resolve => window.setTimeout(resolve, remaining))
+      }
     }
+    setUser(null)
+    writeSessionUser(null)
+    setLoading(false)
   }
 
   return (

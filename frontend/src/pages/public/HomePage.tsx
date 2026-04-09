@@ -228,7 +228,12 @@ export default function HomePage() {
 
                 <div className="impact-dashboard__highlights">
                   <article className="impact-highlight">
-                    <p className="impact-kpi-card__label">Education improvement</p>
+                    <p className="impact-kpi-card__label">
+                      <ImpactMetricLabel
+                        label="Education improvement"
+                        info="Change in average education-plan completion compared with the oldest month in this six-month snapshot."
+                      />
+                    </p>
                     <strong>
                       {impactDashboard.educationDelta == null
                         ? 'Tracking'
@@ -249,7 +254,7 @@ export default function HomePage() {
                     <strong>
                       {impactDashboard.supportPerResident == null
                         ? 'N/A'
-                        : formatImpactNumber(impactDashboard.supportPerResident)}
+                        : formatImpactCurrency(impactDashboard.supportPerResident)}
                     </strong>
                   </article>
                 </div>
