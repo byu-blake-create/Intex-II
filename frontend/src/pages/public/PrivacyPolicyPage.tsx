@@ -70,6 +70,10 @@ export default function PrivacyPolicyPage() {
               cookies.
             </li>
             <li>
+              <strong>nss_theme_pref:</strong> browser-accessible preference cookie used by React to remember your selected
+              light or dark mode.
+            </li>
+            <li>
               <strong>_ga, _ga_*, and _gid:</strong> Google Analytics cookies that are only allowed when this deployment
               is configured for analytics and you explicitly accept them.
             </li>
