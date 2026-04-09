@@ -242,6 +242,11 @@
   color: var(--page-cta-ink);
 }
 
+.public-site[data-theme="dark"] .home-nav__cta {
+  background: #fff8f1;
+  color: #1d140f;
+}
+
 .home-nav__donate {
   display: inline-flex;
   align-items: center;
@@ -1227,6 +1232,11 @@
   background: #fff8f1;
   color: #221813;
   box-shadow: none;
+}
+
+.public-site[data-theme="dark"] .cta-section .button--primary {
+  background: #000;
+  color: #fff8f1;
 }
 
 .cta-section .button--ghost {
