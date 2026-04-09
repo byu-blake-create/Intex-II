@@ -110,6 +110,14 @@ function setAnalyticsDisabled(disabled: boolean) {
   windowWithFlags[getAnalyticsDisableKey(id)] = disabled
 }
 
+function disableOptionalAnalytics() {
+  setAnalyticsDisabled(true)
+  removeAnalyticsScript(ANALYTICS_SCRIPT_ID)
+  removeAnalyticsScript(ANALYTICS_BOOTSTRAP_ID)
+  clearAnalyticsGlobals()
+  clearOptionalAnalyticsCookies()
+}
+
 function removeAnalyticsScript(id: string) {
   document.getElementById(id)?.remove()
 }
@@ -241,11 +249,7 @@ export function syncOptionalAnalytics() {
     return
   }
 
-  setAnalyticsDisabled(true)
-  removeAnalyticsScript(ANALYTICS_SCRIPT_ID)
-  removeAnalyticsScript(ANALYTICS_BOOTSTRAP_ID)
-  clearAnalyticsGlobals()
-  clearOptionalAnalyticsCookies()
+  disableOptionalAnalytics()
 }
 
 export function setConsentDecision(decision: ConsentDecision) {
@@ -255,11 +259,7 @@ export function setConsentDecision(decision: ConsentDecision) {
   if (decision === 'accepted') {
     loadAnalyticsIfConfigured()
   } else {
-    setAnalyticsDisabled(true)
-    removeAnalyticsScript(ANALYTICS_SCRIPT_ID)
-    removeAnalyticsScript(ANALYTICS_BOOTSTRAP_ID)
-    clearAnalyticsGlobals()
-    clearOptionalAnalyticsCookies()
+    disableOptionalAnalytics()
   }
 
   // Explicit forceOpen: false so listeners never treat a post-choice update as "re-open banner".
@@ -267,17 +267,16 @@ export function setConsentDecision(decision: ConsentDecision) {
 }
 
 export function openConsentPreferences() {
+  // Reopening preferences should let the next choice replace the old one cleanly.
+  clearConsentStores()
+  disableOptionalAnalytics()
   preferencesPanelRequested = true
-  notifyConsentChanged({ decision: getConsentDecision(), forceOpen: true })
+  notifyConsentChanged({ decision: null, forceOpen: true })
 }
 
 export function resetConsentDecision() {
   clearPreferencesPanelRequest()
   clearConsentStores()
-  setAnalyticsDisabled(true)
-  removeAnalyticsScript(ANALYTICS_SCRIPT_ID)
-  removeAnalyticsScript(ANALYTICS_BOOTSTRAP_ID)
-  clearAnalyticsGlobals()
-  clearOptionalAnalyticsCookies()
+  disableOptionalAnalytics()
   notifyConsentChanged({ decision: null })
 }
