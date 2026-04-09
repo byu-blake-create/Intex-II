@@ -131,6 +131,17 @@
   font-weight: 600;
 }
 
+.public-footer__contact-cta {
+  color: var(--page-accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.public-footer__contact-cta:hover {
+  color: var(--page-accent-deep, var(--page-accent));
+}
+
 .public-footer__text-button {
   padding: 0;
   border: none;

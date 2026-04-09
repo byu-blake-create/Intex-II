@@ -51,11 +51,11 @@ export default function PublicSiteFooter() {
 
           <section className="public-footer__section" aria-labelledby="footer-contact">
             <p className="public-footer__section-label" id="footer-contact">Contact</p>
-            <a className="public-footer__text-link" href="mailto:privacy@northstarshelter.org">
-              privacy@northstarshelter.org
-            </a>
+            <Link className="public-footer__contact-cta" to="/contact">
+              Contact us →
+            </Link>
             <p className="public-footer__section-copy">
-              Questions about privacy, consent, or data handling can be sent to our team directly.
+              Questions about our programs, giving, or privacy — we're here to help.
             </p>
           </section>
         </div>
