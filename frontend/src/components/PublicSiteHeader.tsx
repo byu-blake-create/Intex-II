@@ -12,7 +12,6 @@ export default function PublicSiteHeader({
   const { user, logout } = useAuth()
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   const accountLabel = user ? formatAccountLabel(user.firstName, user.lastName, user.displayName, user.email) : null
-  const showDonations = Boolean(user?.roles.includes('Donor'))
   const showAdmin = Boolean(user?.roles.includes('Admin'))
 
   return (
@@ -55,16 +54,8 @@ export default function PublicSiteHeader({
             Admin
           </Link>
         ) : (
-          !showDonations && (
-            <Link className="home-nav__donate" to="/donate">
-              Donate
-            </Link>
-          )
-        )}
-
-        {showDonations && !showAdmin && (
-          <Link className="home-nav__donate home-nav__admin" to="/donations">
-            Donations
+          <Link className="home-nav__donate" to="/donate">
+            Donate
           </Link>
         )}
 
