@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import PublicSiteFooter from '../../components/PublicSiteFooter'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
+import { replaceShelterReferences } from '../../lib/publicImpact'
 import { fetchPublishedSnapshots } from '../../lib/snapshotsApi'
 import { usePublicTheme } from '../../lib/usePublicTheme'
 import type { PublicImpactSnapshot } from '../../types/domain'
@@ -35,8 +36,8 @@ export default function ImpactPage() {
               <p className="impact-card__date">
                 {s.snapshotDate ?? s.publishedAt?.slice(0, 10) ?? '—'}
               </p>
-              <h2>{s.headline ?? 'Update'}</h2>
-              <p>{s.summaryText}</p>
+              <h2>{replaceShelterReferences(s.headline) || 'Update'}</h2>
+              <p>{replaceShelterReferences(s.summaryText)}</p>
             </article>
           ))}
         </div>

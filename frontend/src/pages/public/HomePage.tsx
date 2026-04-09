@@ -3,8 +3,10 @@ import PublicSiteHeader from '../../components/PublicSiteHeader'
 import PublicSiteFooter from '../../components/PublicSiteFooter'
 import {
   buildImpactDashboardModel,
+  formatImpactCurrency,
   formatImpactMonth,
   formatImpactNumber,
+  replaceShelterReferences,
 } from '../../lib/publicImpact'
 import { fetchPublishedSnapshots } from '../../lib/snapshotsApi'
 import { usePublicTheme } from '../../lib/usePublicTheme'
@@ -33,6 +35,24 @@ const services = [
       'Holistic care spanning physical, psychological, and social wellbeing so recovery addresses the whole person.',
   },
 ]
+
+function ImpactMetricLabel({ label, info }: { label: string; info?: string }) {
+  return (
+    <span className="impact-kpi-card__label-content">
+      <span>{label}</span>
+      {info ? (
+        <span className="impact-info" tabIndex={0} aria-label={info}>
+          <span className="impact-info__icon" aria-hidden="true">
+            i
+          </span>
+          <span className="impact-info__tooltip" aria-hidden="true">
+            {info}
+          </span>
+        </span>
+      ) : null}
+    </span>
+  )
+}
 
 export default function HomePage() {
   const { theme, setTheme } = usePublicTheme()
@@ -121,7 +141,8 @@ export default function HomePage() {
             <h2>How your support is changing lives.</h2>
             {!impactLoading && !impactError && impactDashboard && (
               <p className="impact-dashboard-section__subtitle">
-                {impactDashboard.latest.snapshot.headline ?? 'Public impact update'}
+                {replaceShelterReferences(impactDashboard.latest.snapshot.headline) ||
+                  'Public impact update'}
               </p>
             )}
           </div>
@@ -147,7 +168,12 @@ export default function HomePage() {
                 </article>
 
                 <article className="impact-kpi-card">
-                  <p className="impact-kpi-card__label">Wellbeing score</p>
+                  <p className="impact-kpi-card__label">
+                    <ImpactMetricLabel
+                      label="Well being score"
+                      info="Average resident well being check-in score for the latest reporting month."
+                    />
+                  </p>
                   <strong>{formatImpactNumber(latestMetrics?.avgHealthScore ?? 0, 2)} / 5</strong>
                   <p className="impact-kpi-card__delta">
                     {healthDelta == null || !previousMonthLabel
@@ -157,7 +183,12 @@ export default function HomePage() {
                 </article>
 
                 <article className="impact-kpi-card">
-                  <p className="impact-kpi-card__label">Education progress</p>
+                  <p className="impact-kpi-card__label">
+                    <ImpactMetricLabel
+                      label="Education progress"
+                      info="Average share of each resident's education plan completed this month."
+                    />
+                  </p>
                   <strong>{formatImpactNumber(latestMetrics?.avgEducationProgress ?? 0, 1)}%</strong>
                   <p className="impact-kpi-card__delta">
                     {educationDelta == null || !previousMonthLabel
@@ -168,11 +199,11 @@ export default function HomePage() {
 
                 <article className="impact-kpi-card">
                   <p className="impact-kpi-card__label">Funded this month</p>
-                  <strong>{formatImpactNumber(latestMetrics?.donationsTotalForMonth ?? 0)}</strong>
+                  <strong>{formatImpactCurrency(latestMetrics?.donationsTotalForMonth ?? 0)}</strong>
                   <p className="impact-kpi-card__delta">
                     {donationDelta == null || !previousMonthLabel
                       ? '\u00A0'
-                      : `${donationDelta >= 0 ? '+' : ''}${formatImpactNumber(donationDelta, 0)} vs ${previousMonthLabel}`}
+                      : `${donationDelta >= 0 ? '+' : '-'}${formatImpactCurrency(Math.abs(donationDelta), 0)} vs ${previousMonthLabel}`}
                   </p>
                 </article>
               </div>
@@ -188,10 +219,15 @@ export default function HomePage() {
                 </article>
                 <article className="impact-highlight">
                   <p className="impact-kpi-card__label">Total raised recently</p>
-                  <strong>{formatImpactNumber(impactDashboard.sixMonthDonations)}</strong>
+                  <strong>{formatImpactCurrency(impactDashboard.sixMonthDonations)}</strong>
                 </article>
                 <article className="impact-highlight">
-                  <p className="impact-kpi-card__label">Support per resident</p>
+                  <p className="impact-kpi-card__label">
+                    <ImpactMetricLabel
+                      label="Support per resident"
+                      info="Average donation support available for each active resident in the latest month."
+                    />
+                  </p>
                   <strong>
                     {impactDashboard.supportPerResident == null
                       ? 'N/A'
@@ -226,7 +262,7 @@ export default function HomePage() {
 
                       <dl className="impact-trend-card__stats">
                         <div>
-                          <dt>Health</dt>
+                          <dt>Well being</dt>
                           <dd>{formatImpactNumber(point.healthScore, 2)} / 5</dd>
                         </div>
                         <div>
@@ -267,7 +303,17 @@ export default function HomePage() {
             <div className="systems-section__content">
               <div className="systems-section__heading">
                 <p className="eyebrow">Where your support goes</p>
-                <h2>Every donation directly funds protection, restoration, and a future beyond crisis.</h2>
+                <h2>
+                  Every donation directly funds{' '}
+                  <span className="word-highlight-wrap">
+                    <span className="word-highlight word-highlight--gold">protection</span>,
+                  </span>{' '}
+                  <span className="word-highlight-wrap">
+                    <span className="word-highlight word-highlight--sage">restoration</span>,
+                  </span>{' '}
+                  and a{' '}
+                  <span className="word-highlight word-highlight--sky">future</span> beyond crisis.
+                </h2>
               </div>
 
               <div className="systems-grid">

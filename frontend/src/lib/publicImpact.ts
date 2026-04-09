@@ -144,6 +144,15 @@ export function formatImpactNumber(value: number, fractionDigits = 0): string {
   }).format(value)
 }
 
+export function formatImpactCurrency(value: number, fractionDigits = 0): string {
+  return `$${formatImpactNumber(value, fractionDigits)}`
+}
+
+export function replaceShelterReferences(value?: string | null): string {
+  if (!value) return ''
+  return value.replace(/Lighthouse Sanctuary/gi, 'North Star Shelter')
+}
+
 export function buildImpactDashboardModel(
   snapshots: PublicImpactSnapshot[],
   now = new Date(),
@@ -166,7 +175,7 @@ export function buildImpactDashboardModel(
   const latest = prepared[0]
   const previous = prepared[1] ?? null
   const recentWindow = prepared.slice(0, 6)
-  const trend = [...recentWindow].reverse().map(item => ({
+  const trend = recentWindow.map(item => ({
     id: item.snapshot.snapshotId,
     label: formatImpactMonth(item.metrics.month ?? item.snapshot.snapshotDate),
     educationProgress: item.metrics.avgEducationProgress ?? 0,
@@ -174,8 +183,8 @@ export function buildImpactDashboardModel(
     residents: item.metrics.totalResidents ?? 0,
     donations: item.metrics.donationsTotalForMonth ?? 0,
   }))
-  const oldestInWindow = trend[0] ?? null
-  const latestTrend = trend[trend.length - 1] ?? null
+  const latestTrend = trend[0] ?? null
+  const oldestInWindow = trend[trend.length - 1] ?? null
 
   return {
     latest,
