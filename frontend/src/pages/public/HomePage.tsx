@@ -128,7 +128,7 @@ export default function HomePage() {
               <a className="button button--primary" href="/donate">
                 Donate Now
               </a>
-              <a className="button button--ghost" href="#impact-dashboard">
+              <a className="button button--ghost" href="/impact">
                 See Our Impact
               </a>
             </div>
@@ -271,7 +271,7 @@ export default function HomePage() {
                         </div>
                         <div>
                           <dt>Funding</dt>
-                          <dd>{formatImpactNumber(point.donations)}</dd>
+                          <dd>{formatImpactCurrency(point.donations)}</dd>
                         </div>
                       </dl>
                     </article>
@@ -337,7 +337,7 @@ export default function HomePage() {
             <a className="button button--primary" href="/donate">
               Donate Now
             </a>
-            <a className="button button--ghost" href="#impact-dashboard">
+            <a className="button button--ghost" href="/impact">
               See our impact
             </a>
           </div>
