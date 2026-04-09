@@ -46,8 +46,8 @@ export default function ReportsPage() {
   const statCards = summary
     ? [
         { label: 'Active Residents', value: String(summary.activeResidents), sub: 'Currently in shelter' },
-        { label: 'Donations (30d)', value: String(summary.totalDonationsLast30Days), sub: 'Transaction count' },
-        { label: 'Amount (30d)', value: `$${summary.donationAmountLast30Days.toLocaleString()}`, sub: 'Total received' },
+        { label: 'Donations (This Month)', value: String(summary.totalDonationsLast30Days), sub: 'Transaction count' },
+        { label: 'Amount (This Month)', value: `$${summary.donationAmountLast30Days.toLocaleString()}`, sub: 'Total received' },
         { label: 'Case Conferences', value: String(summary.upcomingCaseConferences), sub: 'Upcoming' },
       ]
     : []
