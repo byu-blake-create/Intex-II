@@ -57,6 +57,21 @@ const METRIC_HELP: Record<string, string> = {
   'POSTS SAMPLED': 'This is the number of historical posts contributing to the current platform signal.',
 }
 
+const SIGNAL_HELP: Record<string, string> = {
+  'donor-watchlist':
+    'This finding highlights supporters who are most at risk of lapsing soon. Higher counts mean the fundraising team should prioritize retention outreach before those donors disengage.',
+  'top-opportunities':
+    'This finding highlights supporters who are most likely to respond to a larger ask. It helps the team focus upgrade conversations where the model sees near-term giving potential.',
+  'resident-triage':
+    'This finding highlights residents whose recent patterns suggest elevated support needs. Higher counts mean case managers should review those residents first and verify whether more intervention is needed.',
+  'reintegration-ready':
+    'This finding highlights residents with the strongest indicators for a favorable reintegration review. It should support planning and prioritization, not replace staff judgment.',
+  'safehouse-forecast':
+    'This finding highlights occupancy pressure and forecasted capacity strain. Higher values indicate where staffing, placement, or resource planning may need attention soon.',
+  'outreach-highlight':
+    'This finding highlights which platform currently shows the strongest click-through behavior in the recorded data. It helps the team decide where outreach effort is most likely to convert into action.',
+}
+
 function formatMetricLabel(label: string) {
   return METRIC_LABELS[label.toUpperCase()] ?? label
 }
@@ -66,10 +81,10 @@ function describeSignal(card: AdminDashboardData['cards'][number]) {
   const topFactorLine = card.model.topFactor
     ? ` Top factor: ${card.model.topFactor}.`
     : ''
+  const signalHelp = SIGNAL_HELP[card.id] ?? 'This finding summarizes what the pipeline or live signal is surfacing for staff attention.'
 
   return [
-    `What it is: ${card.plainLanguage}`,
-    `What this card means: ${card.detail}`,
+    signalHelp,
     `Metric: ${formatMetricLabel(card.model.metricLabel)} ${card.model.metricValue}. ${metricHelp}`,
     `Tone: ${TONE_LABELS[card.tone] ?? card.tone}.`,
     `Updated: ${card.model.trainedAt}.${topFactorLine}`,
@@ -151,8 +166,10 @@ export default function ReportsPage() {
             <div className="rp__model-grid">
               {dashData.cards.map(card => (
                 <div key={card.id} className="rp__model-card">
-                  <div className="rp__model-header">
-                    <span className="rp__model-name">{card.model.name}</span>
+                  <div className="rp__model-topline">
+                    <span className={`badge rp__tone-badge rp__tone-badge--${card.tone}`}>
+                      {TONE_LABELS[card.tone] ?? card.tone}
+                    </span>
                     <span
                       className="rp__info"
                       tabIndex={0}
@@ -164,17 +181,21 @@ export default function ReportsPage() {
                       </span>
                     </span>
                   </div>
-                  <span className="rp__model-version">{card.model.version}</span>
+                  <span className="rp__model-heading">{card.title}</span>
+                  <span className="rp__model-value">{card.value}</span>
+                  <p className="rp__model-summary">{card.plainLanguage}</p>
+                  <p className="rp__model-detail">{card.detail}</p>
                   <div className="rp__model-meta">
                     <span className={`badge ${card.tone === 'progress' || card.tone === 'forecast' ? 'badge--blue' : 'badge--green'}`}>
                       {formatMetricLabel(card.model.metricLabel)}: {card.model.metricValue}
                     </span>
-                    <span className={`badge rp__tone-badge rp__tone-badge--${card.tone}`}>
-                      {TONE_LABELS[card.tone] ?? card.tone}
-                    </span>
+                    <span className="badge badge--gray">{card.model.name}</span>
                   </div>
-                  <span className="rp__model-trained">Refreshed: {card.model.trainedAt}</span>
-                  {card.model.topFactor && <span className="rp__model-factor">{card.model.topFactor}</span>}
+                  <div className="rp__model-footer">
+                    <span className="rp__model-trained">Refreshed: {card.model.trainedAt}</span>
+                    <a href={card.route} className="rp__model-link">{card.routeLabel} →</a>
+                  </div>
+                  {card.model.topFactor && <span className="rp__model-factor">Top factor: {card.model.topFactor}</span>}
                 </div>
               ))}
             </div>
