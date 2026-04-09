@@ -72,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!parsed) throw new Error('Invalid sign-in response.')
     setUser(parsed)
     writeSessionUser(parsed)
+    setLoading(false)
     return parsed
   }
 
@@ -102,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!parsed) throw new Error('Invalid sign-in response.')
     setUser(parsed)
     writeSessionUser(parsed)
+    setLoading(false)
     return parsed
   }
 
@@ -116,6 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!parsed) throw new Error('Invalid registration response.')
     setUser(parsed)
     writeSessionUser(parsed)
+    setLoading(false)
     return parsed
   }
 
@@ -133,9 +136,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
-    await fetch(apiUrl('/api/auth/logout'), { method: 'POST', credentials: 'include' })
     setUser(null)
     writeSessionUser(null)
+    setLoading(false)
+    try {
+      await fetch(apiUrl('/api/auth/logout'), { method: 'POST', credentials: 'include' })
+    } catch {
+      // Keep client-side sign-out responsive even if network is flaky.
+    }
   }
 
   return (
