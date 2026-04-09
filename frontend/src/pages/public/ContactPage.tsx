@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import PublicSiteFooter from '../../components/PublicSiteFooter'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
 import { usePublicTheme } from '../../lib/usePublicTheme'
@@ -44,53 +43,54 @@ export default function ContactPage() {
       <PublicSiteHeader theme={theme} setTheme={setTheme} />
 
       <main className="contact-page">
-
-        {/* Hero */}
         <header className="contact-hero">
           <p className="contact-hero__eyebrow">North Star Shelter</p>
           <h1>Get in touch</h1>
           <p className="contact-hero__sub">
-            We're here to answer questions, connect volunteers, and welcome supporters.
+            We&apos;re here to answer questions, connect volunteers, and welcome supporters.
             Reach out through any of the channels below.
           </p>
         </header>
 
-        {/* Contact cards */}
         <section className="contact-channels" aria-label="Contact options">
-          {contactChannels.map(ch => (
-            <article key={ch.label} className="contact-card">
-              <div className="contact-card__icon" aria-hidden="true">{ch.icon}</div>
-              <p className="contact-card__label">{ch.label}</p>
-              <a className="contact-card__value" href={ch.href}>{ch.value}</a>
-              <p className="contact-card__desc">{ch.description}</p>
+          {contactChannels.map(channel => (
+            <article key={channel.label} className="contact-card">
+              <div className="contact-card__icon" aria-hidden="true">
+                {channel.icon}
+              </div>
+              <p className="contact-card__label">{channel.label}</p>
+              <a className="contact-card__value" href={channel.href}>
+                {channel.value}
+              </a>
+              <p className="contact-card__desc">{channel.description}</p>
             </article>
           ))}
         </section>
 
-        {/* Social */}
         <section className="contact-social" aria-labelledby="contact-social-label">
-          <p className="contact-social__eyebrow" id="contact-social-label">Follow our work</p>
+          <p className="contact-social__eyebrow" id="contact-social-label">
+            Follow our work
+          </p>
           <h2>Stay connected</h2>
           <p className="contact-social__copy">
             Follow us on social media for updates on our programs, events, and community impact.
           </p>
           <div className="contact-social__icons" aria-label="Social channels">
-            {socials.map(s => (
+            {socials.map(social => (
               <a
-                key={s.label}
+                key={social.label}
                 className="contact-social__icon-link"
                 href="#"
-                aria-label={s.label}
-                title={s.label}
-                onClick={e => e.preventDefault()}
+                aria-label={social.label}
+                title={social.label}
+                onClick={event => event.preventDefault()}
               >
-                {s.icon}
+                {social.icon}
               </a>
             ))}
           </div>
         </section>
 
-        {/* Safety note */}
         <section className="contact-safety">
           <SafetyIcon />
           <p>
@@ -99,12 +99,6 @@ export default function ContactPage() {
             our general line at the address above.
           </p>
         </section>
-
-        {/* Breadcrumb back */}
-        <div className="contact-back">
-          <Link to="/" className="contact-back__link">← Back to home</Link>
-        </div>
-
       </main>
 
       <PublicSiteFooter />

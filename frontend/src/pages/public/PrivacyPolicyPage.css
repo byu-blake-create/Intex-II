@@ -1,7 +1,7 @@
 .privacy-page {
   max-width: 720px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: calc(var(--public-header-offset) + 2rem) 1.5rem 4rem;
 }
 
 .privacy-page__meta {
