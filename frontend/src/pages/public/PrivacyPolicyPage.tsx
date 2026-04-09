@@ -51,8 +51,8 @@ export default function PrivacyPolicyPage() {
           <h2>Cookies we use</h2>
           <div className="privacy-page__cookie-prefs privacy-page__panel">
             <p className="privacy-page__cookie-prefs-text">
-              You can update your cookie preferences at any time during this session. This reopens the same banner you saw
-              when you first arrived, so you can accept or decline non-essential cookies.
+              You can update your cookie preferences at any time. This reopens the same banner you saw when you first
+              arrived, so you can accept or decline non-essential cookies (your choice is saved in this browser).
             </p>
             <div className="privacy-page__actions privacy-page__actions--cookie">
               <button type="button" className="privacy-page__cookie-button" onClick={handleManageCookies}>
