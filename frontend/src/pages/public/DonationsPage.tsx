@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { fetchMyDonations, type MyDonationsResponse } from '../../lib/donationsApi'
 import PublicSiteFooter from '../../components/PublicSiteFooter'
 import PublicSiteHeader from '../../components/PublicSiteHeader'
@@ -40,6 +41,10 @@ export default function DonationsPage() {
           padding: '42px 24px 48px',
         }}
       >
+        <Link to="/" className="donations-back-link">
+          <span aria-hidden="true">←</span> Back to home
+        </Link>
+
         <section
           style={{
             display: 'grid',

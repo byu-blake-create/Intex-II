@@ -1,3 +1,25 @@
+.donations-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--page-chip-border);
+  background: var(--page-auth-bg);
+  backdrop-filter: blur(12px);
+  color: var(--page-ink);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.donations-back-link:hover {
+  background: var(--page-panel);
+  border-color: var(--page-line);
+}
+
 .donations-page__main {
   width: min(1180px, 100%);
   margin: 0 auto;
