@@ -262,7 +262,8 @@ export function setConsentDecision(decision: ConsentDecision) {
     clearOptionalAnalyticsCookies()
   }
 
-  notifyConsentChanged({ decision })
+  // Explicit forceOpen: false so listeners never treat a post-choice update as "re-open banner".
+  notifyConsentChanged({ decision, forceOpen: false })
 }
 
 export function openConsentPreferences() {

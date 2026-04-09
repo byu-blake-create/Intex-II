@@ -3,8 +3,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  /* Above public-page overlays (modals, sticky chrome) so choices always receive clicks */
-  z-index: 10050;
+  /* Above gtag / third-party widgets that can steal clicks at the bottom of the viewport */
+  z-index: 2147483000;
   display: flex;
   justify-content: center;
   padding: 0.85rem 0.75rem;
@@ -12,6 +12,9 @@
 }
 
 .cookie-consent__inner {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
   width: min(980px, calc(100vw - 1.5rem));
   padding: 1rem 1.25rem;
   border-radius: 12px;
@@ -19,6 +22,13 @@
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 12px 40px rgba(34, 24, 19, 0.12);
   pointer-events: auto;
+}
+
+.cookie-consent__policy-link {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .cookie-consent__inner h2 {
@@ -39,10 +49,14 @@
 
 .cookie-consent__primary,
 .cookie-consent__secondary {
+  position: relative;
+  z-index: 2;
   border-radius: 8px;
-  padding: 0.45rem 0.9rem;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
   font-weight: 600;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .cookie-consent__primary {

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import {
   CONSENT_EVENT,
   getConsentDecision,
@@ -22,7 +24,7 @@ export default function CookieConsent() {
   useEffect(() => {
     const sync = (event?: Event) => {
       const detail = readConsentEventDetail(event)
-      const forceOpen = Boolean(detail?.forceOpen)
+      const forceOpen = detail?.forceOpen === true
       setVisible(forceOpen || getConsentDecision() === null || isPreferencesPanelRequested())
       syncOptionalAnalytics()
     }
@@ -45,27 +47,56 @@ export default function CookieConsent() {
     setVisible(false)
   }, [])
 
-  if (!visible) return null
+  if (!visible || typeof document === 'undefined' || !document.body) return null
 
-  return (
-    <div className="cookie-consent" role="dialog" aria-labelledby="cookie-consent-title">
-      <div className="cookie-consent__inner">
+  return createPortal(
+    <div
+      className="cookie-consent"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cookie-consent-title"
+    >
+      <div
+        className="cookie-consent__inner"
+        onPointerDown={e => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
+      >
         <h2 id="cookie-consent-title">Cookies &amp; analytics</h2>
         <p>
           We use essential cookies for sign-in. With your consent we may load privacy-friendly analytics to understand how
           our public pages are used. If you do not choose an option, default cookie settings remain in effect while you
           continue using the site. You can update your preference anytime from the site footer or Privacy Policy page. See our{' '}
-          <a href="/privacy">Privacy Policy</a> for details (GDPR).
+          <Link to="/privacy" className="cookie-consent__policy-link">
+            Privacy Policy
+          </Link>{' '}
+          for details (GDPR).
         </p>
         <div className="cookie-consent__actions">
-          <button type="button" className="cookie-consent__primary" onClick={accept}>
+          <button
+            type="button"
+            className="cookie-consent__primary"
+            onClick={e => {
+              e.preventDefault()
+              e.stopPropagation()
+              accept()
+            }}
+          >
             Accept
           </button>
-          <button type="button" className="cookie-consent__secondary" onClick={decline}>
+          <button
+            type="button"
+            className="cookie-consent__secondary"
+            onClick={e => {
+              e.preventDefault()
+              e.stopPropagation()
+              decline()
+            }}
+          >
             Decline non-essential
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
