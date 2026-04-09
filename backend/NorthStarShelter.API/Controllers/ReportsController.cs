@@ -96,10 +96,10 @@ public class ReportsController : ControllerBase
         var today = DateOnly.FromDateTime(DateTime.Now);
         var conferenceThrough = today.AddDays(7);
 
-        var activeResidentsTask = _db.Residents.AsNoTracking()
+        var activeResidents = await _db.Residents.AsNoTracking()
             .CountAsync(r => r.CaseStatus == "Active", cancellationToken);
 
-        var donationSummaryTask = _db.Donations.AsNoTracking()
+        var donationSummary = await _db.Donations.AsNoTracking()
             .Where(d => d.DonationDate >= donationSince)
             .GroupBy(_ => 1)
             .Select(g => new
@@ -109,21 +109,18 @@ public class ReportsController : ControllerBase
             })
             .FirstOrDefaultAsync(cancellationToken);
 
-        var conferencesTask = _db.Residents.AsNoTracking()
+        var conferences = await _db.Residents.AsNoTracking()
             .CountAsync(r =>
                 r.CaseConferenceDate != null &&
                 r.CaseConferenceDate >= today &&
                 r.CaseConferenceDate <= conferenceThrough,
                 cancellationToken);
 
-        await Task.WhenAll(activeResidentsTask, donationSummaryTask, conferencesTask);
-        var donationSummary = donationSummaryTask.Result;
-
         return Ok(new SummaryDto(
-            activeResidentsTask.Result,
+            activeResidents,
             donationSummary?.DonationCount ?? 0,
             donationSummary?.DonationSum ?? 0,
-            conferencesTask.Result));
+            conferences));
     }
 
     [HttpGet("command-center")]
