@@ -121,7 +121,7 @@ export default function AdminDashboard() {
               { label: 'Active Residents', value: String(summary.activeResidents), sub: 'Currently in shelter', trend: null },
               { label: 'Donations (This Month)', value: String(summary.totalDonationsLast30Days), sub: 'Transaction count', trend: null },
               { label: 'Amount (This Month)', value: `$${summary.donationAmountLast30Days.toLocaleString()}`, sub: 'Total received', trend: donationTrend },
-              { label: 'Case Conferences', value: String(summary.upcomingCaseConferences), sub: 'Upcoming', trend: null },
+              { label: 'Case Conferences', value: String(summary.upcomingCaseConferences), sub: 'Next 7 days', trend: null },
             ].map((s, i) => (
               <div
                 key={s.label}

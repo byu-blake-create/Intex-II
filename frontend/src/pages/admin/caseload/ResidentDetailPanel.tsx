@@ -78,7 +78,7 @@ export default function ResidentDetailPanel({
     <div className="cl-detail">
       {summary && summary.upcomingCaseConferences > 0 && (
         <a href="/admin/reports" className="cl-conference-notice">
-          &#9889; {summary.upcomingCaseConferences} upcoming case conference{summary.upcomingCaseConferences !== 1 ? 's' : ''} scheduled — review caseloads and prepare documentation.
+          &#9889; {summary.upcomingCaseConferences} case conference{summary.upcomingCaseConferences !== 1 ? 's' : ''} scheduled in the next 7 days — review caseloads and prepare documentation.
         </a>
       )}
 
