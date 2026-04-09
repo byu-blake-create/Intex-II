@@ -130,7 +130,11 @@ function clearAnalyticsGlobals() {
   }
 
   analyticsWindow.dataLayer = []
-  delete analyticsWindow.gtag
+  try {
+    delete analyticsWindow.gtag
+  } catch {
+    analyticsWindow.gtag = undefined
+  }
 }
 
 function notifyConsentChanged(detail: ConsentEventDetail) {
