@@ -35,3 +35,6 @@ test-results/
 **/__pycache__/
 .vercel
 seed_azure.py
+.vendor/
+presentation/*
+!presentation/DECK_OUTLINE.md
