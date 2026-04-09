@@ -17,7 +17,7 @@
 .dn-pager__info { font-size:0.78rem; color:var(--adm-muted); flex:1; }
 .dn-pager__btn { border:1px solid var(--adm-border); background:var(--adm-card); color:var(--adm-ink); padding:0.25rem 0.65rem; border-radius:6px; cursor:pointer; font-size:0.8rem; }
 .dn-pager__btn:disabled { opacity:0.35; cursor:default; }
-.dn-detail { overflow-y:auto; padding:1.75rem; display:flex; flex-direction:column; gap:1.5rem; }
+.dn-detail { overflow-y:auto; overflow-x:visible; padding:1.75rem; display:flex; flex-direction:column; gap:1.5rem; }
 .dn-detail__empty { display:flex; align-items:center; justify-content:center; height:100%; color:var(--adm-muted); font-size:0.95rem; }
 .dn-header { display:flex; flex-direction:column; gap:0.35rem; }
 .dn-header__top { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
@@ -32,7 +32,7 @@
 .dn-signal-strip { display:inline-flex; align-items:center; gap:0.4rem; }
 .dn-signal-strip__label { font-size:0.72rem; font-weight:600; color:var(--adm-muted); }
 .dn-signal-strip__info { position:relative; display:inline-flex; align-items:center; justify-content:center; font-size:0.82rem; line-height:1; color:var(--adm-muted); cursor:help; flex-shrink:0; }
-.dn-signal-strip__info::after { content:attr(data-tip); position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); width:240px; padding:0.45rem 0.65rem; border-radius:6px; background:var(--adm-ink); color:var(--adm-surface); font-size:0.75rem; font-weight:400; line-height:1.4; text-align:left; white-space:normal; pointer-events:none; opacity:0; transition:opacity 0.15s; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.18); text-transform:none; letter-spacing:normal; }
+.dn-signal-strip__info::after { content:attr(data-tip); position:absolute; top:calc(100% + 6px); left:0; transform:none; width:240px; max-width:min(300px, calc(100vw - 40px)); padding:0.45rem 0.65rem; border-radius:6px; background:var(--adm-ink); color:var(--adm-surface); font-size:0.75rem; font-weight:400; line-height:1.4; text-align:left; white-space:normal; pointer-events:none; opacity:0; transition:opacity 0.15s; z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.18); text-transform:none; letter-spacing:normal; }
 .dn-signal-strip__info:hover::after, .dn-signal-strip__info:focus-visible::after { opacity:1; }
 .dn-signal-strip__info:focus-visible { outline:2px solid var(--adm-border); outline-offset:2px; }
 .dn-ml-pill { display:inline-flex; align-items:center; justify-content:center; padding:0.15rem 0.5rem; border-radius:999px; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }

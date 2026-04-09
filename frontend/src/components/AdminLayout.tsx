@@ -18,6 +18,7 @@ const ADMIN_THEME_STORAGE_KEY = 'admin-theme'
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
   const { user, logout } = useAuth()
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const isAdmin = user?.roles.includes('Admin') ?? false
   const accountLabel = user
     ? formatAccountLabel(user.firstName, user.lastName, user.displayName, user.email)
@@ -64,6 +65,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (link.matchPrefix) return isOnWorkbench
     if (link.end) return pathname === link.to
     return pathname === link.to || pathname.startsWith(`${link.to}/`)
+  }
+
+  async function handleSignOut() {
+    if (isSigningOut) return
+    setIsSigningOut(true)
+    try {
+      await logout()
+    } finally {
+      setIsSigningOut(false)
+    }
   }
 
   return (
@@ -125,8 +136,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="admin-layout__user">
             <span className="admin-layout__email">{accountLabel}</span>
-            <button type="button" className="admin-layout__logout" onClick={() => void logout()}>
-              Sign out
+            <button type="button" className="admin-layout__logout" onClick={() => void handleSignOut()} disabled={isSigningOut}>
+              {isSigningOut ? 'Signing out...' : 'Sign out'}
             </button>
           </div>
         </div>

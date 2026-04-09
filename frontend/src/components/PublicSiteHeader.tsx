@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import { useAuth } from '../contexts/auth'
 import type { PublicTheme } from '../lib/usePublicTheme'
 
@@ -10,9 +11,20 @@ export default function PublicSiteHeader({
   setTheme: (theme: PublicTheme) => void
 }) {
   const { user, logout } = useAuth()
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
   const accountLabel = user ? formatAccountLabel(user.firstName, user.lastName, user.displayName, user.email) : null
   const showAdmin = Boolean(user?.roles.includes('Admin'))
+
+  async function handleSignOut() {
+    if (isSigningOut) return
+    setIsSigningOut(true)
+    try {
+      await logout()
+    } finally {
+      setIsSigningOut(false)
+    }
+  }
 
   return (
     <header className="home-nav">
@@ -62,8 +74,8 @@ export default function PublicSiteHeader({
         {user ? (
           <div className="home-nav__account">
             <span className="home-nav__account-email">{accountLabel}</span>
-            <button type="button" className="home-nav__logout" onClick={() => void logout()}>
-              Sign Out
+            <button type="button" className="home-nav__logout" onClick={() => void handleSignOut()} disabled={isSigningOut}>
+              {isSigningOut ? 'Signing out...' : 'Sign Out'}
             </button>
           </div>
         ) : (
