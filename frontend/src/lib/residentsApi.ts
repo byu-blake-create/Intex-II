@@ -8,6 +8,7 @@ export function residentsUrl(params: {
   safehouseId?: number
   caseStatus?: string
   caseCategory?: string
+  caseConferenceWithinDays?: number
   search?: string
 }) {
   const q = new URLSearchParams()
@@ -16,6 +17,7 @@ export function residentsUrl(params: {
   if (params.safehouseId != null) q.set('safehouseId', String(params.safehouseId))
   if (params.caseStatus) q.set('caseStatus', params.caseStatus)
   if (params.caseCategory) q.set('caseCategory', params.caseCategory)
+  if (params.caseConferenceWithinDays != null) q.set('caseConferenceWithinDays', String(params.caseConferenceWithinDays))
   if (params.search) q.set('search', params.search)
   const qs = q.toString()
   return `/api/residents${qs ? `?${qs}` : ''}`

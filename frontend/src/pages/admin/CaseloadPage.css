@@ -47,7 +47,7 @@
 .cl-timeline-card__date { font-size:0.85rem; font-weight:800; color:var(--adm-ink); }
 .cl-timeline-card__worker { font-size:0.82rem; color:var(--adm-muted); margin-left:auto; }
 .cl-timeline-card__text { font-size:0.85rem; color:var(--adm-muted); line-height:1.55; margin:0; }
-.cl-conference-notice { display:block; background:rgba(217,158,30,0.12); border:1px solid rgba(217,158,30,0.35); border-radius:8px; padding:0.65rem 1rem; font-size:0.85rem; color:#b8860b; font-weight:600; text-decoration:none; line-height:1.4; }
+.cl-conference-notice { display:block; width:100%; text-align:left; background:rgba(217,158,30,0.12); border:1px solid rgba(217,158,30,0.35); border-radius:8px; padding:0.65rem 1rem; font-size:0.85rem; color:#b8860b; font-weight:600; text-decoration:none; line-height:1.4; cursor:pointer; }
 .cl-conference-notice:hover { background:rgba(217,158,30,0.18); }
 .cl-conference-banner { padding:0.65rem 1rem; border-radius:8px; font-size:0.88rem; font-weight:600; line-height:1.4; }
 .cl-conference-banner--urgent { background:var(--adm-danger-bg); border:1px solid var(--adm-danger-border); color:var(--adm-danger-ink); }

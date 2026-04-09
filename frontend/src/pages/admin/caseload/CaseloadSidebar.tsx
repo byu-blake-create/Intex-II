@@ -9,6 +9,7 @@ type Props = {
   safehouseFilter: string
   statusFilter: string
   signalFilter: string
+  conferenceFilter: string
   listLoading: boolean
   listError: string | null
   pageNum: number
@@ -19,6 +20,7 @@ type Props = {
   onSafehouseFilterChange: (value: string) => void
   onStatusFilterChange: (value: string) => void
   onSignalFilterChange: (value: string) => void
+  onConferenceFilterChange: (value: string) => void
   onSelectResident: (resident: Resident) => void
   onPrevPage: () => void
   onNextPage: () => void
@@ -32,6 +34,7 @@ export default function CaseloadSidebar({
   safehouseFilter,
   statusFilter,
   signalFilter,
+  conferenceFilter,
   listLoading,
   listError,
   pageNum,
@@ -42,6 +45,7 @@ export default function CaseloadSidebar({
   onSafehouseFilterChange,
   onStatusFilterChange,
   onSignalFilterChange,
+  onConferenceFilterChange,
   onSelectResident,
   onPrevPage,
   onNextPage,
@@ -77,6 +81,12 @@ export default function CaseloadSidebar({
               <option value="Active">Active</option>
               <option value="Closed">Closed</option>
             </select>
+            <select aria-label="Filter residents by upcoming case conference" value={conferenceFilter} onChange={event => onConferenceFilterChange(event.target.value)}>
+              <option value="">All conferences</option>
+              <option value="next7">Conference in next 7 days</option>
+            </select>
+          </div>
+          <div className="cl-filters__row">
             <select aria-label="Filter residents by predictive signal" value={signalFilter} onChange={event => onSignalFilterChange(event.target.value)}>
               <option value="">All signals</option>
               <optgroup label="Support Need">

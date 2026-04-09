@@ -21,7 +21,7 @@ import type {
 } from '../../types/domain'
 import CaseloadSidebar from './caseload/CaseloadSidebar'
 import type { DetailTab, InsightLevel, ResidentEditField } from './caseload/caseloadTypes'
-import { daysSince, residentToUpsertInput, todayStr } from './caseload/caseloadUtils'
+import { daysSince, daysUntil, residentToUpsertInput, todayStr } from './caseload/caseloadUtils'
 import NewResidentModal from './caseload/NewResidentModal'
 import ResidentDetailPanel from './caseload/ResidentDetailPanel'
 import ResidentNoteModal from './caseload/ResidentNoteModal'
@@ -63,6 +63,7 @@ export default function CaseloadPage() {
   const [safehouseFilter, setSafehouseFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [signalFilter, setSignalFilter] = useState('')
+  const [conferenceFilter, setConferenceFilter] = useState('')
   const [safehouses, setSafehouses] = useState<Safehouse[]>([])
   const [selected, setSelected] = useState<Resident | null>(null)
   const [visits, setVisits] = useState<HomeVisitation[]>([])
@@ -147,6 +148,7 @@ export default function CaseloadPage() {
       pageSize: PAGE_SIZE,
       safehouseId: safehouseFilter ? Number(safehouseFilter) : undefined,
       caseStatus: statusFilter || undefined,
+      caseConferenceWithinDays: conferenceFilter === 'next7' ? 7 : undefined,
       search: debouncedSearch || undefined,
     })
       .then(response => {
@@ -164,7 +166,7 @@ export default function CaseloadPage() {
     return () => {
       mounted = false
     }
-  }, [pageNum, debouncedSearch, safehouseFilter, statusFilter, residentReloadToken])
+  }, [pageNum, debouncedSearch, safehouseFilter, statusFilter, conferenceFilter, residentReloadToken])
 
   useEffect(() => {
     if (!selected) return
@@ -186,9 +188,15 @@ export default function CaseloadPage() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   const filteredResidents = useMemo(() => {
-    if (!signalFilter) return residents
-
     return residents.filter(resident => {
+      if (conferenceFilter === 'next7') {
+        if (!resident.caseConferenceDate) return false
+        const days = daysUntil(resident.caseConferenceDate)
+        if (days < 0 || days > 7) return false
+      }
+
+      if (!signalFilter) return true
+
       if (signalFilter.startsWith('risk-')) {
         const level = signalFilter.slice(5)
         const insight = residentInsights[resident.residentId]
@@ -205,7 +213,7 @@ export default function CaseloadPage() {
 
       return true
     })
-  }, [reintegrationInsights, residentInsights, residents, signalFilter])
+  }, [conferenceFilter, reintegrationInsights, residentInsights, residents, signalFilter])
 
   const selectedResidentInsight = selected ? residentInsights[selected.residentId] : undefined
   const residentRiskLevel = selectedResidentInsight
@@ -491,6 +499,7 @@ export default function CaseloadPage() {
           safehouseFilter={safehouseFilter}
           statusFilter={statusFilter}
           signalFilter={signalFilter}
+          conferenceFilter={conferenceFilter}
           listLoading={listLoading}
           listError={listError}
           pageNum={pageNum}
@@ -511,6 +520,12 @@ export default function CaseloadPage() {
           }}
           onStatusFilterChange={value => {
             setStatusFilter(value)
+            setPageNum(1)
+            setListLoading(true)
+            setListError(null)
+          }}
+          onConferenceFilterChange={value => {
+            setConferenceFilter(value)
             setPageNum(1)
             setListLoading(true)
             setListError(null)
@@ -580,6 +595,12 @@ export default function CaseloadPage() {
           displayedSessions={displayedSessions}
           sessionsShowAll={sessionsShowAll}
           onToggleSessionsShowAll={setSessionsShowAll}
+          onShowUpcomingConferenceResidents={() => {
+            setConferenceFilter('next7')
+            setPageNum(1)
+            setListLoading(true)
+            setListError(null)
+          }}
         />
       </div>
 
