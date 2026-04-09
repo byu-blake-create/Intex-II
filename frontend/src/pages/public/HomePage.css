@@ -759,6 +759,32 @@
   outline-offset: 2px;
 }
 
+.login-page__password-rules {
+  margin: 0.25rem 0 0;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--page-chip-border);
+  background: var(--page-card-bg);
+}
+
+.login-page__password-rules-title {
+  margin: 0 0 0.45rem;
+  color: var(--page-accent-deep);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.login-page__password-rules ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.2rem;
+  color: var(--page-muted);
+  font-size: 0.9rem;
+}
+
 .hero-section {
   position: relative;
   overflow: hidden;

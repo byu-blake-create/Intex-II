@@ -182,7 +182,7 @@ export default function LoginPage() {
               </p>
               <p style={{ margin: 0, lineHeight: 1.7 }}>
                 {mode === 'register'
-                  ? 'Create a donor account with your first name, last name, email, and a password of at least 10 characters.'
+                  ? 'Create a donor account with your first name, last name, email, and a strong password.'
                   : 'Enter the email and password for your North Star Shelter account.'}
               </p>
             </div>
@@ -358,6 +358,18 @@ export default function LoginPage() {
                     </button>
                   </div>
                 </label>
+              )}
+
+              {mode === 'register' && !awaitingMfa && (
+                <section className="login-page__password-rules" aria-label="Password requirements">
+                  <p className="login-page__password-rules-title">Password requirements</p>
+                  <ul>
+                    <li>At least 14 characters</li>
+                    <li>At least one uppercase letter</li>
+                    <li>At least one lowercase letter</li>
+                    <li>At least one number</li>
+                  </ul>
+                </section>
               )}
 
               {error && (
