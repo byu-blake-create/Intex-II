@@ -1,7 +1,7 @@
 .donate-page > .donate-page__main {
   width: min(620px, 100%);
   margin: 0 auto;
-  padding: 32px 24px 64px;
+  padding: calc(var(--public-header-offset) + 32px) 24px 64px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -128,8 +128,8 @@
 
 .donate-amount-btn--active {
   border-color: var(--page-accent);
-  background: var(--page-accent-solid);
-  color: #fff;
+  background: var(--page-accent);
+  color: var(--page-accent-ink);
 }
 
 .donate-amount-custom {
