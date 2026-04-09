@@ -10,10 +10,19 @@ import './DonorsPage.css'
 
 const PAGE_SIZE = 50
 
-function getLastMonthRange(): { start: string; end: string } {
-  const now = new Date()
-  const firstOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-  const lastOfLastMonth = new Date(firstOfThisMonth.getTime() - 1)
+function getLastMonthRange(donations: Donation[]): { start: string; end: string } {
+  // Anchor to the latest donation date (mirrors backend GetReferenceDateAsync),
+  // so we never show zeroes when the data doesn't extend to the current calendar month.
+  const dates = donations.map(d => d.donationDate).filter(Boolean) as string[]
+  let anchor: Date
+  if (dates.length > 0) {
+    const latest = new Date([...dates].sort().reverse()[0])
+    anchor = new Date(latest.getFullYear(), latest.getMonth() + 1, 1)
+  } else {
+    const now = new Date()
+    anchor = new Date(now.getFullYear(), now.getMonth(), 1)
+  }
+  const lastOfLastMonth = new Date(anchor.getTime() - 1)
   const firstOfLastMonth = new Date(lastOfLastMonth.getFullYear(), lastOfLastMonth.getMonth(), 1)
   return {
     start: firstOfLastMonth.toISOString().slice(0, 10),
@@ -145,7 +154,7 @@ export default function DonorsPage() {
   })()
   const last30Donations = donations.filter(d => d.donationDate != null && d.donationDate >= thirtyDaysAgo)
   const donorLast30 = last30Donations.reduce((sum, d) => sum + (d.amount ?? 0), 0)
-  const { start, end } = getLastMonthRange()
+  const { start, end } = getLastMonthRange(donations)
   const lastMonthTotal = donations
     .filter(d => d.donationDate && d.donationDate >= start && d.donationDate <= end)
     .reduce((sum, d) => sum + (d.amount ?? 0), 0)
