@@ -2,19 +2,28 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   CONSENT_EVENT,
   getConsentDecision,
+  isPreferencesPanelRequested,
   setConsentDecision,
   syncOptionalAnalytics,
   type ConsentEventDetail,
 } from '../lib/cookieConsent'
 import './CookieConsent.css'
 
+function readConsentEventDetail(event?: Event): ConsentEventDetail | undefined {
+  if (!event || typeof event !== 'object' || !('detail' in event)) return undefined
+  return (event as CustomEvent<ConsentEventDetail>).detail
+}
+
 export default function CookieConsent() {
-  const [visible, setVisible] = useState(() => getConsentDecision() === null)
+  const [visible, setVisible] = useState(
+    () => getConsentDecision() === null || isPreferencesPanelRequested(),
+  )
 
   useEffect(() => {
     const sync = (event?: Event) => {
-      const detail = event instanceof CustomEvent ? (event.detail as ConsentEventDetail | undefined) : undefined
-      setVisible(detail?.forceOpen ? true : getConsentDecision() === null)
+      const detail = readConsentEventDetail(event)
+      const forceOpen = Boolean(detail?.forceOpen)
+      setVisible(forceOpen || getConsentDecision() === null || isPreferencesPanelRequested())
       syncOptionalAnalytics()
     }
 

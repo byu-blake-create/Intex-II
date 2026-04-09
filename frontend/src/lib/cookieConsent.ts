@@ -5,6 +5,68 @@ const CONSENT_SESSION_KEY = 'nss_cookie_consent_session'
 const CONSENT_LOCAL_KEY = 'nss_cookie_consent_choice'
 const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365
 
+/**
+ * Survives React remounts / Strict Mode so "Manage cookies" can reopen the banner after a choice exists.
+ * (useState init would otherwise reset visible to false whenever the component remounts.)
+ */
+let preferencesPanelRequested = false
+
+export function isPreferencesPanelRequested(): boolean {
+  return preferencesPanelRequested
+}
+
+function clearPreferencesPanelRequest() {
+  preferencesPanelRequested = false
+}
+
+function safeSessionGet(key: string): string | null {
+  try {
+    return window.sessionStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function safeSessionSet(key: string, value: string) {
+  try {
+    window.sessionStorage.setItem(key, value)
+  } catch {
+    /* private mode / blocked storage */
+  }
+}
+
+function safeSessionRemove(key: string) {
+  try {
+    window.sessionStorage.removeItem(key)
+  } catch {
+    /* ignore */
+  }
+}
+
+function safeLocalGet(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function safeLocalSet(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value)
+  } catch {
+    /* ignore */
+  }
+}
+
+function safeLocalRemove(key: string) {
+  try {
+    window.localStorage.removeItem(key)
+  } catch {
+    /* ignore */
+  }
+}
+
 const ANALYTICS_SCRIPT_ID = 'nss-analytics-script'
 const ANALYTICS_BOOTSTRAP_ID = 'nss-analytics-bootstrap'
 const OPTIONAL_ANALYTICS_COOKIE_PREFIXES = ['_ga', '_gid', '_gat']
@@ -89,30 +151,34 @@ function readConsentCookie(): ConsentDecision | null {
 
 /** Write consent to sessionStorage, localStorage, and a first-party cookie (privacy list + deploy reliability). */
 function persistConsentStores(decision: ConsentDecision) {
-  window.sessionStorage.setItem(CONSENT_SESSION_KEY, decision)
-  window.localStorage.setItem(CONSENT_LOCAL_KEY, decision)
+  safeSessionSet(CONSENT_SESSION_KEY, decision)
+  safeLocalSet(CONSENT_LOCAL_KEY, decision)
   const secure = window.location.protocol === 'https:' ? '; Secure' : ''
-  document.cookie = `${CONSENT_COOKIE}=${encodeURIComponent(decision)}; Path=/; Max-Age=${CONSENT_MAX_AGE_SECONDS}; SameSite=Lax${secure}`
+  try {
+    document.cookie = `${CONSENT_COOKIE}=${encodeURIComponent(decision)}; Path=/; Max-Age=${CONSENT_MAX_AGE_SECONDS}; SameSite=Lax${secure}`
+  } catch {
+    /* ignore */
+  }
 }
 
 function clearConsentStores() {
-  window.sessionStorage.removeItem(CONSENT_SESSION_KEY)
-  window.localStorage.removeItem(CONSENT_LOCAL_KEY)
+  safeSessionRemove(CONSENT_SESSION_KEY)
+  safeLocalRemove(CONSENT_LOCAL_KEY)
   deleteCookieEverywhere(CONSENT_COOKIE)
 }
 
 export function getConsentDecision(): ConsentDecision | null {
-  const session = window.sessionStorage.getItem(CONSENT_SESSION_KEY)
+  const session = safeSessionGet(CONSENT_SESSION_KEY)
   if (session === 'accepted' || session === 'declined') return session
 
-  const local = window.localStorage.getItem(CONSENT_LOCAL_KEY)
+  const local = safeLocalGet(CONSENT_LOCAL_KEY)
   if (local === 'accepted' || local === 'declined') return local
 
   const fromCookie = readConsentCookie()
   if (fromCookie) {
     // One-time-style sync so older deployments that only set the cookie still work everywhere.
-    window.localStorage.setItem(CONSENT_LOCAL_KEY, fromCookie)
-    window.sessionStorage.setItem(CONSENT_SESSION_KEY, fromCookie)
+    safeLocalSet(CONSENT_LOCAL_KEY, fromCookie)
+    safeSessionSet(CONSENT_SESSION_KEY, fromCookie)
     return fromCookie
   }
 
@@ -183,6 +249,7 @@ export function syncOptionalAnalytics() {
 }
 
 export function setConsentDecision(decision: ConsentDecision) {
+  clearPreferencesPanelRequest()
   persistConsentStores(decision)
 
   if (decision === 'accepted') {
@@ -199,10 +266,12 @@ export function setConsentDecision(decision: ConsentDecision) {
 }
 
 export function openConsentPreferences() {
+  preferencesPanelRequested = true
   notifyConsentChanged({ decision: getConsentDecision(), forceOpen: true })
 }
 
 export function resetConsentDecision() {
+  clearPreferencesPanelRequest()
   clearConsentStores()
   setAnalyticsDisabled(true)
   removeAnalyticsScript(ANALYTICS_SCRIPT_ID)
