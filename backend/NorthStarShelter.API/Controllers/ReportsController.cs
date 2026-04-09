@@ -92,26 +92,38 @@ public class ReportsController : ControllerBase
     public async Task<ActionResult<SummaryDto>> Summary(CancellationToken cancellationToken)
     {
         var referenceDate = await GetReferenceDateAsync(cancellationToken);
-        var since = referenceDate.AddDays(-30);
-        var from = referenceDate;
-        var to = referenceDate.AddDays(60);
+        var donationSince = referenceDate.AddDays(-30);
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var conferenceThrough = today.AddDays(7);
 
-        var row = await _db.Database
-            .SqlQueryRaw<SummaryRow>(
-                """
-                SELECT
-                    (SELECT CAST(count(*) AS int) FROM Residents WHERE CaseStatus = 'Active') AS ActiveResidents,
-                    (SELECT CAST(count(*) AS int) FROM Donations WHERE DonationDate >= {0}) AS DonationCount,
-                    (SELECT ISNULL(SUM(Amount), 0) FROM Donations WHERE DonationDate >= {0}) AS DonationSum,
-                    (SELECT CAST(count(*) AS int) FROM InterventionPlans WHERE CaseConferenceDate >= {1} AND CaseConferenceDate <= {2}) AS Conferences
-                """, since, from, to)
+        var activeResidentsTask = _db.Residents.AsNoTracking()
+            .CountAsync(r => r.CaseStatus == "Active", cancellationToken);
+
+        var donationSummaryTask = _db.Donations.AsNoTracking()
+            .Where(d => d.DonationDate >= donationSince)
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                DonationCount = g.Count(),
+                DonationSum = g.Sum(x => x.Amount) ?? 0m
+            })
             .FirstOrDefaultAsync(cancellationToken);
 
+        var conferencesTask = _db.Residents.AsNoTracking()
+            .CountAsync(r =>
+                r.CaseConferenceDate != null &&
+                r.CaseConferenceDate >= today &&
+                r.CaseConferenceDate <= conferenceThrough,
+                cancellationToken);
+
+        await Task.WhenAll(activeResidentsTask, donationSummaryTask, conferencesTask);
+        var donationSummary = donationSummaryTask.Result;
+
         return Ok(new SummaryDto(
-            row?.ActiveResidents ?? 0,
-            row?.DonationCount ?? 0,
-            row?.DonationSum ?? 0,
-            row?.Conferences ?? 0));
+            activeResidentsTask.Result,
+            donationSummary?.DonationCount ?? 0,
+            donationSummary?.DonationSum ?? 0,
+            conferencesTask.Result));
     }
 
     [HttpGet("command-center")]
@@ -705,13 +717,5 @@ public class ReportsController : ControllerBase
         }
 
         return timestamp;
-    }
-
-    private sealed class SummaryRow
-    {
-        public int ActiveResidents { get; set; }
-        public int DonationCount { get; set; }
-        public decimal DonationSum { get; set; }
-        public int Conferences { get; set; }
     }
 }
