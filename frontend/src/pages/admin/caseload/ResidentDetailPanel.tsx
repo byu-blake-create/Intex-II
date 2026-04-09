@@ -37,6 +37,7 @@ type Props = {
   displayedSessions: ProcessRecording[]
   sessionsShowAll: boolean
   onToggleSessionsShowAll: (showAll: boolean) => void
+  onShowUpcomingConferenceResidents: () => void
 }
 
 export default function ResidentDetailPanel({
@@ -73,13 +74,14 @@ export default function ResidentDetailPanel({
   displayedSessions,
   sessionsShowAll,
   onToggleSessionsShowAll,
+  onShowUpcomingConferenceResidents,
 }: Props) {
   return (
     <div className="cl-detail">
       {summary && summary.upcomingCaseConferences > 0 && (
-        <a href="/admin/reports" className="cl-conference-notice">
-          &#9889; {summary.upcomingCaseConferences} case conference{summary.upcomingCaseConferences !== 1 ? 's' : ''} scheduled in the next 7 days — review caseloads and prepare documentation.
-        </a>
+        <button type="button" className="cl-conference-notice" onClick={onShowUpcomingConferenceResidents}>
+          &#9889; {summary.upcomingCaseConferences} case conference{summary.upcomingCaseConferences !== 1 ? 's' : ''} scheduled in the next 7 days — show those residents in the list.
+        </button>
       )}
 
       {!selected && <div className="cl-detail__empty">Select a resident to view details</div>}

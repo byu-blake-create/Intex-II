@@ -36,6 +36,7 @@ public class ResidentsController : ControllerBase
         [FromQuery] int? safehouseId = null,
         [FromQuery] string? caseStatus = null,
         [FromQuery] string? caseCategory = null,
+        [FromQuery] int? caseConferenceWithinDays = null,
         [FromQuery] string? search = null,
         CancellationToken cancellationToken = default)
     {
@@ -46,6 +47,15 @@ public class ResidentsController : ControllerBase
             query = query.Where(r => r.CaseStatus == caseStatus);
         if (!string.IsNullOrWhiteSpace(caseCategory))
             query = query.Where(r => r.CaseCategory == caseCategory);
+        if (caseConferenceWithinDays.HasValue && caseConferenceWithinDays.Value >= 0)
+        {
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var through = today.AddDays(caseConferenceWithinDays.Value);
+            query = query.Where(r =>
+                r.CaseConferenceDate != null &&
+                r.CaseConferenceDate >= today &&
+                r.CaseConferenceDate <= through);
+        }
         if (!string.IsNullOrWhiteSpace(search))
         {
             var s = search.Trim();
