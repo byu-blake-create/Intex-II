@@ -83,7 +83,7 @@ export default function LoginPage() {
   }
 
   function handleGoogleSignIn() {
-    const returnUrl = mode === 'register' ? '/donations' : '/donations'
+    const returnUrl = returnTo || '/donations'
     window.location.href = apiUrl(`/api/auth/google/login?returnUrl=${encodeURIComponent(returnUrl)}`)
   }
 
