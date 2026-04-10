@@ -140,7 +140,7 @@ export default function DonatePage() {
 
             {!user && (
               <p className="donate-card__login-hint">
-                <a href="/login">Sign in or create an account</a> to track your donations
+                <a href="/login?returnTo=/donate">Sign in or create an account</a> to track your donations
                 and see your impact over time.
               </p>
             )}
@@ -166,7 +166,7 @@ export default function DonatePage() {
             {!user && (
               <div className="donate-success__cta">
                 <p>Create a free account to track your donations and see your impact over time.</p>
-                <a className="button button--primary" href="/login">
+                <a className="button button--primary" href="/login?returnTo=/donate">
                   Create Account
                 </a>
               </div>
@@ -203,7 +203,7 @@ export default function DonatePage() {
                 impact, and receive updates about the girls you're helping.
               </p>
               <div className="donate-modal__actions">
-                <a className="button button--primary" href="/login">
+                <a className="button button--primary" href="/login?returnTo=/donate">
                   Log in first
                 </a>
                 <button

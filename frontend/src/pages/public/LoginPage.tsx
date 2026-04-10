@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import PublicSiteFooter from '../../components/PublicSiteFooter'
 import { useAuth } from '../../contexts/auth'
 import { usePublicTheme } from '../../lib/usePublicTheme'
@@ -10,6 +10,8 @@ import './HomePage.css'
 export default function LoginPage() {
   const { login, register, completeTwoFactorLogin } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
   const { theme } = usePublicTheme()
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [firstName, setFirstName] = useState('')
@@ -26,6 +28,7 @@ export default function LoginPage() {
   const [mfaCode, setMfaCode] = useState('')
 
   function destinationFor(user: AuthUser) {
+    if (returnTo) return returnTo
     if (user.roles.includes('Admin')) return '/admin'
     if (user.roles.includes('Donor')) return '/donations'
     return '/'
