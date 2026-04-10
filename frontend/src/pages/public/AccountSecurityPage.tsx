@@ -78,7 +78,7 @@ export default function AccountSecurityPage() {
         style={{
           width: 'min(720px, 100%)',
           margin: '0 auto',
-          padding: '42px 24px 48px',
+          padding: '100px 24px 48px',
         }}
       >
         <p
